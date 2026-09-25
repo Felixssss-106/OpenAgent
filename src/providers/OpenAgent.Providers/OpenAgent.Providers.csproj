@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../core/OpenAgent.Agent/OpenAgent.Agent.csproj" />
+    <ProjectReference Include="../../shared/OpenAgent.Shared/OpenAgent.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

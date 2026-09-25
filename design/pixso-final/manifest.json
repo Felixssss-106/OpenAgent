@@ -1,0 +1,84 @@
+{
+  "project": "OpenAgent",
+  "deliverable": "UI 设计稿",
+  "generatedAt": "2026-09-25",
+  "source": "Pixso（矢量设计源文件）",
+  "designSystem": {
+    "reference": "Apple Human Interface Guidelines",
+    "baseSystem": "D:\\WorkSpace\\OpenAgent\\Apple（Pinguo 设计系统）",
+    "font": "DM Sans（可用字重：Regular / Medium / Bold，SemiBold 不可用）",
+    "radius": {
+      "28": "内容容器（卡片、浮层、list-card）",
+      "999": "胶囊（按钮、标签、输入框、底部导航、发送圆钮、系统消息、侧栏导航项、搜索框）",
+      "rule": "嵌套铁律：内圆角 ≤ 外圆角"
+    },
+    "spacing": {
+      "windows": { "水平外边距": 96, "内容左边缘": 336 },
+      "android": { "水平外边距": 20, "内容左边缘": 20 }
+    },
+    "variables": 28
+  },
+  "totals": { "frames": 30, "platforms": 2, "themes": 2 },
+
+  "groups": [
+    {
+      "name": "核心界面",
+      "count": 12,
+      "items": [
+        { "file": "01-windows-起始页-浅色.png", "pixso": "3:491", "size": "1440×900", "platform": "Windows", "theme": "light", "state": "起始页" },
+        { "file": "02-windows-起始页-深色.png", "pixso": "3:687", "size": "1440×900", "platform": "Windows", "theme": "dark",  "state": "起始页" },
+        { "file": "03-windows-对话态-浅色.png", "pixso": "3:60",  "size": "1440×900", "platform": "Windows", "theme": "light", "state": "对话态" },
+        { "file": "04-windows-对话态-深色.png", "pixso": "3:289", "size": "1440×900", "platform": "Windows", "theme": "dark",  "state": "对话态" },
+        { "file": "05-windows-审批态-浅色.png", "pixso": "3:1281", "size": "1440×900", "platform": "Windows", "theme": "light", "state": "审批态" },
+        { "file": "06-windows-审批态-深色.png", "pixso": "3:1421", "size": "1440×900", "platform": "Windows", "theme": "dark",  "state": "审批态" },
+        { "file": "07-android-起始页-浅色.png", "pixso": "3:598", "size": "390×844", "platform": "Android", "theme": "light", "state": "起始页" },
+        { "file": "08-android-起始页-深色.png", "pixso": "3:794", "size": "390×844", "platform": "Android", "theme": "dark",  "state": "起始页" },
+        { "file": "09-android-对话态-浅色.png", "pixso": "3:188", "size": "390×844", "platform": "Android", "theme": "light", "state": "对话态" },
+        { "file": "10-android-对话态-深色.png", "pixso": "3:395", "size": "390×844", "platform": "Android", "theme": "dark",  "state": "对话态" },
+        { "file": "11-android-审批态-浅色.png", "pixso": "3:1561", "size": "390×844", "platform": "Android", "theme": "light", "state": "审批态" },
+        { "file": "12-android-审批态-深色.png", "pixso": "3:1653", "size": "390×844", "platform": "Android", "theme": "dark",  "state": "审批态" }
+      ]
+    },
+    {
+      "name": "功能页面 · Windows",
+      "count": 12,
+      "note": "浅色 6 张 + 深色 6 张",
+      "items": [
+        { "page": "任务",     "light": "13-windows-任务-浅色.png",     "dark": "19-windows-任务-深色.png",     "pixsoLight": "4:207",  "pixsoDark": "5:5821" },
+        { "page": "设备",     "light": "14-windows-设备-浅色.png",     "dark": "20-windows-设备-深色.png",     "pixsoLight": "4:516",  "pixsoDark": "5:6145" },
+        { "page": "工具",     "light": "15-windows-工具-浅色.png",     "dark": "21-windows-工具-深色.png",     "pixsoLight": "4:825",  "pixsoDark": "5:6439" },
+        { "page": "Provider", "light": "16-windows-Provider-浅色.png", "dark": "22-windows-Provider-深色.png", "pixsoLight": "4:1134", "pixsoDark": "5:6617" },
+        { "page": "插件",     "light": "17-windows-插件-浅色.png",     "dark": "23-windows-插件-深色.png",     "pixsoLight": "4:1443", "pixsoDark": "5:6804" },
+        { "page": "设置",     "light": "18-windows-设置-浅色.png",     "dark": "24-windows-设置-深色.png",     "pixsoLight": "4:1752", "pixsoDark": "5:6969" }
+      ]
+    },
+    {
+      "name": "功能页面 · Android",
+      "count": 6,
+      "note": "移动端底部导航只有 任务 / 设备 / 设置 三个标签；工具、Provider、插件在移动端无独立页面（Provider 与插件作为设置页的二级入口）",
+      "items": [
+        { "page": "任务", "light": "25-android-任务-浅色.png", "dark": "28-android-任务-深色.png", "pixsoLight": "4:380",  "pixsoDark": "5:6003" },
+        { "page": "设备", "light": "26-android-设备-浅色.png", "dark": "29-android-设备-深色.png", "pixsoLight": "4:689",  "pixsoDark": "5:6308" },
+        { "page": "设置", "light": "27-android-设置-浅色.png", "dark": "30-android-设置-深色.png", "pixsoLight": "4:1925", "pixsoDark": "5:7172" }
+      ]
+    }
+  ],
+
+  "keyDesignDecisions": [
+    "权限审批做成产品的视觉签名 —— 审批卡是有风险等级、可逆性、影响面的决策物件，不是弹窗",
+    "审批卡弹出时覆盖输入框区域，并与 meta 行（设备/连接/权限）一起淡出；批准后一起淡入",
+    "进入对话后不显示问候语，标题让位给内容",
+    "工具调用采用 Codex 风格：无边框纯文本行 + 缩进的工具名 + 代码块输出",
+    "思考强度控件参考 Codex：折叠态为胶囊，展开后是带滑块的浮层",
+    "列表采用 Apple「内嵌分组」（inset grouped）样式：每组行装在圆角卡片里，分隔线内缩",
+    "选中项 = 胶囊高亮背景 + 图标/文字/计数同时着强调色（参考 HIG 标签页栏 + Liquid Glass）",
+    "移动端导航栏：圆形描边返回按钮 + 居中 17px 粗体标题"
+  ],
+
+  "relatedFiles": {
+    "designContext": "../../.impeccable.md",
+    "tokens": "../tokens.css",
+    "directionStudy": "../directions.html",
+    "appleDesignSystem": "../../Apple/"
+  }
+}

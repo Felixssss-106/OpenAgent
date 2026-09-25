@@ -1,0 +1,803 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: OpenAgent · UI Direction Study
+      - heading "5 个 UI 方向对比" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Apple 极简 · 大留白大标题为共同基调。5 个方向在同一美学家族内， 但结构与交互范式不同 —— 换配色不是方向，换骨架才是。每方向含 Windows 1440×900 与 Android 390×844 两张稿。
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: 色板
+        - generic [ref=e11]:
+          - button "A 石墨" [pressed] [ref=e12] [cursor=pointer]
+          - button "B 纸白" [ref=e13] [cursor=pointer]
+          - button "C 午夜" [ref=e14] [cursor=pointer]
+      - generic [ref=e15]:
+        - generic [ref=e16]: 主题
+        - generic [ref=e17]:
+          - button "浅色" [pressed] [ref=e18] [cursor=pointer]
+          - button "深色" [ref=e19] [cursor=pointer]
+      - generic [ref=e20]:
+        - generic [ref=e21]: 缩放
+        - generic [ref=e22]:
+          - button "适配" [pressed] [ref=e23] [cursor=pointer]
+          - button "1:1" [ref=e24] [cursor=pointer]
+  - table [ref=e26]:
+    - rowgroup [ref=e27]:
+      - row [ref=e28]:
+        - columnheader "方向" [ref=e29]
+        - columnheader "结构骨架" [ref=e30]
+        - columnheader "信息密度" [ref=e31]
+        - columnheader "第一眼看到什么" [ref=e32]
+        - columnheader "差异化记忆点" [ref=e33]
+        - columnheader "主要风险" [ref=e34]
+    - rowgroup [ref=e35]:
+      - row [ref=e36]:
+        - cell "01 静默画布" [ref=e37]
+        - cell "72px 图标轨 + 单栏画布" [ref=e38]
+        - cell "低" [ref=e39]
+        - cell "大标题与 Agent 输出本身" [ref=e40]
+        - cell "容器消失，靠排版与发丝线分区" [ref=e41]
+        - cell "重度用户嫌空；工具/日志类内容没地方放" [ref=e42]
+      - row [ref=e43]:
+        - cell "02 对话即产品" [ref=e44]
+        - cell "居中窄列 + 可折叠 Inspector" [ref=e45]
+        - cell "低–中" [ref=e46]
+        - cell "Agent 对话" [ref=e47]
+        - cell "Command Center 与主窗口视觉同构" [ref=e48]
+        - cell "与 ChatGPT 相似度过高，品牌辨识度弱" [ref=e49]
+      - row [ref=e50]:
+        - cell "03 环境仪表" [ref=e51]
+        - cell "212px 侧栏 + 仪表层 + 常驻输入" [ref=e52]
+        - cell "中" [ref=e53]
+        - cell "设备与系统状态数字" [ref=e54]
+        - cell "「先看状态再下指令」的常驻控制中心心智" [ref=e55]
+        - cell "与「以 Agent 为核心」的定位略有偏移" [ref=e56]
+      - row [ref=e57]:
+        - cell "04 工作台" [ref=e58]
+        - cell "240 导航 + 主区 + 320 Inspector 三栏" [ref=e59]
+        - cell "高" [ref=e60]
+        - cell "任务流 + 上下文面板并置" [ref=e61]
+        - cell "为 Coding Agent 场景优化，Git/Tool Call 常驻可见" [ref=e62]
+        - cell "与「大留白」有张力，需靠排版纪律平衡" [ref=e63]
+      - row [ref=e64]:
+        - cell "05 聚光" [ref=e65]
+        - cell "浮层即产品，主窗口为展开态" [ref=e66]
+        - cell "低" [ref=e67]
+        - cell "Alt+Space 浮层里的完整任务生命周期" [ref=e68]
+        - cell "输入 → 计划 → 审批 → 流式输出全在浮层内闭环" [ref=e69]
+        - cell "与文档第 49 条「主窗口为主」的结构描述有偏离" [ref=e70]
+  - generic [ref=e71]:
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - paragraph [ref=e74]: 方向 01
+        - heading [level=2] [ref=e75]:
+          - text: 静默画布
+          - emphasis [ref=e76]: The Quiet Canvas
+        - paragraph [ref=e77]: 容器消失，内容成为唯一的界面。没有卡片、没有分区背景、没有阴影 —— 只有排版层次和 1px 发丝线。Agent 的每一类输出（Agent 说话 / 工具调用 / 审批 / 命令） 用左侧一条 2px 色标区分，而不是用气泡。最接近 Apple 原生 App 的气质。
+        - generic [ref=e78]:
+          - generic [ref=e79]: 容器消失
+          - generic [ref=e80]: 排版即分区
+          - generic [ref=e81]: 单栏
+          - generic [ref=e82]: 最低视觉噪音
+      - generic [ref=e83]:
+        - term [ref=e84]: 信息架构
+        - definition [ref=e85]: 扁平。图标轨只承载 6 个一级入口，无二级导航
+        - term [ref=e86]: 适合场景
+        - definition [ref=e87]: 日常文件整理、系统查询、快速问答 —— 高频但轻量
+        - term [ref=e88]: 记忆点
+        - definition [ref=e89]: Agent 输出流的 2px 来源色标，一眼分清「谁在说话」
+        - term [ref=e90]: 风险
+        - definition [ref=e91]: 没有卡片容器意味着工具日志、协议详情等密集内容无处安放， 需要依赖开发者模式抽屉兜底
+    - generic [ref=e92]:
+      - figure "Windows · 1440 × 900" [ref=e93]:
+        - generic [ref=e96]:
+          - generic [ref=e97]: OpenAgent
+          - generic [ref=e111]:
+            - navigation [ref=e112]:
+              - generic "Agent" [ref=e113]
+              - generic "Devices" [ref=e116]
+              - generic "Tasks" [ref=e119]
+              - generic "Tools" [ref=e122]
+              - generic "Providers" [ref=e125]
+              - generic "Plugins" [ref=e129]
+              - generic "Settings" [ref=e135]
+            - main [ref=e139]:
+              - generic [ref=e140]:
+                - heading "Good afternoon" [level=3] [ref=e141]
+                - generic [ref=e142]:
+                  - generic [ref=e143]: DESKTOP-XXXX · Windows 11
+                  - generic [ref=e144]: 已连接 · 直连
+                  - generic [ref=e146]: OpenAgent Native
+                  - generic [ref=e147]: 权限：请求批准
+              - separator [ref=e148]
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - generic [ref=e152]: 你
+                  - paragraph [ref=e153]: 整理一下今天下载的文件。
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Agent · OpenAgent Native · 12:04
+                  - paragraph [ref=e158]: 我发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件。 建议建立 D:\Downloads\2026-09-25\ 并分为 图片 / 文档 / 压缩包 / 其他。需要移动 35 个文件。
+                - generic [ref=e159]:
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: file.list
+                    - generic [ref=e162]: D:\Downloads
+                    - generic [ref=e163]: 0.4s
+                  - paragraph [ref=e164]: 返回 35 项 · 合计 1.2 GB · 无权限异常
+                - generic [ref=e165]:
+                  - generic [ref=e166]:
+                    - generic [ref=e167]: 需要你的批准
+                    - generic [ref=e169]: 可撤销
+                  - heading "移动 35 个文件" [level=4] [ref=e170]
+                  - paragraph [ref=e171]: D:\Downloads\* → D:\Downloads\2026-09-25\
+                  - generic [ref=e172]:
+                    - generic [ref=e173]: 影响 35 个文件
+                    - generic [ref=e174]: 1.2 GB
+                    - generic [ref=e175]: 预计 4 秒
+                    - generic [ref=e176]: 中风险
+                  - generic [ref=e177]:
+                    - button "批准" [ref=e178] [cursor=pointer]
+                    - button "修改计划" [ref=e179] [cursor=pointer]
+                    - button "取消" [ref=e180] [cursor=pointer]
+              - generic [ref=e182]:
+                - generic [ref=e183]: 再让它按拍摄日期分成子文件夹…
+                - generic [ref=e184]:
+                  - generic [ref=e185]: Alt
+                  - generic [ref=e186]: Space
+      - figure "Android · 390 × 844" [ref=e191]:
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - generic [ref=e196]: 9:41
+            - generic [ref=e197]: ◗ ◔ ▮
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - heading "Good evening" [level=3] [ref=e200]
+              - generic [ref=e201]: DESKTOP-XXXX · 直连
+              - separator [ref=e204]
+              - generic [ref=e205]:
+                - generic [ref=e206]:
+                  - generic [ref=e207]: 你
+                  - paragraph [ref=e208]: 整理一下今天下载的文件。
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Agent · OpenAgent Native
+                  - paragraph [ref=e211]: 发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件，需要移动 35 个文件。
+                - generic [ref=e212]:
+                  - generic [ref=e213]:
+                    - generic [ref=e214]: 需要批准
+                    - generic [ref=e216]: 可撤销
+                  - heading "移动 35 个文件" [level=4] [ref=e217]
+                  - paragraph [ref=e218]: → D:\Downloads\2026-09-25\
+                  - generic [ref=e219]:
+                    - generic [ref=e220]: 35 个文件
+                    - generic [ref=e221]: 1.2 GB
+                    - generic [ref=e222]: 中风险
+                  - generic [ref=e223]:
+                    - button "批准" [ref=e224] [cursor=pointer]
+                    - button "修改计划" [ref=e225] [cursor=pointer]
+            - generic [ref=e226]: 说点什么…
+            - navigation [ref=e232]:
+              - generic [ref=e233]: Agent
+              - generic [ref=e236]: 任务
+              - generic [ref=e239]: 设备
+              - generic [ref=e242]: 设置
+  - generic [ref=e249]:
+    - generic [ref=e250]:
+      - generic [ref=e251]:
+        - paragraph [ref=e252]: 方向 02
+        - heading [level=2] [ref=e253]:
+          - text: 对话即产品
+          - emphasis [ref=e254]: Conversation Core
+        - paragraph [ref=e255]: Agent 对话是唯一的主界面。720px 居中窄列，其余一切 （设备、任务、工具、Provider）收进右侧可折叠的 Inspector。Command Center 浮层与主窗口 视觉同构 —— 同一个组件，只是尺寸不同。学习成本最低，最贴近文档对 「ChatGPT + Apple」的描述。
+        - generic [ref=e256]:
+          - generic [ref=e257]: 单一主界面
+          - generic [ref=e258]: 居中窄列
+          - generic [ref=e259]: 上下文可折叠
+          - generic [ref=e260]: 浮层与主窗同构
+      - generic [ref=e261]:
+        - term [ref=e262]: 信息架构
+        - definition [ref=e263]: 一层导航（文字式）+ 一层按需展开的 Inspector
+        - term [ref=e264]: 适合场景
+        - definition [ref=e265]: 绝大多数交互 —— 说一句话拿到结果，不关心底层
+        - term [ref=e266]: 记忆点
+        - definition [ref=e267]: 浮层与主窗口是同一个组件的两种尺寸，认知负担几乎为零
+        - term [ref=e268]: 风险
+        - definition [ref=e269]: 与 ChatGPT 的视觉语言高度重合，品牌辨识度最弱； 任务队列、工具注册表等「非对话」内容被压到 Inspector 里会显得局促
+    - generic [ref=e270]:
+      - figure "Windows · 1440 × 900" [ref=e271]:
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - generic [ref=e276]: OpenAgent
+            - navigation [ref=e280]:
+              - generic [ref=e281]: Agent
+              - generic [ref=e282]: Devices
+              - generic [ref=e283]: Tasks
+              - generic [ref=e284]: Providers
+            - generic [ref=e285]:
+              - generic [ref=e286]: DESKTOP-XXXX · 直连
+              - generic [ref=e288]: 请求批准
+          - generic [ref=e293]:
+            - main [ref=e294]:
+              - generic [ref=e297]:
+                - generic [ref=e298]: 整理一下今天下载的文件。
+                - generic [ref=e303]:
+                  - paragraph [ref=e304]: 我发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件。 建议建立 D:\Downloads\2026-09-25\ 并分为 图片 / 文档 / 压缩包 / 其他。
+                  - generic [ref=e305]:
+                    - generic [ref=e306]: file.list
+                    - generic [ref=e307]: D:\Downloads
+                    - generic [ref=e308]: 0.4s · 35 项 · 1.2 GB
+                - generic [ref=e313]:
+                  - generic [ref=e314]:
+                    - generic [ref=e315]: 需要你的批准
+                    - generic [ref=e317]: 中风险 · 可撤销
+                  - heading "移动 35 个文件" [level=4] [ref=e318]
+                  - paragraph [ref=e319]: D:\Downloads\* → D:\Downloads\2026-09-25\
+                  - generic [ref=e320]:
+                    - generic [ref=e321]: 35 个文件
+                    - generic [ref=e322]: 1.2 GB
+                    - generic [ref=e323]: 预计 4 秒
+                  - generic [ref=e324]:
+                    - button "批准" [ref=e325] [cursor=pointer]
+                    - button "修改计划" [ref=e326] [cursor=pointer]
+                    - button "取消" [ref=e327] [cursor=pointer]
+                - paragraph [ref=e328]: 批准后我会立即开始，完成后给出逐个文件的校验结果。
+              - generic [ref=e331]:
+                - generic [ref=e332]: 再让它按拍摄日期分成子文件夹…
+                - generic [ref=e333]:
+                  - generic [ref=e334]: Alt
+                  - generic [ref=e335]: Space
+            - complementary [ref=e339]:
+              - generic [ref=e340]: 上下文
+      - figure "Android · 390 × 844（无底部导航，对话即全部）" [ref=e344]:
+        - generic [ref=e347]:
+          - generic [ref=e348]:
+            - generic [ref=e349]: 9:41
+            - generic [ref=e350]: ◗ ◔ ▮
+          - generic [ref=e351]:
+            - generic [ref=e352]:
+              - generic [ref=e355]: Agent
+              - generic [ref=e356]: 直连
+            - generic [ref=e358]:
+              - generic [ref=e359]: Agent
+              - generic [ref=e360]: 任务 3
+              - generic [ref=e361]: 设备
+            - generic [ref=e363]:
+              - generic [ref=e364]: 整理一下今天下载的文件。
+              - generic [ref=e369]:
+                - paragraph [ref=e370]: 发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件。
+                - generic [ref=e371]:
+                  - generic [ref=e372]: file.list
+                  - generic [ref=e373]: 0.4s
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - generic [ref=e376]: 需要批准
+                  - generic [ref=e378]: 可撤销
+                - heading "移动 35 个文件" [level=4] [ref=e379]
+                - paragraph [ref=e380]: → D:\Downloads\2026-09-25\
+                - generic [ref=e381]:
+                  - button "批准" [ref=e382] [cursor=pointer]
+                  - button "修改计划" [ref=e383] [cursor=pointer]
+            - generic [ref=e384]: 说点什么…
+  - generic [ref=e393]:
+    - generic [ref=e394]:
+      - generic [ref=e395]:
+        - paragraph [ref=e396]: 方向 03
+        - heading [level=2] [ref=e397]:
+          - text: 环境仪表
+          - emphasis [ref=e398]: Ambient Console
+        - paragraph [ref=e399]: 先看状态，再下指令。首页是一个纯排版构成的仪表层 —— 超大数字配微小标签， 没有图表卡、没有环形进度条。Agent 输入框常驻底部，随时可打字，像 Spotlight 一样。 匹配「常驻后台的控制中心」这一产品心智。
+        - generic [ref=e400]:
+          - generic [ref=e401]: 状态优先
+          - generic [ref=e402]: 排版化仪表
+          - generic [ref=e403]: 常驻输入
+          - generic [ref=e404]: 设备是一等公民
+      - generic [ref=e405]:
+        - term [ref=e406]: 信息架构
+        - definition [ref=e407]: 带标签侧栏 + 仪表层 + 常驻底栏，三层各司其职
+        - term [ref=e408]: 适合场景
+        - definition [ref=e409]: 长期挂着后台、偶尔瞄一眼状态、随时丢一个任务
+        - term [ref=e410]: 记忆点
+        - definition [ref=e411]: 54px 等宽数字 + 11px 大写标签的仪表排版，不用任何图表
+        - term [ref=e412]: 风险
+        - definition [ref=e413]: 「先看状态」会稀释「Agent 优先」的产品主张； 数字指标天然容易被误读为绝对准确值（文档第 327 条已提醒）
+    - generic [ref=e414]:
+      - figure "Windows · 1440 × 900" [ref=e415]:
+        - generic [ref=e418]:
+          - generic [ref=e419]: OpenAgent
+          - generic [ref=e433]:
+            - navigation [ref=e434]:
+              - generic [ref=e435]:
+                - generic [ref=e436]: 工作区
+                - generic [ref=e437]:
+                  - text: Agent
+                  - generic [ref=e440]: "3"
+                - generic [ref=e441]:
+                  - text: 任务
+                  - generic [ref=e444]: "16"
+                - generic [ref=e445]:
+                  - text: 设备
+                  - generic [ref=e448]: "2"
+              - generic [ref=e449]:
+                - generic [ref=e450]: 能力
+                - generic [ref=e451]:
+                  - text: 工具
+                  - generic [ref=e454]: "23"
+                - generic [ref=e455]:
+                  - text: Provider
+                  - generic [ref=e459]: "4"
+                - generic [ref=e460]:
+                  - text: 插件
+                  - generic [ref=e464]: "1"
+              - generic [ref=e465]: 设置
+            - main [ref=e470]:
+              - generic [ref=e471]:
+                - paragraph [ref=e472]: 星期三 · 9 月 25 日
+                - heading "Good afternoon" [level=3] [ref=e473]
+              - generic [ref=e475]:
+                - generic [ref=e476]:
+                  - paragraph [ref=e477]: 23%
+                  - paragraph [ref=e478]: CPU
+                  - paragraph [ref=e479]: 8 核 · 峰值 41%
+                - generic [ref=e480]:
+                  - paragraph [ref=e481]: 51%
+                  - paragraph [ref=e482]: 内存
+                  - paragraph [ref=e483]: 16 GB · 已用 8.2
+                - generic [ref=e484]:
+                  - paragraph [ref=e485]: 12%
+                  - paragraph [ref=e486]: GPU
+                  - paragraph [ref=e487]: 未在编码
+                - generic [ref=e488]:
+                  - paragraph [ref=e489]: 32ms
+                  - paragraph [ref=e490]: 延迟
+                  - paragraph [ref=e491]: 直连 · 局域网
+              - generic [ref=e492]:
+                - generic [ref=e493]:
+                  - heading "你的设备" [level=4] [ref=e494]
+                  - generic [ref=e495]: 2 台已配对
+                - generic [ref=e496]:
+                  - generic [ref=e497]:
+                    - generic [ref=e501]:
+                      - generic [ref=e502]: DESKTOP-XXXX
+                      - generic [ref=e503]: Windows 11 · OpenAgent 0.4.2 · 本机
+                    - generic [ref=e504]:
+                      - generic [ref=e505]: 在线 · 直连
+                      - generic [ref=e507]: CPU 23% · 内存 51%
+                  - generic [ref=e508]:
+                    - generic [ref=e512]:
+                      - generic [ref=e513]: Pixel 9
+                      - generic [ref=e514]: Android 15 · OpenAgent 0.4.2 · 已信任
+                    - generic [ref=e515]:
+                      - generic [ref=e516]: 在线
+                      - generic [ref=e518]: 电量 78%
+              - generic [ref=e519]:
+                - generic [ref=e520]:
+                  - heading "任务" [level=4] [ref=e521]
+                  - generic [ref=e522]: 3 运行中 · 1 等待批准 · 12 已完成
+                - generic [ref=e523]:
+                  - generic [ref=e524]:
+                    - generic [ref=e528]:
+                      - generic [ref=e529]: 整理下载文件
+                      - generic [ref=e530]: OpenAgent Native · 正在执行 24/35
+                    - generic [ref=e531]: 00:04
+                  - generic [ref=e532]:
+                    - generic [ref=e537]:
+                      - generic [ref=e538]: 删除重复文件
+                      - generic [ref=e539]: 等待批准 · 高风险 · 不可撤销
+                    - generic [ref=e540]: 需要批准
+              - generic [ref=e542]:
+                - generic [ref=e543]:
+                  - generic [ref=e544]: OpenAgent Native
+                  - generic [ref=e545]: Agent
+                - generic [ref=e547]:
+                  - generic [ref=e548]: 权限
+                  - generic [ref=e549]: 请求批准
+                - generic [ref=e551]: DESKTOP-XXXX
+                - generic [ref=e554]: 说一句话，交给它做…
+      - figure "Android · 390 × 844" [ref=e560]:
+        - generic [ref=e563]:
+          - generic [ref=e564]:
+            - generic [ref=e565]: 9:41
+            - generic [ref=e566]: ◗ ◔ ▮
+          - generic [ref=e567]:
+            - generic [ref=e568]:
+              - paragraph [ref=e569]: 星期三 · 9 月 25 日
+              - heading "Good evening" [level=3] [ref=e570]
+              - generic [ref=e571]:
+                - generic [ref=e572]:
+                  - paragraph [ref=e573]: 23%
+                  - paragraph [ref=e574]: CPU
+                - generic [ref=e575]:
+                  - paragraph [ref=e576]: 51%
+                  - paragraph [ref=e577]: 内存
+                - generic [ref=e578]:
+                  - paragraph [ref=e579]: 32ms
+                  - paragraph [ref=e580]: 延迟
+              - heading "你的设备" [level=4] [ref=e581]
+              - generic [ref=e582]:
+                - generic [ref=e587]:
+                  - generic [ref=e588]: DESKTOP-XXXX
+                  - generic [ref=e589]: Windows 11 · 直连
+                - generic [ref=e595]:
+                  - generic [ref=e596]: Pixel 9
+                  - generic [ref=e597]: Android 15 · 电量 78%
+              - heading "任务" [level=4] [ref=e599]
+              - generic [ref=e600]:
+                - generic [ref=e605]:
+                  - generic [ref=e606]: 整理下载文件
+                  - generic [ref=e607]: 正在执行 24/35
+                - generic [ref=e613]:
+                  - generic [ref=e614]: 删除重复文件
+                  - generic [ref=e615]: 等待批准 · 高风险
+            - generic [ref=e616]: 说一句话，交给它做…
+            - navigation [ref=e622]:
+              - generic [ref=e623]: Agent
+              - generic [ref=e626]: 任务
+              - generic [ref=e629]: 设备
+              - generic [ref=e632]: 设置
+  - generic [ref=e639]:
+    - generic [ref=e640]:
+      - generic [ref=e641]:
+        - paragraph [ref=e642]: 方向 04
+        - heading [level=2] [ref=e643]:
+          - text: 工作台
+          - emphasis [ref=e644]: Split Workspace
+        - paragraph [ref=e645]: 三栏结构：导航 / 任务流 / 上下文面板。为 Coding Agent 场景优化 —— Working Directory、Git 分支与脏状态、Tool Call 次数、待批准队列常驻右侧，不用切页面。 信息密度最高，但仍靠留白与 1px 发丝线分层，不用满屏卡片。
+        - generic [ref=e646]:
+          - generic [ref=e647]: 三栏
+          - generic [ref=e648]: 上下文常驻
+          - generic [ref=e649]: 高密度
+          - generic [ref=e650]: 为 Coding Agent 优化
+      - generic [ref=e651]:
+        - term [ref=e652]: 信息架构
+        - definition [ref=e653]: 三层并列：一级导航 + 任务流 + 上下文 Inspector
+        - term [ref=e654]: 适合场景
+        - definition [ref=e655]: 长时间盯着的复杂任务 —— 用 Codex / Claude Code 改代码、跑测试
+        - term [ref=e656]: 记忆点
+        - definition [ref=e657]: 右侧 Inspector 把「Agent 正在什么环境下动手」变成常驻可见的事实
+        - term [ref=e658]: 风险
+        - definition [ref=e659]: 与「大留白」的美学要求存在张力；1440 宽度下主区只剩 880px， 再窄就需要折叠 Inspector。文档第 156 条正是这个场景，所以方向本身是对的， 问题是它不该成为唯一形态
+    - generic [ref=e660]:
+      - figure "Windows · 1440 × 900" [ref=e661]:
+        - generic [ref=e664]:
+          - generic [ref=e666]:
+            - generic [ref=e669]: OpenAgent
+            - generic [ref=e670]: 工作台
+          - generic [ref=e680]:
+            - navigation [ref=e681]:
+              - generic [ref=e682]:
+                - generic [ref=e683]: 今天
+                - generic [ref=e685]:
+                  - generic [ref=e686]: 分析 OpenAgent 编译问题
+                  - generic [ref=e687]: Codex · 运行中
+                - generic [ref=e689]:
+                  - generic [ref=e690]: 整理下载文件
+                  - generic [ref=e691]: OpenAgent · 已完成
+                - generic [ref=e693]:
+                  - generic [ref=e694]: 修复单元测试
+                  - generic [ref=e695]: Claude Code · 失败
+              - generic [ref=e696]:
+                - generic [ref=e697]: 昨天
+                - generic [ref=e698]:
+                  - text: 查看系统占用
+                  - generic [ref=e699]: 完成
+                - generic [ref=e700]:
+                  - text: 截图并发送
+                  - generic [ref=e701]: 完成
+              - generic [ref=e702]:
+                - generic [ref=e703]: 快速指令
+                - generic [ref=e704]: 启动 Minecraft
+                - generic [ref=e707]: 整理学习资料
+              - generic [ref=e711]:
+                - generic [ref=e712]: 新建任务…
+                - generic [ref=e713]:
+                  - generic [ref=e714]: Alt
+                  - generic [ref=e715]: Space
+            - main [ref=e716]:
+              - generic [ref=e718]:
+                - heading "分析 OpenAgent 编译问题" [level=3] [ref=e719]
+                - generic [ref=e720]: 运行中
+                - generic [ref=e722]: Codex · gpt-5-codex
+              - separator [ref=e723]
+              - generic [ref=e725]:
+                - generic [ref=e726]:
+                  - generic [ref=e727]: 你 · 12:31
+                  - paragraph [ref=e728]: 用 Codex 分析这个项目的编译问题。
+                - generic [ref=e729]:
+                  - generic [ref=e730]: Agent · Codex
+                  - paragraph [ref=e733]: 先确认仓库状态，再跑一次构建拿到真实错误。
+                - generic [ref=e734]:
+                  - generic [ref=e735]:
+                    - generic [ref=e736]: ·
+                    - generic [ref=e737]: git.status --porcelain
+                    - generic [ref=e738]: 0.2s · 3 modified
+                  - generic [ref=e739]:
+                    - generic [ref=e740]: ·
+                    - generic [ref=e741]: directory.list src/
+                    - generic [ref=e742]: 0.1s · 12 entries
+                  - generic [ref=e743]:
+                    - generic [ref=e744]: "!"
+                    - generic [ref=e745]: shell.exec dotnet build -warnaserror
+                    - generic [ref=e746]: 12.4s · exit 1
+                - generic [ref=e747]:
+                  - paragraph [ref=e748]: dotnet build · stderr
+                  - generic [ref=e749]: "src/OpenAgent.Agent/AgentLoop.cs(142,17): error CS8602: Dereference of a possibly null reference. [OpenAgent.Agent.csproj] src/OpenAgent.Tools/PathGuard.cs(58,9): warning CS1591: Missing XML comment for publicly visible type"
+                - generic [ref=e750]:
+                  - generic [ref=e751]:
+                    - generic [ref=e752]: 需要你的批准
+                    - generic [ref=e754]: 高风险 · 会修改源码
+                  - heading "修改 2 个文件并重新构建" [level=4] [ref=e755]
+                  - paragraph [ref=e756]: AgentLoop.cs · PathGuard.cs
+                  - generic [ref=e757]:
+                    - generic [ref=e758]: +18 / −9 行
+                    - generic [ref=e759]: 可撤销
+                    - generic [ref=e760]: 预计 15 秒
+                  - generic [ref=e761]:
+                    - button "批准" [ref=e762] [cursor=pointer]
+                    - button "查看 diff" [ref=e763] [cursor=pointer]
+                    - button "拒绝" [ref=e764] [cursor=pointer]
+              - generic [ref=e766]:
+                - generic [ref=e767]: 追加指令…
+                - generic [ref=e768]:
+                  - generic [ref=e769]: ⏎
+                  - text: 发送 ·
+                  - generic [ref=e770]: ⇧⏎
+                  - text: 换行
+            - complementary [ref=e774]:
+              - generic [ref=e775]:
+                - paragraph [ref=e776]: 工作区
+                - generic [ref=e777]:
+                  - term [ref=e778]: 目录
+                  - definition [ref=e779]: D:\WorkSpace-Codex\OpenAgent
+                  - term [ref=e780]: Git
+                  - definition [ref=e781]:
+                    - generic [ref=e782]: main · 3 个未提交
+                  - term [ref=e784]: Provider
+                  - definition [ref=e785]: Codex · Ready
+              - generic [ref=e786]:
+                - paragraph [ref=e787]: 本次任务
+                - generic [ref=e788]:
+                  - term [ref=e789]: Tool Calls
+                  - definition [ref=e790]: 7 次
+                  - term [ref=e791]: 已耗时
+                  - definition [ref=e792]: 00:42
+                  - term [ref=e793]: 权限模式
+                  - definition [ref=e794]: 请求批准
+                  - term [ref=e795]: 待批准
+                  - definition [ref=e796]: 1 项
+              - generic [ref=e797]:
+                - paragraph [ref=e798]: 工具调用
+                - generic [ref=e799]:
+                  - generic [ref=e800]:
+                    - generic [ref=e801]: git.status
+                    - generic [ref=e802]: 0.2s
+                  - generic [ref=e803]:
+                    - generic [ref=e804]: directory.list
+                    - generic [ref=e805]: 0.1s
+                  - generic [ref=e806]:
+                    - generic [ref=e807]: file.read ×2
+                    - generic [ref=e808]: 0.3s
+                  - generic [ref=e809]:
+                    - generic [ref=e810]: shell.exec
+                    - generic [ref=e811]: 12.4s
+              - generic [ref=e812]:
+                - paragraph [ref=e813]: 会话
+                - generic [ref=e814]:
+                  - generic [ref=e815]: 对话
+                  - generic [ref=e816]: Trace
+                  - generic [ref=e817]: 日志
+                - paragraph [ref=e818]: 开发者模式下可查看完整 Trace：用户输入 → Plan → Tool Call → Approval → 执行 → 校验。
+      - figure "Android · 390 × 844（Inspector 收进可展开的底部 Sheet）" [ref=e820]:
+        - generic [ref=e823]:
+          - generic [ref=e824]:
+            - generic [ref=e825]: 9:41
+            - generic [ref=e826]: ◗ ◔ ▮
+          - generic [ref=e827]:
+            - generic [ref=e828]: 分析 OpenAgent 编译问题
+            - generic [ref=e830]:
+              - generic [ref=e831]: 运行中
+              - generic [ref=e833]: Codex
+              - generic [ref=e834]: 00:42
+            - generic [ref=e836]:
+              - generic [ref=e837]:
+                - generic [ref=e838]: 你
+                - paragraph [ref=e839]: 用 Codex 分析这个项目的编译问题。
+              - generic [ref=e840]:
+                - generic [ref=e841]: Agent · Codex
+                - paragraph [ref=e842]: 先确认仓库状态，再跑一次构建拿到真实错误。
+              - generic [ref=e843]:
+                - generic [ref=e844]:
+                  - generic [ref=e845]: ·
+                  - generic [ref=e846]: git.status
+                  - generic [ref=e847]: 0.2s
+                - generic [ref=e848]:
+                  - generic [ref=e849]: "!"
+                  - generic [ref=e850]: shell.exec
+                  - generic [ref=e851]: exit 1
+              - generic [ref=e852]:
+                - generic [ref=e853]:
+                  - generic [ref=e854]: 需要批准
+                  - generic [ref=e856]: 高风险
+                - heading "修改 2 个文件" [level=4] [ref=e857]
+                - paragraph [ref=e858]: AgentLoop.cs · PathGuard.cs
+                - generic [ref=e859]:
+                  - button "批准" [ref=e860] [cursor=pointer]
+                  - button "查看 diff" [ref=e861] [cursor=pointer]
+            - generic [ref=e862]: 追加指令…
+            - navigation [ref=e868]:
+              - generic [ref=e869]: Agent
+              - generic [ref=e872]: 任务
+              - generic [ref=e875]: 设备
+              - generic [ref=e878]: 设置
+  - generic [ref=e885]:
+    - generic [ref=e886]:
+      - generic [ref=e887]:
+        - paragraph [ref=e888]: 方向 05
+        - heading [level=2] [ref=e889]:
+          - text: 聚光
+          - emphasis [ref=e890]: Spotlight Primacy
+        - paragraph [ref=e891]: 浮层是产品本体，主窗口只是它的展开态。Alt+Space 唤起的 680px 面板不只是输入框，而是完整的任务生命周期容器 —— 输入、计划、审批、流式输出、 结果，全部在浮层内闭环，不跳转、不打断心流。主窗口只在需要长时间观察或管理时才打开。
+        - generic [ref=e892]:
+          - generic [ref=e893]: 浮层即产品
+          - generic [ref=e894]: 零跳转闭环
+          - generic [ref=e895]: 不打断心流
+          - generic [ref=e896]: 主窗口次要化
+      - generic [ref=e897]:
+        - term [ref=e898]: 信息架构
+        - definition [ref=e899]: 浮层（高频全部功能）→ 主窗口（低频管理）两级
+        - term [ref=e900]: 适合场景
+        - definition [ref=e901]: 开发者白天的高频节奏：下任务、审批、看结果，全程不离开当前窗口
+        - term [ref=e902]: 记忆点
+        - definition [ref=e903]: 审批与计划在同一浮层内就地完成，用户视线零位移
+        - term [ref=e904]: 风险
+        - definition [ref=e905]: 与文档第 49 条「主窗口为主体」的描述有偏离，需要产品层接受 「主窗口次要化」；另外浮层承载审批时，误触成本更高，需要把「批准」做成需要 刻意确认的动作
+    - generic [ref=e906]:
+      - figure "Windows · 1440 × 900（浮层浮于桌面之上，主窗口仅作管理入口）" [ref=e907]:
+        - generic [ref=e910]:
+          - generic [ref=e921]:
+            - generic [ref=e922]:
+              - generic [ref=e925]: Ask OpenAgent
+              - generic [ref=e926]: OpenAgent Native
+              - generic [ref=e927]: 请求批准
+            - generic [ref=e931]: 整理一下今天下载的文件。
+            - generic [ref=e933]:
+              - generic [ref=e934]:
+                - generic [ref=e935]: 执行计划 · 5 步
+                - generic [ref=e936]: 预计 6 秒
+              - generic [ref=e937]:
+                - generic [ref=e938]:
+                  - generic [ref=e939]: "1"
+                  - text: 扫描
+                  - generic [ref=e940]: D:\Downloads
+                  - generic [ref=e941]: 安全
+                - generic [ref=e942]:
+                  - generic [ref=e943]: "2"
+                  - text: 按类型分类 35 个文件
+                  - generic [ref=e944]: 安全
+                - generic [ref=e945]:
+                  - generic [ref=e946]: "3"
+                  - text: 创建目标文件夹
+                  - generic [ref=e947]: 低
+                - generic [ref=e948]:
+                  - generic [ref=e949]: "4"
+                  - text: 移动文件
+                  - generic [ref=e950]: 中 · 需批准
+                - generic [ref=e951]:
+                  - generic [ref=e952]: "5"
+                  - text: 校验哈希并生成报告
+                  - generic [ref=e953]: 安全
+            - generic [ref=e955]:
+              - generic [ref=e956]:
+                - generic [ref=e957]: 需要你的批准 · 第 4 步
+                - generic [ref=e959]: 可撤销
+              - heading "移动 35 个文件到 2026-09-25\\" [level=4] [ref=e960]
+              - generic [ref=e961]:
+                - generic [ref=e962]: 35 个文件
+                - generic [ref=e963]: 1.2 GB
+                - generic [ref=e964]: 中风险
+              - generic [ref=e965]:
+                - button "批准并继续" [ref=e966] [cursor=pointer]
+                - button "修改计划" [ref=e967] [cursor=pointer]
+                - button "取消" [ref=e968] [cursor=pointer]
+            - generic [ref=e970]:
+              - generic [ref=e971]: ✓ 步骤 1 · 扫描完成 · 35 项 / 1.2 GB
+              - generic [ref=e972]: ✓ 步骤 2 · 分类完成 · 图片 23 / 文档 4 / 压缩包 2 / 其他 6
+              - generic [ref=e973]: ✓ 步骤 3 · 已创建 D:\Downloads\2026-09-25\
+              - generic [ref=e974]: 等待批准以继续…
+            - generic [ref=e975]:
+              - generic [ref=e976]: Agent：OpenAgent Native
+              - generic [ref=e977]: 权限：请求批准
+              - generic [ref=e978]: 设备：DESKTOP-XXXX · 直连
+              - generic [ref=e979]: Esc 收起
+          - generic [ref=e980]:
+            - generic [ref=e981]:
+              - generic [ref=e982]: 主窗口
+              - text: 任务中心 · 历史 · 设备
+            - generic [ref=e983]:
+              - generic [ref=e984]: Devices
+              - text: 配对 · 信任 · 撤销
+            - generic [ref=e985]:
+              - generic [ref=e986]: Settings
+              - text: Provider · 权限 · Relay
+      - figure "Android · 390 × 844（Bottom Sheet 形态的同一浮层）" [ref=e988]:
+        - generic [ref=e991]:
+          - generic [ref=e992]:
+            - generic [ref=e993]: 9:41
+            - generic [ref=e994]: ◗ ◔ ▮
+          - generic [ref=e997]:
+            - generic [ref=e1000]:
+              - generic [ref=e1003]: Ask OpenAgent
+              - generic [ref=e1004]: 直连
+            - generic [ref=e1006]: 整理一下今天下载的文件。
+            - generic [ref=e1008]:
+              - paragraph [ref=e1009]: 执行计划 · 5 步
+              - generic [ref=e1010]:
+                - generic [ref=e1011]:
+                  - generic [ref=e1012]: "1"
+                  - text: 扫描 D:\Downloads
+                  - generic [ref=e1013]: 安全
+                - generic [ref=e1014]:
+                  - generic [ref=e1015]: "2"
+                  - text: 分类 35 个文件
+                  - generic [ref=e1016]: 安全
+                - generic [ref=e1017]:
+                  - generic [ref=e1018]: "3"
+                  - text: 创建目标文件夹
+                  - generic [ref=e1019]: 低
+                - generic [ref=e1020]:
+                  - generic [ref=e1021]: "4"
+                  - text: 移动文件
+                  - generic [ref=e1022]: 需批准
+            - generic [ref=e1024]:
+              - generic [ref=e1025]:
+                - generic [ref=e1026]: 需要批准
+                - generic [ref=e1028]: 可撤销
+              - heading "移动 35 个文件" [level=4] [ref=e1029]
+              - generic [ref=e1030]:
+                - generic [ref=e1031]: 1.2 GB
+                - generic [ref=e1032]: 中风险
+              - generic [ref=e1033]:
+                - button "批准并继续" [ref=e1034] [cursor=pointer]
+                - button "修改计划" [ref=e1035] [cursor=pointer]
+  - generic [ref=e1039]:
+    - heading "3 套候选色板" [level=2] [ref=e1040]
+    - paragraph [ref=e1041]: 三套都基于 OKLCH 构建，中性色带 0.008–0.014 chroma 的品牌色偏移（拒绝死灰）， 各含明暗双主题。用上方的色板切换器可以把上面 10 张稿实时切到任意一套 —— 建议先选色板， 再选方向，因为色板是全局的，方向是结构的。
+    - generic [ref=e1042]:
+      - generic [ref=e1051]:
+        - heading "A · 石墨 Graphite" [level=3] [ref=e1052]
+        - paragraph [ref=e1053]: 冷灰偏蓝 + 单一靛青强调色。最耐看，明暗双主题都稳， 与 WinUI 3 的 Fluent 灰阶最接近，落地成本最低。
+        - generic [ref=e1054]:
+          - generic [ref=e1055]: 强调色
+          - generic [ref=e1056]: oklch(52% 0.145 258)
+        - generic [ref=e1057]:
+          - generic [ref=e1058]: 中性偏移
+          - generic [ref=e1059]: hue 250 · C 0.003–0.010
+        - generic [ref=e1060]:
+          - generic [ref=e1061]: 契合品牌
+          - generic [ref=e1062]: Privacy · Control
+      - generic [ref=e1071]:
+        - heading "B · 纸白 Paper" [level=3] [ref=e1072]
+        - paragraph [ref=e1073]: 暖灰偏橙 + 低饱和深墨蓝。像印刷油墨落在纸上的感觉， 温度更高，适合强调「本地、离线、属于你自己」。
+        - generic [ref=e1074]:
+          - generic [ref=e1075]: 强调色
+          - generic [ref=e1076]: oklch(40% 0.090 254)
+        - generic [ref=e1077]:
+          - generic [ref=e1078]: 中性偏移
+          - generic [ref=e1079]: hue 70–80 · C 0.004–0.014
+        - generic [ref=e1080]:
+          - generic [ref=e1081]: 契合品牌
+          - generic [ref=e1082]: Local-first · Open
+      - generic [ref=e1091]:
+        - heading "C · 午夜 Midnight" [level=3] [ref=e1092]
+        - paragraph [ref=e1093]: 深蓝黑 + 电光青，暗色是第一公民。屏幕感最强， 符合「常驻后台的基础设施」气质；但离常见 AI 配色更近，需要更严格的用色纪律。
+        - generic [ref=e1094]:
+          - generic [ref=e1095]: 强调色
+          - generic [ref=e1096]: oklch(74% 0.115 200)
+        - generic [ref=e1097]:
+          - generic [ref=e1098]: 中性偏移
+          - generic [ref=e1099]: hue 265 · C 0.012–0.014
+        - generic [ref=e1100]:
+          - generic [ref=e1101]: 契合品牌
+          - generic [ref=e1102]: Cross-device
+    - generic [ref=e1103]:
+      - heading "设计方建议" [level=3] [ref=e1104]
+      - paragraph [ref=e1105]: 色板取 A · 石墨，方向取 01 静默画布 为默认形态、 04 工作台 作为 Coding Agent 场景的可切换布局、 05 聚光 作为 Alt+Space 的浮层形态。
+      - paragraph [ref=e1106]: 理由：三者不是竞争关系，而是同一个产品的三种尺度 —— 静默画布是日常形态， 工作台是复杂任务形态，聚光是瞬时形态。它们共享同一套 token、同一套组件语义， 因此可以共存，且不违反文档第 2 条「不允许为完成第一版而使用阻碍未来扩展的架构」。
+      - paragraph [ref=e1107]: 02 对话即产品的问题不是不好，而是太容易被误认为是 ChatGPT 客户端； 03 环境仪表的信息架构值得吸收（设备一等公民、状态诚实），但把仪表层做成首页会稀释 「Agent 优先」的产品主张 —— 建议把它的仪表排版并入 01 的 Dashboard。

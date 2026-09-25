@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: build and test (windows)
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore OpenAgent.sln
+
+      - name: Build
+        run: dotnet build OpenAgent.sln -c Release -p:Platform=x64 --no-restore
+
+      - name: Test
+        run: dotnet test OpenAgent.sln -c Release --no-build --logger "console;verbosity=normal"

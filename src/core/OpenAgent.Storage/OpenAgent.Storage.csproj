@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenAgent.Core/OpenAgent.Core.csproj" />
+    <ProjectReference Include="../../shared/OpenAgent.Shared/OpenAgent.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

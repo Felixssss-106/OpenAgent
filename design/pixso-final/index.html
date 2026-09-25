@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAgent · 设计稿总览</title>
+<style>
+  :root{
+    --bg:#0a0a0a; --surface:#1c1c1e; --raised:#2c2c2e; --line:#3a3a3c;
+    --tx:#f5f5f7; --tx2:#aeaeb2; --tx3:#8e8e93; --accent:#2e8dff;
+    --sans:"Segoe UI Variable Text","Segoe UI","PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:15px;line-height:22px;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1560px;margin:0 auto;padding:56px 40px 120px}
+  header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:44px}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.062em;text-transform:uppercase;color:var(--tx3);margin:0 0 10px}
+  h1{font-size:38px;line-height:44px;font-weight:700;letter-spacing:-.022em;margin:0}
+  .sub{color:var(--tx2);margin:14px 0 0;max-width:74ch}
+  .stats{display:flex;gap:36px;margin-top:24px;flex-wrap:wrap}
+  .stat b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .stat span{font-size:12px;color:var(--tx3)}
+  h2{font-size:22px;font-weight:700;letter-spacing:-.015em;margin:56px 0 6px}
+  h2:first-of-type{margin-top:0}
+  .hint{color:var(--tx3);font-size:13px;margin:0 0 22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:26px}
+  .grid.wide{grid-template-columns:repeat(auto-fill,minmax(460px,1fr))}
+  figure{margin:0}
+  .shot{display:block;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);
+        transition:border-color .2s ease}
+  .shot:hover{border-color:var(--accent)}
+  .shot img{display:block;width:100%;height:auto}
+  figcaption{font-size:12px;color:var(--tx3);margin-top:10px}
+  .tag{display:inline-block;font-size:11px;color:var(--tx2);border:1px solid var(--line);
+       border-radius:999px;padding:2px 9px;margin-left:8px}
+  .tag.dark{color:var(--accent);border-color:var(--accent)}
+  footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);color:var(--tx3);font-size:13px}
+  footer code{font-family:"Cascadia Code",ui-monospace,Consolas,monospace;font-size:12px;color:var(--tx2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">OpenAgent · UI Design Deliverable</p>
+    <h1>设计稿总览</h1>
+    <p class="sub">Windows × Android 开源个人 AI 跨设备控制中心。全部界面基于 Apple Human Interface Guidelines
+      设计，采用 Apple 风格设计系统（DM Sans / 胶囊圆角体系 / 明暗双主题）。</p>
+    <div class="stats">
+      <div class="stat"><b>30</b><span>画板</span></div>
+      <div class="stat"><b>2</b><span>平台</span></div>
+      <div class="stat"><b>2</b><span>主题</span></div>
+      <div class="stat"><b>28</b><span>设计变量</span></div>
+    </div>
+  </header>
+
+  <h2>一、核心界面</h2>
+  <p class="hint">三种状态 × 双平台 × 明暗双主题，共 12 张。起始页 / 对话态 / 审批态。</p>
+
+  <h3 style="font-size:15px;color:var(--tx2);margin:22px 0 12px">Windows · 桌面端</h3>
+  <div class="grid wide">
+    <figure><a class="shot" href="01-windows-起始页-浅色.png" target="_blank"><img src="01-windows-起始页-浅色.png" alt="Windows 起始页 浅色" loading="lazy"></a><figcaption>起始页 · 浅色<span class="tag">1440×900</span></figcaption></figure>
+    <figure><a class="shot" href="02-windows-起始页-深色.png" target="_blank"><img src="02-windows-起始页-深色.png" alt="Windows 起始页 深色" loading="lazy"></a><figcaption>起始页 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="03-windows-对话态-浅色.png" target="_blank"><img src="03-windows-对话态-浅色.png" alt="Windows 对话态 浅色" loading="lazy"></a><figcaption>对话态 · 浅色<span class="tag">含工具调用 / 思考强度</span></figcaption></figure>
+    <figure><a class="shot" href="04-windows-对话态-深色.png" target="_blank"><img src="04-windows-对话态-深色.png" alt="Windows 对话态 深色" loading="lazy"></a><figcaption>对话态 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="05-windows-审批态-浅色.png" target="_blank"><img src="05-windows-审批态-浅色.png" alt="Windows 审批态 浅色" loading="lazy"></a><figcaption>审批态 · 浅色<span class="tag">权限审批覆盖输入区</span></figcaption></figure>
+    <figure><a class="shot" href="06-windows-审批态-深色.png" target="_blank"><img src="06-windows-审批态-深色.png" alt="Windows 审批态 深色" loading="lazy"></a><figcaption>审批态 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--tx2);margin:40px 0 12px">Android · 移动端</h3>
+  <div class="grid">
+    <figure><a class="shot" href="07-android-起始页-浅色.png" target="_blank"><img src="07-android-起始页-浅色.png" alt="Android 起始页 浅色" loading="lazy"></a><figcaption>起始页 · 浅色<span class="tag">390×844</span></figcaption></figure>
+    <figure><a class="shot" href="08-android-起始页-深色.png" target="_blank"><img src="08-android-起始页-深色.png" alt="Android 起始页 深色" loading="lazy"></a><figcaption>起始页 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="09-android-对话态-浅色.png" target="_blank"><img src="09-android-对话态-浅色.png" alt="Android 对话态 浅色" loading="lazy"></a><figcaption>对话态 · 浅色</figcaption></figure>
+    <figure><a class="shot" href="10-android-对话态-深色.png" target="_blank"><img src="10-android-对话态-深色.png" alt="Android 对话态 深色" loading="lazy"></a><figcaption>对话态 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="11-android-审批态-浅色.png" target="_blank"><img src="11-android-审批态-浅色.png" alt="Android 审批态 浅色" loading="lazy"></a><figcaption>审批态 · 浅色</figcaption></figure>
+    <figure><a class="shot" href="12-android-审批态-深色.png" target="_blank"><img src="12-android-审批态-深色.png" alt="Android 审批态 深色" loading="lazy"></a><figcaption>审批态 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+  </div>
+
+  <h2>二、功能页面</h2>
+  <p class="hint">Windows 6 个页面 + Android 3 个页面（移动端底部导航只有 任务 / 设备 / 设置），共 18 张。</p>
+
+  <h3 style="font-size:15px;color:var(--tx2);margin:22px 0 12px">Windows · 浅色</h3>
+  <div class="grid wide">
+    <figure><a class="shot" href="13-windows-任务-浅色.png" target="_blank"><img src="13-windows-任务-浅色.png" alt="任务 浅色" loading="lazy"></a><figcaption>任务</figcaption></figure>
+    <figure><a class="shot" href="14-windows-设备-浅色.png" target="_blank"><img src="14-windows-设备-浅色.png" alt="设备 浅色" loading="lazy"></a><figcaption>设备</figcaption></figure>
+    <figure><a class="shot" href="15-windows-工具-浅色.png" target="_blank"><img src="15-windows-工具-浅色.png" alt="工具 浅色" loading="lazy"></a><figcaption>工具</figcaption></figure>
+    <figure><a class="shot" href="16-windows-Provider-浅色.png" target="_blank"><img src="16-windows-Provider-浅色.png" alt="Provider 浅色" loading="lazy"></a><figcaption>Provider</figcaption></figure>
+    <figure><a class="shot" href="17-windows-插件-浅色.png" target="_blank"><img src="17-windows-插件-浅色.png" alt="插件 浅色" loading="lazy"></a><figcaption>插件</figcaption></figure>
+    <figure><a class="shot" href="18-windows-设置-浅色.png" target="_blank"><img src="18-windows-设置-浅色.png" alt="设置 浅色" loading="lazy"></a><figcaption>设置</figcaption></figure>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--tx2);margin:40px 0 12px">Windows · 深色</h3>
+  <div class="grid wide">
+    <figure><a class="shot" href="19-windows-任务-深色.png" target="_blank"><img src="19-windows-任务-深色.png" alt="任务 深色" loading="lazy"></a><figcaption>任务<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="20-windows-设备-深色.png" target="_blank"><img src="20-windows-设备-深色.png" alt="设备 深色" loading="lazy"></a><figcaption>设备<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="21-windows-工具-深色.png" target="_blank"><img src="21-windows-工具-深色.png" alt="工具 深色" loading="lazy"></a><figcaption>工具<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="22-windows-Provider-深色.png" target="_blank"><img src="22-windows-Provider-深色.png" alt="Provider 深色" loading="lazy"></a><figcaption>Provider<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="23-windows-插件-深色.png" target="_blank"><img src="23-windows-插件-深色.png" alt="插件 深色" loading="lazy"></a><figcaption>插件<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="24-windows-设置-深色.png" target="_blank"><img src="24-windows-设置-深色.png" alt="设置 深色" loading="lazy"></a><figcaption>设置<span class="tag dark">Dark</span></figcaption></figure>
+  </div>
+
+  <h3 style="font-size:15px;color:var(--tx2);margin:40px 0 12px">Android · 浅色 / 深色</h3>
+  <div class="grid">
+    <figure><a class="shot" href="25-android-任务-浅色.png" target="_blank"><img src="25-android-任务-浅色.png" alt="Android 任务 浅色" loading="lazy"></a><figcaption>任务 · 浅色</figcaption></figure>
+    <figure><a class="shot" href="28-android-任务-深色.png" target="_blank"><img src="28-android-任务-深色.png" alt="Android 任务 深色" loading="lazy"></a><figcaption>任务 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="26-android-设备-浅色.png" target="_blank"><img src="26-android-设备-浅色.png" alt="Android 设备 浅色" loading="lazy"></a><figcaption>设备 · 浅色</figcaption></figure>
+    <figure><a class="shot" href="29-android-设备-深色.png" target="_blank"><img src="29-android-设备-深色.png" alt="Android 设备 深色" loading="lazy"></a><figcaption>设备 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+    <figure><a class="shot" href="27-android-设置-浅色.png" target="_blank"><img src="27-android-设置-浅色.png" alt="Android 设置 浅色" loading="lazy"></a><figcaption>设置 · 浅色</figcaption></figure>
+    <figure><a class="shot" href="30-android-设置-深色.png" target="_blank"><img src="30-android-设置-深色.png" alt="Android 设置 深色" loading="lazy"></a><figcaption>设置 · 深色<span class="tag dark">Dark</span></figcaption></figure>
+  </div>
+
+  <footer>
+    <p>设计源文件在 Pixso；本目录为 PNG 导出（30 张，原生尺寸）。</p>
+    <p>设计系统 token：<code>../tokens.css</code> · 设计上下文：<code>../../.impeccable.md</code> · 方向对比稿：<code>../directions.html</code></p>
+  </footer>
+
+</div>
+</body>
+</html>

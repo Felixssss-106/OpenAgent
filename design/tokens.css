@@ -1,0 +1,306 @@
+/* ============================================================================
+   OpenAgent — Design Tokens
+   Windows (WinUI 3) × Android (Compose / Material 3)
+   ----------------------------------------------------------------------------
+   三套候选色板 × 明暗双主题。全部基于 OKLCH，中性色带极低 chroma 的品牌色偏移
+   （0.008–0.014），不使用纯黑 / 纯白。语义 token 与原始 token 分层，暗色只重定义
+   语义层。
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   0. 与色板无关的 token：字体、字号、间距、圆角、动效、层级
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* --- 字体族 ---------------------------------------------------------------
+     文档第 141 条：优先系统字体，不打包无授权第三方字体。
+     Windows = Segoe UI Variable；Android = 系统无衬线；中文回落 PingFang / 雅黑。 */
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont,
+             "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei",
+             system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont,
+                  "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "Cascadia Mono", ui-monospace, "SF Mono", "JetBrains Mono",
+               Menlo, Consolas, monospace;
+
+  /* --- 字号阶梯 -------------------------------------------------------------
+     固定 rem/px 阶梯（非流体）：App UI 需要空间可预测性。
+     桌面基准 15px，Android 基准 15sp。6 级，级差足够大以避免层次浑浊。 */
+  --t-display-size: 34px;   --t-display-lh: 40px;  --t-display-w: 600; --t-display-ls: -0.021em;
+  --t-title-size:   24px;   --t-title-lh:   30px;  --t-title-w:   600; --t-title-ls:   -0.016em;
+  --t-heading-size: 17px;   --t-heading-lh: 24px;  --t-heading-w: 600; --t-heading-ls: -0.010em;
+  --t-body-size:    15px;   --t-body-lh:    22px;  --t-body-w:    400; --t-body-ls:     0;
+  --t-callout-size: 14px;   --t-callout-lh: 20px;  --t-callout-w: 400; --t-callout-ls:  0;
+  --t-caption-size: 13px;   --t-caption-lh: 18px;  --t-caption-w: 400; --t-caption-ls:  0;
+  --t-micro-size:   11px;   --t-micro-lh:   16px;  --t-micro-w:   600; --t-micro-ls:    0.062em;
+
+  --t-display: var(--t-display-w) var(--t-display-size)/var(--t-display-lh) var(--font-display);
+  --t-title:   var(--t-title-w)   var(--t-title-size)/var(--t-title-lh)     var(--font-display);
+  --t-heading: var(--t-heading-w) var(--t-heading-size)/var(--t-heading-lh) var(--font-ui);
+  --t-body:    var(--t-body-w)    var(--t-body-size)/var(--t-body-lh)       var(--font-ui);
+  --t-callout: var(--t-callout-w) var(--t-callout-size)/var(--t-callout-lh) var(--font-ui);
+  --t-caption: var(--t-caption-w) var(--t-caption-size)/var(--t-caption-lh) var(--font-ui);
+  --t-micro:   var(--t-micro-w)   var(--t-micro-size)/var(--t-micro-lh)    var(--font-ui);
+  --t-code:    400 13px/20px var(--font-mono);
+
+  /* --- 间距阶梯（8pt 网格，节奏用 4/8/12/16/24/32/48/64） -------------------- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+
+  /* 垂直节奏单位 = body line-height 22px 的公约数，文本与留白共享同一数学基础 */
+  --rhythm: 22px;
+
+  /* --- 圆角：连续圆角取向，桌面克制 / 移动更圆 ------------------------------ */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+
+  /* --- 描边：深度主要靠 1px 发丝线，而非阴影 --------------------------------- */
+  --hair: 1px;
+  --border-hair: var(--hair) solid var(--border-subtle);
+
+  /* --- 动效：指数缓动，无回弹 / 无弹性 -------------------------------------- */
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.30, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.50, 1);
+  --ease-in:        cubic-bezier(0.70, 0, 0.84, 0);
+  --ease-in-out:    cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-instant: 120ms;   /* 按压 / 开关 / 变色 */
+  --dur-state:   200ms;   /* 菜单 / 悬浮 / tooltip */
+  --dur-layout:  320ms;   /* 抽屉 / 模态 / 折叠 */
+  --dur-enter:   480ms;   /* 页面进入 */
+  --dur-exit:    240ms;   /* 退出 = 进入的 75% */
+
+  /* --- 层级：仅浮层使用阴影，其余靠表面色阶 -------------------------------- */
+  --shadow-overlay: 0 24px 60px -12px oklch(0% 0 0 / 0.28), 0 2px 8px -2px oklch(0% 0 0 / 0.12);
+  --shadow-float:   0 12px 32px -8px oklch(0% 0 0 / 0.18), 0 1px 3px -1px oklch(0% 0 0 / 0.08);
+
+  --focus-ring: 0 0 0 3px var(--focus-ring-color), 0 0 0 1px var(--accent);
+}
+
+/* ---------------------------------------------------------------------------
+   1. 色板 A · Graphite — 冷灰偏蓝，单一靛青强调色
+      气质：克制、专业、原生。最耐看，明暗双主题都稳。
+      契合品牌词：Privacy / Control
+   --------------------------------------------------------------------------- */
+
+[data-palette="graphite"][data-theme="light"] {
+  --bg-canvas:      oklch(98.4% 0.003 250);
+  --bg-surface:     oklch(99.5% 0.002 250);
+  --bg-raised:      oklch(99.9% 0.001 250);
+  --bg-sunken:      oklch(96.2% 0.004 250);
+  --bg-inset:       oklch(94.0% 0.005 250);
+  --border-subtle:  oklch(91.5% 0.005 250);
+  --border-default: oklch(86.0% 0.006 250);
+  --border-strong:  oklch(72.0% 0.008 250);
+  --text-primary:   oklch(20.5% 0.010 250);
+  --text-secondary: oklch(45.0% 0.009 250);
+  --text-tertiary:  oklch(60.0% 0.008 250);
+  --text-quaternary:oklch(72.0% 0.007 250);
+  --text-inverse:   oklch(99.5% 0.002 250);
+  --accent:         oklch(52.0% 0.145 258);
+  --accent-hover:   oklch(46.0% 0.150 258);
+  --accent-quiet:   oklch(94.5% 0.028 258);
+  --accent-text:    oklch(44.0% 0.140 258);
+  --on-accent:      oklch(99.5% 0.002 258);
+  --focus-ring-color: oklch(58% 0.150 258 / 0.45);
+  --scrim:          oklch(24% 0.012 250 / 0.32);
+  --body-weight: 400;
+}
+
+[data-palette="graphite"][data-theme="dark"] {
+  --bg-canvas:      oklch(15.5% 0.010 250);
+  --bg-surface:     oklch(18.5% 0.010 250);
+  --bg-raised:      oklch(22.5% 0.011 250);
+  --bg-sunken:      oklch(13.0% 0.010 250);
+  --bg-inset:       oklch(25.5% 0.011 250);
+  --border-subtle:  oklch(24.0% 0.011 250);
+  --border-default: oklch(30.5% 0.011 250);
+  --border-strong:  oklch(43.0% 0.010 250);
+  --text-primary:   oklch(96.5% 0.004 250);
+  --text-secondary: oklch(76.0% 0.008 250);
+  --text-tertiary:  oklch(62.0% 0.009 250);
+  --text-quaternary:oklch(50.0% 0.009 250);
+  --text-inverse:   oklch(15.5% 0.010 250);
+  --accent:         oklch(68.0% 0.130 258);
+  --accent-hover:   oklch(74.0% 0.125 258);
+  --accent-quiet:   oklch(27.0% 0.048 258);
+  --accent-text:    oklch(78.0% 0.115 258);
+  --on-accent:      oklch(14.0% 0.012 258);
+  --focus-ring-color: oklch(72% 0.130 258 / 0.50);
+  --scrim:          oklch(8% 0.012 250 / 0.56);
+  --body-weight: 350;   /* 深色底上降低字重，抵消光渗 */
+}
+
+/* ---------------------------------------------------------------------------
+   2. 色板 B · Paper — 暖灰偏橙，低饱和深墨蓝强调色
+      气质：编辑感、纸质感、暖而稳。像 Apple Books / Things。
+      契合品牌词：Local-first（"离线也能用"的温度）
+   --------------------------------------------------------------------------- */
+
+[data-palette="paper"][data-theme="light"] {
+  --bg-canvas:      oklch(97.6% 0.006 80);
+  --bg-surface:     oklch(99.2% 0.004 80);
+  --bg-raised:      oklch(99.7% 0.003 80);
+  --bg-sunken:      oklch(95.4% 0.008 80);
+  --bg-inset:       oklch(93.2% 0.010 80);
+  --border-subtle:  oklch(90.5% 0.010 80);
+  --border-default: oklch(85.0% 0.012 80);
+  --border-strong:  oklch(70.0% 0.014 80);
+  --text-primary:   oklch(21.0% 0.014 70);
+  --text-secondary: oklch(46.0% 0.014 70);
+  --text-tertiary:  oklch(61.0% 0.012 70);
+  --text-quaternary:oklch(73.0% 0.010 70);
+  --text-inverse:   oklch(99.2% 0.004 80);
+  --accent:         oklch(40.0% 0.090 254);
+  --accent-hover:   oklch(34.0% 0.092 254);
+  --accent-quiet:   oklch(93.5% 0.020 254);
+  --accent-text:    oklch(36.0% 0.088 254);
+  --on-accent:      oklch(99.2% 0.004 80);
+  --focus-ring-color: oklch(48% 0.095 254 / 0.42);
+  --scrim:          oklch(26% 0.016 70 / 0.30);
+  --body-weight: 400;
+}
+
+[data-palette="paper"][data-theme="dark"] {
+  --bg-canvas:      oklch(16.0% 0.008 70);
+  --bg-surface:     oklch(19.5% 0.008 70);
+  --bg-raised:      oklch(23.5% 0.009 70);
+  --bg-sunken:      oklch(13.5% 0.008 70);
+  --bg-inset:       oklch(26.5% 0.009 70);
+  --border-subtle:  oklch(25.0% 0.009 70);
+  --border-default: oklch(31.0% 0.010 70);
+  --border-strong:  oklch(43.0% 0.010 70);
+  --text-primary:   oklch(96.0% 0.006 80);
+  --text-secondary: oklch(77.0% 0.010 80);
+  --text-tertiary:  oklch(63.0% 0.011 80);
+  --text-quaternary:oklch(51.0% 0.011 80);
+  --text-inverse:   oklch(16.0% 0.008 70);
+  --accent:         oklch(74.0% 0.075 250);
+  --accent-hover:   oklch(80.0% 0.070 250);
+  --accent-quiet:   oklch(28.0% 0.030 250);
+  --accent-text:    oklch(82.0% 0.070 250);
+  --on-accent:      oklch(16.0% 0.010 250);
+  --focus-ring-color: oklch(78% 0.075 250 / 0.48);
+  --scrim:          oklch(9% 0.010 70 / 0.54);
+  --body-weight: 350;
+}
+
+/* ---------------------------------------------------------------------------
+   3. 色板 C · Midnight — 深蓝黑（hue 265），暗色为第一公民，电光青强调色
+      气质：屏幕感强，夜间常驻后台的"基础设施"。
+      契合品牌词：Cross-device
+      风险：更接近常见 AI 配色，需靠低 chroma + 严格 60-30-10 纪律拉回。
+   --------------------------------------------------------------------------- */
+
+[data-palette="midnight"][data-theme="light"] {
+  --bg-canvas:      oklch(97.8% 0.004 265);
+  --bg-surface:     oklch(99.3% 0.003 265);
+  --bg-raised:      oklch(99.8% 0.002 265);
+  --bg-sunken:      oklch(95.6% 0.006 265);
+  --bg-inset:       oklch(93.4% 0.008 265);
+  --border-subtle:  oklch(90.8% 0.008 265);
+  --border-default: oklch(85.2% 0.010 265);
+  --border-strong:  oklch(70.5% 0.012 265);
+  --text-primary:   oklch(20.0% 0.014 265);
+  --text-secondary: oklch(44.5% 0.013 265);
+  --text-tertiary:  oklch(59.5% 0.011 265);
+  --text-quaternary:oklch(71.5% 0.009 265);
+  --text-inverse:   oklch(99.3% 0.003 265);
+  --accent:         oklch(48.0% 0.105 205);
+  --accent-hover:   oklch(42.0% 0.110 205);
+  --accent-quiet:   oklch(93.0% 0.026 205);
+  --accent-text:    oklch(40.0% 0.100 205);
+  --on-accent:      oklch(99.3% 0.003 265);
+  --focus-ring-color: oklch(54% 0.105 205 / 0.42);
+  --scrim:          oklch(22% 0.016 265 / 0.34);
+  --body-weight: 400;
+}
+
+[data-palette="midnight"][data-theme="dark"] {
+  --bg-canvas:      oklch(13.5% 0.012 265);
+  --bg-surface:     oklch(16.8% 0.013 265);
+  --bg-raised:      oklch(20.8% 0.014 265);
+  --bg-sunken:      oklch(11.0% 0.012 265);
+  --bg-inset:       oklch(23.8% 0.014 265);
+  --border-subtle:  oklch(22.5% 0.014 265);
+  --border-default: oklch(28.5% 0.014 265);
+  --border-strong:  oklch(40.5% 0.013 265);
+  --text-primary:   oklch(96.8% 0.005 265);
+  --text-secondary: oklch(76.5% 0.010 265);
+  --text-tertiary:  oklch(62.5% 0.012 265);
+  --text-quaternary:oklch(50.5% 0.012 265);
+  --text-inverse:   oklch(13.5% 0.012 265);
+  --accent:         oklch(74.0% 0.115 200);
+  --accent-hover:   oklch(80.0% 0.110 200);
+  --accent-quiet:   oklch(26.0% 0.045 200);
+  --accent-text:    oklch(82.0% 0.105 200);
+  --on-accent:      oklch(13.5% 0.014 200);
+  --focus-ring-color: oklch(78% 0.115 200 / 0.48);
+  --scrim:          oklch(7% 0.014 265 / 0.58);
+  --body-weight: 350;
+}
+
+/* ---------------------------------------------------------------------------
+   4. 风险 / 状态语义色 — 跨色板共享，仅随明暗切换
+      文档第 105 条：颜色不得作为唯一信息载体，必须同时有文字与图标。
+   --------------------------------------------------------------------------- */
+
+[data-theme="light"] {
+  --risk-safe:      oklch(48.0% 0.055 250);
+  --risk-safe-bg:   oklch(94.5% 0.010 250);
+  --risk-low:       oklch(46.0% 0.100 165);
+  --risk-low-bg:    oklch(94.5% 0.024 165);
+  --risk-medium:    oklch(52.0% 0.130 72);
+  --risk-medium-bg: oklch(95.5% 0.035 78);
+  --risk-high:      oklch(50.0% 0.170 32);
+  --risk-high-bg:   oklch(95.5% 0.028 32);
+  --risk-critical:  oklch(46.0% 0.195 22);
+  --risk-critical-bg: oklch(94.5% 0.038 22);
+  --status-online:  oklch(52.0% 0.120 158);
+  --status-pending: oklch(58.0% 0.135 72);
+  --status-offline: oklch(66.0% 0.008 250);
+  --status-error:   oklch(52.0% 0.180 25);
+}
+
+[data-theme="dark"] {
+  --risk-safe:      oklch(72.0% 0.045 250);
+  --risk-safe-bg:   oklch(26.0% 0.012 250);
+  --risk-low:       oklch(74.0% 0.115 165);
+  --risk-low-bg:    oklch(27.0% 0.032 165);
+  --risk-medium:    oklch(80.0% 0.130 78);
+  --risk-medium-bg: oklch(28.5% 0.040 78);
+  --risk-high:      oklch(72.0% 0.155 38);
+  --risk-high-bg:   oklch(28.0% 0.042 38);
+  --risk-critical:  oklch(70.0% 0.180 25);
+  --risk-critical-bg: oklch(27.5% 0.052 25);
+  --status-online:  oklch(74.0% 0.125 158);
+  --status-pending: oklch(80.0% 0.130 78);
+  --status-offline: oklch(52.0% 0.010 250);
+  --status-error:   oklch(70.0% 0.170 25);
+}
+
+/* ---------------------------------------------------------------------------
+   5. 基础重置
+   --------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-weight: var(--body-weight);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 数据、指标、代码一律用等宽数字，避免跳动 */
+.mono, .num { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

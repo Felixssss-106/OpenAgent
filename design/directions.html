@@ -1,0 +1,1730 @@
+<!doctype html>
+<html lang="zh-CN" data-palette="graphite" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAgent · UI 方向对比</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* ==========================================================================
+   画廊外壳
+   ========================================================================== */
+:root { --fs: .68; }
+body[data-zoom="1"] { --fs: 1; }
+
+html, body { background: var(--bg-canvas); color: var(--text-primary); }
+body { font-family: var(--font-ui); }
+
+.gal { max-width: 1440px; margin: 0 auto; padding: 56px 40px 120px; }
+
+.gal__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px;
+  padding-bottom: 24px; border-bottom: var(--border-hair); flex-wrap: wrap; }
+.gal__eyebrow { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); margin: 0 0 10px; }
+.gal__title { font: var(--t-display); font-size: 40px; line-height: 46px; margin: 0; }
+.gal__sub { font: var(--t-body); color: var(--text-secondary); margin: 12px 0 0; max-width: 62ch; }
+
+.switchers { display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap; }
+.sw { display: flex; flex-direction: column; gap: 8px; }
+.sw__label { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); }
+.seg { display: inline-flex; padding: 3px; gap: 3px; border: var(--border-hair); border-radius: var(--r-sm);
+  background: var(--bg-sunken); }
+.seg button { appearance: none; border: 0; background: transparent; cursor: pointer;
+  font: var(--t-caption); color: var(--text-secondary); padding: 6px 12px; border-radius: 7px;
+  transition: background var(--dur-state) var(--ease-out-quart), color var(--dur-state) var(--ease-out-quart); }
+.seg button:hover { color: var(--text-primary); }
+.seg button[aria-pressed="true"] { background: var(--bg-raised); color: var(--text-primary);
+  box-shadow: var(--shadow-float); }
+
+/* 总览对比表 */
+.overview { margin: 40px 0 0; }
+.overview table { width: 100%; border-collapse: collapse; font: var(--t-caption); }
+.overview th { text-align: left; font: var(--t-micro); letter-spacing: var(--t-micro-ls);
+  text-transform: uppercase; color: var(--text-quaternary); padding: 0 16px 10px 0; font-weight: 600;
+  border-bottom: var(--border-hair); }
+.overview td { padding: 14px 16px 14px 0; border-bottom: var(--border-hair); color: var(--text-secondary);
+  vertical-align: top; }
+.overview td:first-child { color: var(--text-primary); font-weight: 600; white-space: nowrap; }
+.overview .pick { color: var(--accent-text); font-weight: 600; }
+
+/* ==========================================================================
+   方向区块
+   ========================================================================== */
+.dir { padding: 72px 0 0; }
+.dir__head { display: grid; grid-template-columns: 1fr 420px; gap: 40px; align-items: start;
+  padding-bottom: 28px; }
+.dir__no { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--accent-text); margin: 0 0 10px; }
+.dir__name { font: var(--t-title); font-size: 30px; line-height: 36px; margin: 0; }
+.dir__name em { font-style: normal; color: var(--text-tertiary); font-weight: 400; }
+.dir__pos { font: var(--t-body); color: var(--text-secondary); margin: 12px 0 0; max-width: 58ch; }
+.dir__tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 0; }
+.tag { font: var(--t-caption); color: var(--text-secondary); padding: 5px 10px;
+  border: var(--border-hair); border-radius: var(--r-full); }
+.tag--key { color: var(--accent-text); border-color: var(--accent); background: var(--accent-quiet); }
+.dir__facts { display: grid; grid-template-columns: 88px 1fr; gap: 10px 16px; font: var(--t-caption); }
+.dir__facts dt { color: var(--text-quaternary); }
+.dir__facts dd { margin: 0; color: var(--text-secondary); }
+
+.frames { display: flex; gap: 40px; align-items: flex-start; }
+.frame { margin: 0; }
+.frame__cap { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); margin: 16px 0 0; }
+
+.stage-wrap { overflow: hidden; border-radius: var(--r-md); border: var(--border-hair); }
+.stage-wrap--desktop { width: calc(1440px * var(--fs)); height: calc(900px * var(--fs)); }
+.stage-wrap--mobile  { width: calc(390px  * var(--fs)); height: calc(844px * var(--fs)); }
+.stage { transform: scale(var(--fs)); transform-origin: top left; }
+
+/* ==========================================================================
+   桌面窗口外壳
+   ========================================================================== */
+.win { width: 1440px; height: 900px; display: flex; flex-direction: column;
+  background: var(--bg-canvas); color: var(--text-primary); overflow: hidden; }
+.win__cap { height: 44px; flex: none; display: flex; align-items: center; gap: 16px;
+  padding: 0 8px 0 20px; border-bottom: var(--border-hair); background: var(--bg-surface); }
+.win__mark { display: flex; align-items: center; gap: 9px; }
+.win__mark svg { color: var(--accent); }
+.win__wordmark { font: 600 13px/1 var(--font-ui); letter-spacing: .01em; }
+.win__cap-mid { flex: 1; display: flex; align-items: center; gap: 10px; padding-left: 8px; }
+.win__caps { display: flex; }
+.capbtn { width: 44px; height: 32px; display: grid; place-items: center; color: var(--text-tertiary); }
+.win__body { flex: 1; display: flex; min-height: 0; }
+
+/* 图标轨 */
+.rail { width: 72px; flex: none; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 14px 0 16px; border-right: var(--border-hair); }
+.rail__item { width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--r-sm);
+  color: var(--text-tertiary); position: relative;
+  transition: color var(--dur-state) var(--ease-out-quart), background var(--dur-state) var(--ease-out-quart); }
+.rail__item.is-active { color: var(--accent); background: var(--accent-quiet); }
+.rail__spacer { flex: 1; }
+
+/* 带标签侧栏 */
+.side { width: 212px; flex: none; padding: 20px 12px; border-right: var(--border-hair);
+  display: flex; flex-direction: column; gap: 26px; }
+.side__group { display: flex; flex-direction: column; gap: 2px; }
+.side__label { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); padding: 0 10px 8px; }
+.side__item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-sm);
+  font: var(--t-callout); color: var(--text-secondary); }
+.side__item.is-active { background: var(--accent-quiet); color: var(--accent-text); font-weight: 600; }
+.side__item .tail { margin-left: auto; font: var(--t-caption); color: var(--text-quaternary); }
+.side__item.is-active .tail { color: var(--accent-text); }
+
+/* 主画布 */
+.canvas { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.canvas__head { flex: none; padding: 36px 48px 22px; }
+.canvas__scroll { flex: 1; min-height: 0; padding: 0 48px; overflow: hidden; }
+.canvas__foot { flex: none; padding: 18px 48px 24px; }
+
+/* 排版 */
+.h1 { font: var(--t-display); margin: 0; }
+.h2 { font: var(--t-title); margin: 0; }
+.h3 { font: var(--t-heading); margin: 0; }
+.p  { font: var(--t-body); color: var(--text-secondary); margin: 0; }
+.micro { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); }
+.code { font: var(--t-code); color: var(--text-secondary); }
+.hair { height: 1px; background: var(--border-subtle); border: 0; margin: 0; }
+
+/* 状态胶囊 */
+.metarow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font: var(--t-caption);
+  color: var(--text-secondary); }
+.chip--boxed { border: var(--border-hair); border-radius: var(--r-full); padding: 5px 11px; }
+.dot { width: 7px; height: 7px; border-radius: var(--r-full); flex: none;
+  background: var(--status-offline); }
+.dot--online { background: var(--status-online); }
+.dot--pending { background: var(--status-pending); }
+.dot--error { background: var(--status-error); }
+.dot--idle { background: var(--status-offline); }
+
+/* 事件流：以排版而非气泡区分来源 */
+.stream { display: flex; flex-direction: column; gap: 26px; }
+.turn { display: grid; gap: 7px; }
+.turn__label { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); display: flex; align-items: center; gap: 8px; }
+.turn__body { font: var(--t-body); color: var(--text-primary); max-width: 68ch; }
+.turn--user .turn__body { font: var(--t-heading); font-weight: 500; }
+
+/* 工具调用行 */
+.tool { display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-top: var(--border-hair);
+  border-bottom: var(--border-hair); }
+.tool__name { font: var(--t-code); color: var(--text-primary); }
+.tool__arg { font: var(--t-code); color: var(--text-tertiary); }
+.tool__meta { margin-left: auto; font: var(--t-caption); color: var(--text-quaternary); }
+.tool__res { font: var(--t-caption); color: var(--text-secondary); }
+
+/* ── 签名组件：审批决策物件 ─────────────────────────────────────────────── */
+.approve { border: var(--hair) solid var(--border-default); border-left: 3px solid var(--risk-medium);
+  border-radius: var(--r-md); background: var(--bg-raised); padding: 20px 22px 18px; }
+.approve--low { border-left-color: var(--risk-low); }
+.approve--high { border-left-color: var(--risk-high); }
+.approve__top { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin-bottom: 12px; }
+.risk { display: inline-flex; align-items: center; gap: 7px; font: var(--t-micro);
+  letter-spacing: var(--t-micro-ls); text-transform: uppercase; color: var(--risk-medium); }
+.risk__dot { width: 7px; height: 7px; border-radius: var(--r-full); background: var(--risk-medium); }
+.risk--low { color: var(--risk-low); } .risk--low .risk__dot { background: var(--risk-low); }
+.risk--high { color: var(--risk-high); } .risk--high .risk__dot { background: var(--risk-high); }
+.approve__title { font: var(--t-heading); font-size: 18px; margin: 0 0 6px; }
+.approve__target { font: var(--t-code); color: var(--text-tertiary); margin: 0 0 14px;
+  word-break: break-all; }
+.approve__facts { display: flex; gap: 18px; font: var(--t-caption); color: var(--text-secondary);
+  margin-bottom: 18px; flex-wrap: wrap; }
+.approve__actions { display: flex; gap: 8px; }
+
+.btn { appearance: none; border: 0; cursor: pointer; font: 500 14px/1 var(--font-ui);
+  padding: 10px 18px; border-radius: var(--r-sm);
+  transition: background var(--dur-instant) var(--ease-out-quart), color var(--dur-instant) var(--ease-out-quart); }
+.btn--primary { background: var(--accent); color: var(--on-accent); }
+.btn--ghost { background: transparent; color: var(--text-primary); border: var(--hair) solid var(--border-default); }
+.btn--quiet { background: transparent; color: var(--text-secondary); }
+
+/* 输入区 */
+.composer { border: var(--hair) solid var(--border-default); border-radius: var(--r-md);
+  background: var(--bg-raised); padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+.composer__text { flex: 1; font: var(--t-body); color: var(--text-tertiary); }
+.composer__hint { font: var(--t-caption); color: var(--text-quaternary); display: flex;
+  align-items: center; gap: 6px; }
+kbd { font: 500 11px/1 var(--font-ui); border: var(--hair) solid var(--border-default);
+  border-bottom-width: 2px; border-radius: 5px; padding: 3px 5px; color: var(--text-tertiary); }
+.composer__send { width: 32px; height: 32px; border-radius: var(--r-full); display: grid;
+  place-items: center; background: var(--accent); color: var(--on-accent); }
+
+/* 指标面板 */
+.metrics { display: flex; align-items: stretch; }
+.metric { flex: 1; padding: 4px 0 4px 24px; border-left: var(--border-hair); }
+.metric:first-child { padding-left: 0; border-left: 0; }
+.metric__value { font: 600 54px/1 var(--font-display); letter-spacing: -.032em;
+  font-variant-numeric: tabular-nums; margin: 0 0 10px; }
+.metric__value small { font-size: 22px; letter-spacing: -.01em; color: var(--text-tertiary);
+  margin-left: 2px; }
+.metric__label { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); }
+.metric__note { font: var(--t-caption); color: var(--text-tertiary); margin: 8px 0 0; }
+
+/* 行列表 */
+.rowlist { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; gap: 14px; padding: 15px 0; border-top: var(--border-hair); }
+.row__icon { width: 34px; height: 34px; flex: none; display: grid; place-items: center;
+  border-radius: var(--r-sm); border: var(--border-hair); color: var(--text-secondary); }
+.row__main { min-width: 0; }
+.row__name { font: var(--t-callout); color: var(--text-primary); font-weight: 600; }
+.row__sub { font: var(--t-caption); color: var(--text-tertiary); margin-top: 3px; }
+.row__tail { margin-left: auto; font: var(--t-caption); color: var(--text-tertiary); text-align: right; }
+
+/* Inspector */
+.insp { width: 320px; flex: none; border-left: var(--border-hair); padding: 20px; display: flex;
+  flex-direction: column; gap: 24px; background: var(--bg-surface); }
+.insp__label { font: var(--t-micro); letter-spacing: var(--t-micro-ls); text-transform: uppercase;
+  color: var(--text-quaternary); margin: 0 0 10px; }
+.kv { display: grid; grid-template-columns: 88px 1fr; gap: 8px 12px; font: var(--t-caption); }
+.kv dt { color: var(--text-quaternary); }
+.kv dd { margin: 0; color: var(--text-primary); }
+
+/* 浮动面板（Command Center） */
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.desktopghost { position: absolute; border: var(--border-hair); border-radius: var(--r-md);
+  background: var(--bg-sunken); }
+.floatpanel { position: absolute; left: 50%; transform: translateX(-50%);
+  border-radius: var(--r-lg); background: var(--bg-raised); border: var(--hair) solid var(--border-default);
+  box-shadow: var(--shadow-overlay); overflow: hidden; }
+.floatpanel__head { display: flex; align-items: center; gap: 12px; padding: 18px 22px 14px; }
+.floatpanel__foot { display: flex; align-items: center; gap: 16px; padding: 12px 22px;
+  border-top: var(--border-hair); background: var(--bg-surface); font: var(--t-caption);
+  color: var(--text-tertiary); }
+.plan { display: flex; flex-direction: column; }
+.plan__step { display: flex; align-items: baseline; gap: 12px; padding: 9px 0;
+  border-top: var(--border-hair); font: var(--t-callout); color: var(--text-primary); }
+.plan__n { font: 500 12px/1 var(--font-mono); color: var(--text-quaternary); width: 16px; flex: none; }
+.plan__risk { margin-left: auto; font: var(--t-micro); letter-spacing: var(--t-micro-ls);
+  text-transform: uppercase; color: var(--text-quaternary); }
+
+/* ==========================================================================
+   移动端外壳
+   ========================================================================== */
+.phone { width: 390px; height: 844px; background: var(--bg-canvas); color: var(--text-primary);
+  display: flex; flex-direction: column; overflow: hidden; }
+.phone__status { height: 52px; flex: none; display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 26px 8px; font: 600 14px/1 var(--font-ui); }
+.phone__body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.phone__scroll { flex: 1; min-height: 0; padding: 0 20px; overflow: hidden; }
+.phone__foot { flex: none; padding: 12px 16px 8px; }
+.phone__home { height: 22px; flex: none; display: grid; place-items: center; }
+.phone__home i { width: 128px; height: 5px; border-radius: var(--r-full); background: var(--text-quaternary); }
+.tabbar { flex: none; height: 56px; display: flex; border-top: var(--border-hair);
+  background: var(--bg-surface); }
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; color: var(--text-quaternary); font: 500 10px/1 var(--font-ui); }
+.tab.is-active { color: var(--accent); }
+
+/* 画廊收尾 */
+.tail { padding: 96px 0 0; }
+.tail__h { font: var(--t-title); margin: 0 0 8px; }
+.tail__p { font: var(--t-body); color: var(--text-secondary); margin: 0 0 32px; max-width: 68ch; }
+.swatchgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.swatchcard { border: var(--border-hair); border-radius: var(--r-md); overflow: hidden;
+  background: var(--bg-surface); }
+.swatchcard__bar { display: flex; height: 88px; }
+.swatchcard__bar i { flex: 1; }
+.swatchcard__body { padding: 18px 20px 20px; }
+.swatchcard__name { font: var(--t-heading); margin: 0 0 6px; }
+.swatchcard__desc { font: var(--t-caption); color: var(--text-secondary); margin: 0 0 14px; }
+.swatchcard__row { display: flex; align-items: center; gap: 10px; font: var(--t-caption);
+  color: var(--text-tertiary); padding: 5px 0; border-top: var(--border-hair); }
+.swatchcard__row b { width: 68px; font-weight: 400; color: var(--text-quaternary); }
+.swatchcard__row span { font-family: var(--font-mono); font-size: 12px; }
+.verdict { margin: 48px 0 0; border: var(--hair) solid var(--accent); background: var(--accent-quiet);
+  border-radius: var(--r-md); padding: 24px 26px; }
+.verdict h3 { font: var(--t-heading); font-size: 18px; margin: 0 0 10px; color: var(--accent-text); }
+.verdict p { font: var(--t-body); color: var(--text-primary); margin: 0 0 10px; }
+.verdict p:last-child { margin: 0; }
+
+/* ==========================================================================
+   方向 02 · 对话即产品 —— 专属样式
+   ========================================================================== */
+.d02-top { height: 56px; flex: none; display: flex; align-items: center; gap: 30px;
+  padding: 0 26px; border-bottom: var(--border-hair); }
+.d02-nav { display: flex; gap: 24px; }
+.d02-nav span { font: var(--t-callout); color: var(--text-tertiary); padding: 4px 0 3px;
+  border-bottom: 2px solid transparent; }
+.d02-nav span.is-active { color: var(--text-primary); font-weight: 600; border-bottom-color: var(--accent); }
+.d02-col { width: 720px; margin: 0 auto; }
+.d02-bubble { background: var(--accent-quiet); color: var(--accent-text); border-radius: 18px 18px 5px 18px;
+  padding: 11px 16px; font: var(--t-body); max-width: 74%; margin-left: auto; }
+.d02-agent { display: grid; grid-template-columns: 26px 1fr; gap: 14px; align-items: start; }
+.d02-avatar { width: 26px; height: 26px; border-radius: var(--r-full); display: grid; place-items: center;
+  background: var(--bg-inset); color: var(--accent); flex: none; }
+.d02-rail { width: 48px; flex: none; border-left: var(--border-hair); display: flex; flex-direction: column;
+  align-items: center; gap: 18px; padding: 18px 0; }
+.d02-rail span.v { writing-mode: vertical-rl; font: var(--t-micro); letter-spacing: var(--t-micro-ls);
+  text-transform: uppercase; color: var(--text-quaternary); }
+.d02-pill { display: inline-flex; gap: 6px; align-items: center; font: var(--t-caption);
+  border: var(--border-hair); border-radius: var(--r-full); padding: 4px 10px; color: var(--text-secondary); }
+
+/* ==========================================================================
+   方向 03 · 环境仪表 —— 专属样式
+   ========================================================================== */
+.d03-head { padding: 30px 40px 0; flex: none; }
+.d03-panel { padding: 26px 40px 30px; border-bottom: var(--border-hair); flex: none; }
+.d03-sec { padding: 24px 40px 0; }
+.d03-bar { flex: none; border-top: var(--border-hair); background: var(--bg-surface);
+  padding: 13px 40px; display: flex; align-items: center; gap: 22px; }
+.d03-bar .composer { flex: 1; border-radius: var(--r-full); padding: 11px 12px 11px 20px; }
+.d03-stat { display: flex; align-items: baseline; gap: 10px; }
+.d03-stat b { font: 600 15px/1 var(--font-display); letter-spacing: -.01em; }
+.d03-sep { width: 1px; height: 26px; background: var(--border-subtle); }
+
+/* ==========================================================================
+   方向 04 · 工作台 —— 专属样式
+   ========================================================================== */
+.d04-nav { width: 240px; flex: none; border-right: var(--border-hair); padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 22px; background: var(--bg-surface); }
+.d04-toolrow { display: grid; grid-template-columns: 14px 1fr auto; gap: 12px; align-items: baseline;
+  padding: 8px 0; border-top: var(--border-hair); }
+.d04-toolrow .nm { font: var(--t-code); font-size: 12px; color: var(--text-primary); }
+.d04-toolrow .mt { font: var(--t-caption); font-size: 12px; color: var(--text-quaternary); }
+.d04-diff { font: var(--t-code); font-size: 12px; }
+.d04-add { color: var(--risk-low); }
+.d04-del { color: var(--risk-high); }
+.d04-insp { width: 320px; flex: none; border-left: var(--border-hair); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 22px; background: var(--bg-surface); overflow: hidden; }
+.d04-seg { display: flex; gap: 2px; border: var(--border-hair); border-radius: var(--r-xs);
+  padding: 2px; background: var(--bg-sunken); }
+.d04-seg span { flex: 1; text-align: center; font: var(--t-caption); font-size: 12px; padding: 4px 0;
+  border-radius: 4px; color: var(--text-tertiary); }
+.d04-seg span.on { background: var(--bg-raised); color: var(--text-primary); }
+
+/* ==========================================================================
+   方向 05 · 聚光 —— 专属样式
+   ========================================================================== */
+.d05-desk { position: relative; width: 1440px; height: 900px; overflow: hidden;
+  background: var(--bg-sunken); }
+.d05-ghost { position: absolute; border: var(--border-hair); border-radius: var(--r-md);
+  background: var(--bg-raised); }
+.d05-ghost i { display: block; height: 10px; border-radius: 3px; background: var(--bg-inset); margin: 12px; }
+.d05-panel { position: absolute; left: 50%; transform: translateX(-50%); top: 52px; width: 680px;
+  border-radius: var(--r-lg); background: var(--bg-raised); border: var(--hair) solid var(--border-default);
+  box-shadow: var(--shadow-overlay); overflow: hidden; }
+.d05-input { padding: 4px 24px 18px; }
+.d05-input__field { border: var(--hair) solid var(--border-default); border-radius: var(--r-md);
+  padding: 13px 16px; font: var(--t-body); color: var(--text-primary); background: var(--bg-surface); }
+.d05-sec { padding: 0 24px 18px; }
+.d05-sec__label { display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 10px; }
+.d05-stream { border-top: var(--border-hair); padding: 14px 0 4px; display: flex; flex-direction: column;
+  gap: 7px; font: var(--t-code); font-size: 12px; color: var(--text-secondary); }
+.d05-stream b { color: var(--text-primary); font-weight: 400; }
+.d05-bar { display: flex; align-items: center; gap: 18px; padding: 11px 24px; border-top: var(--border-hair);
+  background: var(--bg-surface); font: var(--t-caption); color: var(--text-tertiary); }
+.d05-strip { position: absolute; left: 50%; transform: translateX(-50%); top: 806px; width: 680px;
+  display: flex; gap: 12px; }
+.d05-stripcard { flex: 1; border: var(--border-hair); border-radius: var(--r-sm); background: var(--bg-raised);
+  padding: 12px 14px; }
+.d05-stripcard b { display: block; font: var(--t-caption); color: var(--text-primary); font-weight: 600; }
+.d05-stripcard span { font: var(--t-caption); font-size: 12px; color: var(--text-quaternary); }
+
+@media (max-width: 1100px) {
+  .dir__head { grid-template-columns: 1fr; }
+  .frames { flex-direction: column; }
+  .swatchgrid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="gal">
+
+  <header class="gal__head">
+    <div>
+      <p class="gal__eyebrow">OpenAgent · UI Direction Study</p>
+      <h1 class="gal__title">5 个 UI 方向对比</h1>
+      <p class="gal__sub">Apple 极简 · 大留白大标题为共同基调。5 个方向在同一美学家族内，
+        但<b>结构与交互范式不同</b> —— 换配色不是方向，换骨架才是。每方向含 Windows 1440×900
+        与 Android 390×844 两张稿。</p>
+    </div>
+    <div class="switchers">
+      <div class="sw">
+        <span class="sw__label">色板</span>
+        <div class="seg" id="segPalette">
+          <button data-p="graphite" aria-pressed="true">A 石墨</button>
+          <button data-p="paper" aria-pressed="false">B 纸白</button>
+          <button data-p="midnight" aria-pressed="false">C 午夜</button>
+        </div>
+      </div>
+      <div class="sw">
+        <span class="sw__label">主题</span>
+        <div class="seg" id="segTheme">
+          <button data-t="light" aria-pressed="true">浅色</button>
+          <button data-t="dark" aria-pressed="false">深色</button>
+        </div>
+      </div>
+      <div class="sw">
+        <span class="sw__label">缩放</span>
+        <div class="seg" id="segZoom">
+          <button data-z="0" aria-pressed="true">适配</button>
+          <button data-z="1" aria-pressed="false">1:1</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="overview">
+    <table>
+      <thead>
+        <tr>
+          <th>方向</th><th>结构骨架</th><th>信息密度</th><th>第一眼看到什么</th>
+          <th>差异化记忆点</th><th>主要风险</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01 静默画布</td><td>72px 图标轨 + 单栏画布</td><td>低</td>
+          <td>大标题与 Agent 输出本身</td><td>容器消失，靠排版与发丝线分区</td>
+          <td>重度用户嫌空；工具/日志类内容没地方放</td>
+        </tr>
+        <tr>
+          <td>02 对话即产品</td><td>居中窄列 + 可折叠 Inspector</td><td>低–中</td>
+          <td>Agent 对话</td><td>Command Center 与主窗口视觉同构</td>
+          <td>与 ChatGPT 相似度过高，品牌辨识度弱</td>
+        </tr>
+        <tr>
+          <td>03 环境仪表</td><td>212px 侧栏 + 仪表层 + 常驻输入</td><td>中</td>
+          <td>设备与系统状态数字</td><td>「先看状态再下指令」的常驻控制中心心智</td>
+          <td>与「以 Agent 为核心」的定位略有偏移</td>
+        </tr>
+        <tr>
+          <td>04 工作台</td><td>240 导航 + 主区 + 320 Inspector 三栏</td><td>高</td>
+          <td>任务流 + 上下文面板并置</td><td>为 Coding Agent 场景优化，Git/Tool Call 常驻可见</td>
+          <td>与「大留白」有张力，需靠排版纪律平衡</td>
+        </tr>
+        <tr>
+          <td>05 聚光</td><td>浮层即产品，主窗口为展开态</td><td>低</td>
+          <td>Alt+Space 浮层里的完整任务生命周期</td><td>输入 → 计划 → 审批 → 流式输出全在浮层内闭环</td>
+          <td>与文档第 49 条「主窗口为主」的结构描述有偏离</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- =====================================================================
+       方向 01 · 静默画布
+       ===================================================================== -->
+  <section class="dir">
+    <div class="dir__head">
+      <div>
+        <p class="dir__no">方向 01</p>
+        <h2 class="dir__name">静默画布 <em>The Quiet Canvas</em></h2>
+        <p class="dir__pos">容器消失，内容成为唯一的界面。没有卡片、没有分区背景、没有阴影 ——
+          只有排版层次和 1px 发丝线。Agent 的每一类输出（Agent 说话 / 工具调用 / 审批 / 命令）
+          用左侧一条 2px 色标区分，而不是用气泡。最接近 Apple 原生 App 的气质。</p>
+        <div class="dir__tags">
+          <span class="tag tag--key">容器消失</span>
+          <span class="tag">排版即分区</span>
+          <span class="tag">单栏</span>
+          <span class="tag">最低视觉噪音</span>
+        </div>
+      </div>
+      <dl class="dir__facts">
+        <dt>信息架构</dt><dd>扁平。图标轨只承载 6 个一级入口，无二级导航</dd>
+        <dt>适合场景</dt><dd>日常文件整理、系统查询、快速问答 —— 高频但轻量</dd>
+        <dt>记忆点</dt><dd>Agent 输出流的 2px 来源色标，一眼分清「谁在说话」</dd>
+        <dt>风险</dt><dd>没有卡片容器意味着工具日志、协议详情等密集内容无处安放，
+          需要依赖开发者模式抽屉兜底</dd>
+      </dl>
+    </div>
+
+    <div class="frames">
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--desktop">
+          <div class="stage">
+            <div class="win">
+              <div class="win__cap">
+                <div class="win__mark">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z"
+                      stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="win__wordmark">OpenAgent</span>
+                </div>
+                <div class="win__cap-mid"></div>
+                <div class="win__caps">
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 5h10" stroke="currentColor" stroke-width="1"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" fill="none"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1"/></svg></span>
+                </div>
+              </div>
+              <div class="win__body">
+                <nav class="rail">
+                  <div class="rail__item is-active" title="Agent">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 12.3 7.7 17.5 10 12.3 12.3 10 17.5 7.7 12.3 2.5 10 7.7 7.7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="rail__item" title="Devices">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                  <div class="rail__item" title="Tasks">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                  <div class="rail__item" title="Tools">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 3.5a4 4 0 0 0 5 5L10 16 5.5 16 4 14.5l7.5-7.5a4 4 0 0 1 1-3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="rail__item" title="Providers">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                  <div class="rail__item" title="Plugins">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                  </div>
+                  <div class="rail__spacer"></div>
+                  <div class="rail__item" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5M15.3 4.7l-1.6 1.6M6.3 13.7l-1.6 1.6M15.3 15.3l-1.6-1.6M6.3 6.3 4.7 4.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                </nav>
+
+                <main class="canvas">
+                  <div class="canvas__head">
+                    <h3 class="h1">Good afternoon</h3>
+                    <div class="metarow" style="margin-top:14px">
+                      <span class="chip chip--boxed">DESKTOP-XXXX · Windows 11</span>
+                      <span class="chip"><i class="dot dot--online"></i>已连接 · 直连</span>
+                      <span class="chip">OpenAgent Native</span>
+                      <span class="chip">权限：请求批准</span>
+                    </div>
+                  </div>
+                  <hr class="hair" style="margin:0 48px">
+
+                  <div class="canvas__scroll" style="padding-top:28px">
+                    <div class="stream">
+                      <div class="turn turn--user">
+                        <span class="turn__label">你</span>
+                        <p class="turn__body">整理一下今天下载的文件。</p>
+                      </div>
+
+                      <div class="turn">
+                        <span class="turn__label">
+                          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                          Agent · OpenAgent Native · 12:04
+                        </span>
+                        <p class="turn__body">我发现 <b>23 张图片</b>、<b>4 个 PDF</b>、<b>2 个 ZIP</b>、<b>6 个其他文件</b>。
+                          建议建立 <span class="code">D:\Downloads\2026-09-25\</span> 并分为 图片 / 文档 / 压缩包 / 其他。需要移动 35 个文件。</p>
+                      </div>
+
+                      <div>
+                        <div class="tool">
+                          <span class="tool__name">file.list</span>
+                          <span class="tool__arg">D:\Downloads</span>
+                          <span class="tool__meta">0.4s</span>
+                        </div>
+                        <p class="tool__res" style="padding-top:10px">返回 35 项 · 合计 1.2 GB · 无权限异常</p>
+                      </div>
+
+                      <div class="approve">
+                        <div class="approve__top">
+                          <span class="risk"><i class="risk__dot"></i>需要你的批准</span>
+                          <span class="micro">可撤销</span>
+                        </div>
+                        <h4 class="approve__title">移动 35 个文件</h4>
+                        <p class="approve__target">D:\Downloads\* → D:\Downloads\2026-09-25\</p>
+                        <div class="approve__facts">
+                          <span>影响 35 个文件</span><span>1.2 GB</span><span>预计 4 秒</span><span>中风险</span>
+                        </div>
+                        <div class="approve__actions">
+                          <button class="btn btn--primary">批准</button>
+                          <button class="btn btn--ghost">修改计划</button>
+                          <button class="btn btn--quiet">取消</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="canvas__foot">
+                    <div class="composer">
+                      <span class="composer__text">再让它按拍摄日期分成子文件夹…</span>
+                      <span class="composer__hint"><kbd>Alt</kbd><kbd>Space</kbd></span>
+                      <span class="composer__send">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Windows · 1440 × 900</figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--mobile">
+          <div class="stage">
+            <div class="phone">
+              <div class="phone__status"><span>9:41</span><span>◗ ◔ ▮</span></div>
+              <div class="phone__body">
+                <div class="phone__scroll">
+                  <h3 class="h1" style="font-size:30px;line-height:36px;padding-top:16px">Good evening</h3>
+                  <div class="metarow" style="margin-top:12px;gap:10px">
+                    <span class="chip"><i class="dot dot--online"></i>DESKTOP-XXXX · 直连</span>
+                  </div>
+                  <hr class="hair" style="margin:20px 0 22px">
+
+                  <div class="stream" style="gap:20px">
+                    <div class="turn turn--user">
+                      <span class="turn__label">你</span>
+                      <p class="turn__body" style="font-size:16px">整理一下今天下载的文件。</p>
+                    </div>
+                    <div class="turn">
+                      <span class="turn__label">Agent · OpenAgent Native</span>
+                      <p class="turn__body">发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件，需要移动 35 个文件。</p>
+                    </div>
+                    <div class="approve" style="padding:16px 18px 14px">
+                      <div class="approve__top" style="margin-bottom:10px">
+                        <span class="risk"><i class="risk__dot"></i>需要批准</span>
+                        <span class="micro">可撤销</span>
+                      </div>
+                      <h4 class="approve__title" style="font-size:16px">移动 35 个文件</h4>
+                      <p class="approve__target" style="font-size:12px;margin-bottom:12px">→ D:\Downloads\2026-09-25\</p>
+                      <div class="approve__facts" style="margin-bottom:14px;gap:12px;font-size:12px">
+                        <span>35 个文件</span><span>1.2 GB</span><span>中风险</span>
+                      </div>
+                      <div class="approve__actions" style="flex-direction:column;gap:8px">
+                        <button class="btn btn--primary" style="width:100%">批准</button>
+                        <button class="btn btn--ghost" style="width:100%">修改计划</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="phone__foot">
+                  <div class="composer" style="padding:12px 14px">
+                    <span class="composer__text" style="font-size:15px">说点什么…</span>
+                    <span class="composer__send" style="width:30px;height:30px">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <nav class="tabbar">
+                  <span class="tab is-active"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 12.3 7.7 17.5 10 12.3 12.3 10 17.5 7.7 12.3 2.5 10 7.7 7.7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Agent</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>任务</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设备</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设置</span>
+                </nav>
+                <div class="phone__home"><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Android · 390 × 844</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       方向 02 · 对话即产品
+       ===================================================================== -->
+  <section class="dir">
+    <div class="dir__head">
+      <div>
+        <p class="dir__no">方向 02</p>
+        <h2 class="dir__name">对话即产品 <em>Conversation Core</em></h2>
+        <p class="dir__pos">Agent 对话是唯一的主界面。720px 居中窄列，其余一切
+          （设备、任务、工具、Provider）收进右侧可折叠的 Inspector。Command Center 浮层与主窗口
+          视觉同构 —— 同一个组件，只是尺寸不同。学习成本最低，最贴近文档对
+          「ChatGPT + Apple」的描述。</p>
+        <div class="dir__tags">
+          <span class="tag tag--key">单一主界面</span>
+          <span class="tag">居中窄列</span>
+          <span class="tag">上下文可折叠</span>
+          <span class="tag">浮层与主窗同构</span>
+        </div>
+      </div>
+      <dl class="dir__facts">
+        <dt>信息架构</dt><dd>一层导航（文字式）+ 一层按需展开的 Inspector</dd>
+        <dt>适合场景</dt><dd>绝大多数交互 —— 说一句话拿到结果，不关心底层</dd>
+        <dt>记忆点</dt><dd>浮层与主窗口是同一个组件的两种尺寸，认知负担几乎为零</dd>
+        <dt>风险</dt><dd>与 ChatGPT 的视觉语言高度重合，品牌辨识度最弱；
+          任务队列、工具注册表等「非对话」内容被压到 Inspector 里会显得局促</dd>
+      </dl>
+    </div>
+
+    <div class="frames">
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--desktop">
+          <div class="stage">
+            <div class="win">
+              <div class="d02-top">
+                <div class="win__mark">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                  <span class="win__wordmark">OpenAgent</span>
+                </div>
+                <nav class="d02-nav">
+                  <span class="is-active">Agent</span><span>Devices</span><span>Tasks</span><span>Providers</span>
+                </nav>
+                <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+                  <span class="chip"><i class="dot dot--online"></i>DESKTOP-XXXX · 直连</span>
+                  <span class="d02-pill">请求批准</span>
+                  <span class="capbtn" style="width:32px">
+                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="win__body">
+                <main class="canvas">
+                  <div class="canvas__scroll" style="padding:38px 0 0">
+                    <div class="d02-col">
+                      <div style="display:flex;flex-direction:column;gap:26px">
+                        <div class="d02-bubble">整理一下今天下载的文件。</div>
+
+                        <div class="d02-agent">
+                          <span class="d02-avatar">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                          </span>
+                          <div>
+                            <p class="turn__body" style="margin-bottom:14px">我发现 <b>23 张图片</b>、<b>4 个 PDF</b>、<b>2 个 ZIP</b>、<b>6 个其他文件</b>。
+                              建议建立 <span class="code">D:\Downloads\2026-09-25\</span> 并分为 图片 / 文档 / 压缩包 / 其他。</p>
+                            <div class="tool" style="border-radius:0">
+                              <span class="tool__name">file.list</span>
+                              <span class="tool__arg">D:\Downloads</span>
+                              <span class="tool__meta">0.4s · 35 项 · 1.2 GB</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="d02-agent">
+                          <span class="d02-avatar" style="background:transparent">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                          </span>
+                          <div class="approve" style="margin-top:2px">
+                            <div class="approve__top">
+                              <span class="risk"><i class="risk__dot"></i>需要你的批准</span>
+                              <span class="micro">中风险 · 可撤销</span>
+                            </div>
+                            <h4 class="approve__title">移动 35 个文件</h4>
+                            <p class="approve__target">D:\Downloads\* → D:\Downloads\2026-09-25\</p>
+                            <div class="approve__facts"><span>35 个文件</span><span>1.2 GB</span><span>预计 4 秒</span></div>
+                            <div class="approve__actions">
+                              <button class="btn btn--primary">批准</button>
+                              <button class="btn btn--ghost">修改计划</button>
+                              <button class="btn btn--quiet">取消</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p class="p" style="color:var(--text-tertiary)">批准后我会立即开始，完成后给出逐个文件的校验结果。</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="canvas__foot" style="padding:16px 0 22px">
+                    <div class="d02-col">
+                      <div class="composer" style="border-radius:var(--r-lg);padding:12px 12px 12px 18px">
+                        <span class="composer__text">再让它按拍摄日期分成子文件夹…</span>
+                        <span class="composer__hint"><kbd>Alt</kbd><kbd>Space</kbd></span>
+                        <span class="composer__send">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+
+                <aside class="d02-rail">
+                  <span class="v">上下文</span>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="color:var(--text-quaternary)"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Windows · 1440 × 900</figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--mobile">
+          <div class="stage">
+            <div class="phone">
+              <div class="phone__status"><span>9:41</span><span>◗ ◔ ▮</span></div>
+              <div class="phone__body">
+                <div style="padding:6px 20px 14px;display:flex;align-items:center;gap:10px">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--accent)"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  <span style="font:600 15px/1 var(--font-ui)">Agent</span>
+                  <span class="chip" style="margin-left:auto;font-size:12px"><i class="dot dot--online"></i>直连</span>
+                </div>
+                <div style="padding:0 20px 16px;display:flex;gap:6px;border-bottom:var(--border-hair)">
+                  <span class="d02-pill" style="border-color:var(--accent);background:var(--accent-quiet);color:var(--accent-text)">Agent</span>
+                  <span class="d02-pill">任务 3</span>
+                  <span class="d02-pill">设备</span>
+                </div>
+
+                <div class="phone__scroll" style="padding-top:22px">
+                  <div style="display:flex;flex-direction:column;gap:22px">
+                    <div class="d02-bubble" style="max-width:82%">整理一下今天下载的文件。</div>
+                    <div class="d02-agent">
+                      <span class="d02-avatar" style="width:24px;height:24px">
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                      </span>
+                      <div>
+                        <p class="turn__body" style="margin-bottom:12px">发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件。</p>
+                        <div class="tool"><span class="tool__name" style="font-size:12px">file.list</span><span class="tool__meta">0.4s</span></div>
+                      </div>
+                    </div>
+                    <div class="approve" style="padding:16px 18px 14px">
+                      <div class="approve__top" style="margin-bottom:10px">
+                        <span class="risk"><i class="risk__dot"></i>需要批准</span>
+                        <span class="micro">可撤销</span>
+                      </div>
+                      <h4 class="approve__title" style="font-size:16px">移动 35 个文件</h4>
+                      <p class="approve__target" style="font-size:12px;margin-bottom:12px">→ D:\Downloads\2026-09-25\</p>
+                      <div class="approve__actions" style="flex-direction:column;gap:8px">
+                        <button class="btn btn--primary" style="width:100%">批准</button>
+                        <button class="btn btn--ghost" style="width:100%">修改计划</button>
+                      </div>
+                    </div>
+                    <p class="p" style="color:var(--text-tertiary);font-size:13px">批准后我会立即开始，完成后给出逐个文件的校验结果。</p>
+                  </div>
+                </div>
+
+                <div class="phone__foot" style="padding:12px 16px 8px">
+                  <div class="composer" style="border-radius:var(--r-full);padding:11px 10px 11px 18px">
+                    <span class="composer__text" style="font-size:15px">说点什么…</span>
+                    <span class="composer__send" style="width:30px;height:30px">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="phone__home"><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Android · 390 × 844（无底部导航，对话即全部）</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       方向 03 · 环境仪表
+       ===================================================================== -->
+  <section class="dir">
+    <div class="dir__head">
+      <div>
+        <p class="dir__no">方向 03</p>
+        <h2 class="dir__name">环境仪表 <em>Ambient Console</em></h2>
+        <p class="dir__pos">先看状态，再下指令。首页是一个纯排版构成的仪表层 —— 超大数字配微小标签，
+          没有图表卡、没有环形进度条。Agent 输入框常驻底部，随时可打字，像 Spotlight 一样。
+          匹配「常驻后台的控制中心」这一产品心智。</p>
+        <div class="dir__tags">
+          <span class="tag tag--key">状态优先</span>
+          <span class="tag">排版化仪表</span>
+          <span class="tag">常驻输入</span>
+          <span class="tag">设备是一等公民</span>
+        </div>
+      </div>
+      <dl class="dir__facts">
+        <dt>信息架构</dt><dd>带标签侧栏 + 仪表层 + 常驻底栏，三层各司其职</dd>
+        <dt>适合场景</dt><dd>长期挂着后台、偶尔瞄一眼状态、随时丢一个任务</dd>
+        <dt>记忆点</dt><dd>54px 等宽数字 + 11px 大写标签的仪表排版，不用任何图表</dd>
+        <dt>风险</dt><dd>「先看状态」会稀释「Agent 优先」的产品主张；
+          数字指标天然容易被误读为绝对准确值（文档第 327 条已提醒）</dd>
+      </dl>
+    </div>
+
+    <div class="frames">
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--desktop">
+          <div class="stage">
+            <div class="win">
+              <div class="win__cap">
+                <div class="win__mark">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                  <span class="win__wordmark">OpenAgent</span>
+                </div>
+                <div class="win__cap-mid"></div>
+                <div class="win__caps">
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" fill="none"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor"/></svg></span>
+                </div>
+              </div>
+
+              <div class="win__body">
+                <nav class="side">
+                  <div class="side__group">
+                    <span class="side__label">工作区</span>
+                    <span class="side__item is-active">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 12.3 7.7 17.5 10 12.3 12.3 10 17.5 7.7 12.3 2.5 10 7.7 7.7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                      Agent<span class="tail">3</span>
+                    </span>
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      任务<span class="tail">16</span>
+                    </span>
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      设备<span class="tail">2</span>
+                    </span>
+                  </div>
+                  <div class="side__group">
+                    <span class="side__label">能力</span>
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M12.5 3.5a4 4 0 0 0 5 5L10 16H5.5L4 14.5l7.5-7.5a4 4 0 0 1 1-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                      工具<span class="tail">23</span>
+                    </span>
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      Provider<span class="tail">4</span>
+                    </span>
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+                      插件<span class="tail">1</span>
+                    </span>
+                  </div>
+                  <div class="side__group" style="margin-top:auto">
+                    <span class="side__item">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      设置
+                    </span>
+                  </div>
+                </nav>
+
+                <main class="canvas">
+                  <div class="d03-head">
+                    <p class="micro" style="margin-bottom:8px">星期三 · 9 月 25 日</p>
+                    <h3 class="h1" style="font-size:30px;line-height:36px">Good afternoon</h3>
+                  </div>
+
+                  <div class="d03-panel">
+                    <div class="metrics">
+                      <div class="metric">
+                        <p class="metric__value">23<small>%</small></p>
+                        <p class="metric__label">CPU</p>
+                        <p class="metric__note">8 核 · 峰值 41%</p>
+                      </div>
+                      <div class="metric">
+                        <p class="metric__value">51<small>%</small></p>
+                        <p class="metric__label">内存</p>
+                        <p class="metric__note">16 GB · 已用 8.2</p>
+                      </div>
+                      <div class="metric">
+                        <p class="metric__value">12<small>%</small></p>
+                        <p class="metric__label">GPU</p>
+                        <p class="metric__note">未在编码</p>
+                      </div>
+                      <div class="metric">
+                        <p class="metric__value">32<small>ms</small></p>
+                        <p class="metric__label">延迟</p>
+                        <p class="metric__note">直连 · 局域网</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d03-sec">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+                      <h4 class="h3">你的设备</h4>
+                      <span class="micro">2 台已配对</span>
+                    </div>
+                    <div class="rowlist">
+                      <div class="row">
+                        <span class="row__icon">
+                          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="row__main">
+                          <div class="row__name">DESKTOP-XXXX</div>
+                          <div class="row__sub">Windows 11 · OpenAgent 0.4.2 · 本机</div>
+                        </div>
+                        <div class="row__tail">
+                          <span class="chip"><i class="dot dot--online"></i>在线 · 直连</span>
+                          <div style="margin-top:4px">CPU 23% · 内存 51%</div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <span class="row__icon">
+                          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="5" y="2" width="10" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="row__main">
+                          <div class="row__name">Pixel 9</div>
+                          <div class="row__sub">Android 15 · OpenAgent 0.4.2 · 已信任</div>
+                        </div>
+                        <div class="row__tail">
+                          <span class="chip"><i class="dot dot--online"></i>在线</span>
+                          <div style="margin-top:4px">电量 78%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d03-sec">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                      <h4 class="h3">任务</h4>
+                      <span class="micro">3 运行中 · 1 等待批准 · 12 已完成</span>
+                    </div>
+                    <div class="rowlist">
+                      <div class="row" style="padding:13px 0">
+                        <span class="row__icon" style="border-color:var(--status-online)">
+                          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--status-online)"><path d="M3 8.5 6.5 12 13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <div class="row__main">
+                          <div class="row__name">整理下载文件</div>
+                          <div class="row__sub">OpenAgent Native · 正在执行 24/35</div>
+                        </div>
+                        <div class="row__tail">00:04</div>
+                      </div>
+                      <div class="row" style="padding:13px 0">
+                        <span class="row__icon" style="border-color:var(--status-pending)">
+                          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--status-pending)"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                        </span>
+                        <div class="row__main">
+                          <div class="row__name">删除重复文件</div>
+                          <div class="row__sub">等待批准 · 高风险 · 不可撤销</div>
+                        </div>
+                        <div class="row__tail"><span class="chip" style="color:var(--risk-high)">需要批准</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d03-bar" style="margin-top:auto">
+                    <div class="d03-stat"><b>OpenAgent Native</b><span class="micro">Agent</span></div>
+                    <span class="d03-sep"></span>
+                    <div class="d03-stat"><span class="micro">权限</span><b style="font-size:13px">请求批准</b></div>
+                    <span class="d03-sep"></span>
+                    <div class="d03-stat"><span class="chip"><i class="dot dot--online"></i>DESKTOP-XXXX</span></div>
+                    <div class="composer" style="margin-left:auto;max-width:520px">
+                      <span class="composer__text">说一句话，交给它做…</span>
+                      <span class="composer__send" style="width:30px;height:30px">
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Windows · 1440 × 900</figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--mobile">
+          <div class="stage">
+            <div class="phone">
+              <div class="phone__status"><span>9:41</span><span>◗ ◔ ▮</span></div>
+              <div class="phone__body">
+                <div class="phone__scroll">
+                  <p class="micro" style="padding-top:14px">星期三 · 9 月 25 日</p>
+                  <h3 class="h1" style="font-size:30px;line-height:36px;margin-top:6px">Good evening</h3>
+
+                  <div style="display:flex;gap:22px;margin-top:26px;padding-bottom:20px;border-bottom:var(--border-hair)">
+                    <div style="flex:1">
+                      <p style="font:600 34px/1 var(--font-display);letter-spacing:-.03em;margin:0 0 8px">23<span style="font-size:16px;color:var(--text-tertiary)">%</span></p>
+                      <p class="micro">CPU</p>
+                    </div>
+                    <div style="flex:1;border-left:var(--border-hair);padding-left:22px">
+                      <p style="font:600 34px/1 var(--font-display);letter-spacing:-.03em;margin:0 0 8px">51<span style="font-size:16px;color:var(--text-tertiary)">%</span></p>
+                      <p class="micro">内存</p>
+                    </div>
+                    <div style="flex:1;border-left:var(--border-hair);padding-left:22px">
+                      <p style="font:600 34px/1 var(--font-display);letter-spacing:-.03em;margin:0 0 8px">32<span style="font-size:16px;color:var(--text-tertiary)">ms</span></p>
+                      <p class="micro">延迟</p>
+                    </div>
+                  </div>
+
+                  <h4 class="h3" style="margin:22px 0 2px">你的设备</h4>
+                  <div class="rowlist">
+                    <div class="row" style="padding:14px 0">
+                      <span class="row__icon" style="width:38px;height:38px">
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      </span>
+                      <div class="row__main">
+                        <div class="row__name">DESKTOP-XXXX</div>
+                        <div class="row__sub"><i class="dot dot--online" style="display:inline-block;vertical-align:middle;margin-right:5px"></i>Windows 11 · 直连</div>
+                      </div>
+                    </div>
+                    <div class="row" style="padding:14px 0">
+                      <span class="row__icon" style="width:38px;height:38px">
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="5" y="2" width="10" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      </span>
+                      <div class="row__main">
+                        <div class="row__name">Pixel 9</div>
+                        <div class="row__sub"><i class="dot dot--online" style="display:inline-block;vertical-align:middle;margin-right:5px"></i>Android 15 · 电量 78%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 class="h3" style="margin:24px 0 10px">任务</h4>
+                  <div class="rowlist">
+                    <div class="row" style="padding:13px 0">
+                      <span class="row__icon" style="width:34px;height:34px;border-color:var(--status-online)">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--status-online)"><path d="M3 8.5 6.5 12 13 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                      <div class="row__main">
+                        <div class="row__name">整理下载文件</div>
+                        <div class="row__sub">正在执行 24/35</div>
+                      </div>
+                    </div>
+                    <div class="row" style="padding:13px 0">
+                      <span class="row__icon" style="width:34px;height:34px;border-color:var(--status-pending)">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--status-pending)"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                      </span>
+                      <div class="row__main">
+                        <div class="row__name">删除重复文件</div>
+                        <div class="row__sub" style="color:var(--risk-high)">等待批准 · 高风险</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="phone__foot" style="padding:10px 16px 8px">
+                  <div class="composer" style="border-radius:var(--r-full);padding:11px 10px 11px 18px">
+                    <span class="composer__text" style="font-size:15px">说一句话，交给它做…</span>
+                    <span class="composer__send" style="width:30px;height:30px">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <nav class="tabbar">
+                  <span class="tab is-active"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 12.3 7.7 17.5 10 12.3 12.3 10 17.5 7.7 12.3 2.5 10 7.7 7.7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Agent</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>任务</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设备</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设置</span>
+                </nav>
+                <div class="phone__home"><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Android · 390 × 844</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       方向 04 · 工作台
+       ===================================================================== -->
+  <section class="dir">
+    <div class="dir__head">
+      <div>
+        <p class="dir__no">方向 04</p>
+        <h2 class="dir__name">工作台 <em>Split Workspace</em></h2>
+        <p class="dir__pos">三栏结构：导航 / 任务流 / 上下文面板。为 Coding Agent 场景优化 ——
+          Working Directory、Git 分支与脏状态、Tool Call 次数、待批准队列常驻右侧，不用切页面。
+          信息密度最高，但仍靠留白与 1px 发丝线分层，不用满屏卡片。</p>
+        <div class="dir__tags">
+          <span class="tag tag--key">三栏</span>
+          <span class="tag">上下文常驻</span>
+          <span class="tag">高密度</span>
+          <span class="tag">为 Coding Agent 优化</span>
+        </div>
+      </div>
+      <dl class="dir__facts">
+        <dt>信息架构</dt><dd>三层并列：一级导航 + 任务流 + 上下文 Inspector</dd>
+        <dt>适合场景</dt><dd>长时间盯着的复杂任务 —— 用 Codex / Claude Code 改代码、跑测试</dd>
+        <dt>记忆点</dt><dd>右侧 Inspector 把「Agent 正在什么环境下动手」变成常驻可见的事实</dd>
+        <dt>风险</dt><dd>与「大留白」的美学要求存在张力；1440 宽度下主区只剩 880px，
+          再窄就需要折叠 Inspector。文档第 156 条正是这个场景，所以方向本身是对的，
+          问题是它不该成为<b>唯一</b>形态</dd>
+      </dl>
+    </div>
+
+    <div class="frames">
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--desktop">
+          <div class="stage">
+            <div class="win">
+              <div class="win__cap">
+                <div class="win__mark">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                  <span class="win__wordmark">OpenAgent</span>
+                  <span class="micro" style="margin-left:8px">工作台</span>
+                </div>
+                <div class="win__cap-mid"></div>
+                <div class="win__caps">
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" fill="none"/></svg></span>
+                  <span class="capbtn"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor"/></svg></span>
+                </div>
+              </div>
+
+              <div class="win__body">
+                <nav class="d04-nav">
+                  <div class="side__group">
+                    <span class="side__label">今天</span>
+                    <span class="side__item is-active" style="padding:9px 10px">
+                      <span style="min-width:0">
+                        <span style="display:block">分析 OpenAgent 编译问题</span>
+                        <span style="display:block;font:var(--t-caption);font-size:12px;color:var(--text-quaternary);margin-top:3px">Codex · 运行中</span>
+                      </span>
+                    </span>
+                    <span class="side__item">
+                      <span style="min-width:0">
+                        <span style="display:block">整理下载文件</span>
+                        <span style="display:block;font:var(--t-caption);font-size:12px;color:var(--text-quaternary);margin-top:3px">OpenAgent · 已完成</span>
+                      </span>
+                    </span>
+                    <span class="side__item">
+                      <span style="min-width:0">
+                        <span style="display:block">修复单元测试</span>
+                        <span style="display:block;font:var(--t-caption);font-size:12px;color:var(--text-quaternary);margin-top:3px">Claude Code · 失败</span>
+                      </span>
+                    </span>
+                  </div>
+                  <div class="side__group">
+                    <span class="side__label">昨天</span>
+                    <span class="side__item">查看系统占用<span class="tail">完成</span></span>
+                    <span class="side__item">截图并发送<span class="tail">完成</span></span>
+                  </div>
+                  <div class="side__group">
+                    <span class="side__label">快速指令</span>
+                    <span class="side__item">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M11 3 5 11h4l-1 6 6-8h-4l1-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                      启动 Minecraft
+                    </span>
+                    <span class="side__item">
+                      <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h3l1.5 2h5A1.5 1.5 0 0 1 16.5 7.5v7A1.5 1.5 0 0 1 15 16H5.5A1.5 1.5 0 0 1 4 14.5v-9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                      整理学习资料
+                    </span>
+                  </div>
+                  <div style="margin-top:auto">
+                    <div class="composer" style="padding:9px 10px 9px 14px;border-radius:var(--r-sm)">
+                      <span class="composer__text" style="font-size:13px">新建任务…</span>
+                      <span class="composer__hint"><kbd>Alt</kbd><kbd>Space</kbd></span>
+                    </div>
+                  </div>
+                </nav>
+
+                <main class="canvas">
+                  <div class="canvas__head" style="padding:22px 32px 16px">
+                    <div style="display:flex;align-items:center;gap:12px">
+                      <h3 class="h3">分析 OpenAgent 编译问题</h3>
+                      <span class="chip"><i class="dot dot--online"></i>运行中</span>
+                      <span class="chip" style="margin-left:auto">Codex · gpt-5-codex</span>
+                    </div>
+                  </div>
+                  <hr class="hair" style="margin:0 32px">
+
+                  <div class="canvas__scroll" style="padding:20px 32px 0">
+                    <div class="stream" style="gap:18px">
+                      <div class="turn turn--user">
+                        <span class="turn__label">你 · 12:31</span>
+                        <p class="turn__body" style="font-size:15px">用 Codex 分析这个项目的编译问题。</p>
+                      </div>
+
+                      <div class="turn">
+                        <span class="turn__label">
+                          <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                          Agent · Codex
+                        </span>
+                        <p class="turn__body">先确认仓库状态，再跑一次构建拿到真实错误。</p>
+                      </div>
+
+                      <div>
+                        <div class="d04-toolrow">
+                          <span class="d04-diff">·</span>
+                          <span><span class="nm">git.status</span> <span style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px">--porcelain</span></span>
+                          <span class="mt">0.2s · 3 modified</span>
+                        </div>
+                        <div class="d04-toolrow">
+                          <span class="d04-diff">·</span>
+                          <span><span class="nm">directory.list</span> <span style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px">src/</span></span>
+                          <span class="mt">0.1s · 12 entries</span>
+                        </div>
+                        <div class="d04-toolrow">
+                          <span class="d04-diff" style="color:var(--risk-high)">!</span>
+                          <span><span class="nm">shell.exec</span> <span style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px">dotnet build -warnaserror</span></span>
+                          <span class="mt">12.4s · exit 1</span>
+                        </div>
+                      </div>
+
+                      <div style="border:var(--hair) solid var(--border-subtle);border-radius:var(--r-sm);
+                        background:var(--bg-sunken);padding:14px 16px">
+                        <p class="micro" style="margin-bottom:8px">dotnet build · stderr</p>
+                        <pre class="code" style="margin:0;font-size:12px;white-space:pre-wrap;color:var(--text-secondary)">src/OpenAgent.Agent/AgentLoop.cs(142,17): error CS8602:
+  Dereference of a possibly null reference. [OpenAgent.Agent.csproj]
+src/OpenAgent.Tools/PathGuard.cs(58,9): warning CS1591:
+  Missing XML comment for publicly visible type</pre>
+                      </div>
+
+                      <div class="approve approve--high" style="padding:18px 20px 16px">
+                        <div class="approve__top" style="margin-bottom:10px">
+                          <span class="risk risk--high"><i class="risk__dot"></i>需要你的批准</span>
+                          <span class="micro">高风险 · 会修改源码</span>
+                        </div>
+                        <h4 class="approve__title" style="font-size:17px">修改 2 个文件并重新构建</h4>
+                        <p class="approve__target" style="font-size:12px;margin-bottom:12px">AgentLoop.cs · PathGuard.cs</p>
+                        <div class="approve__facts" style="margin-bottom:14px">
+                          <span>+18 / −9 行</span><span>可撤销</span><span>预计 15 秒</span>
+                        </div>
+                        <div class="approve__actions">
+                          <button class="btn btn--primary">批准</button>
+                          <button class="btn btn--ghost">查看 diff</button>
+                          <button class="btn btn--quiet">拒绝</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="canvas__foot" style="padding:14px 32px 18px">
+                    <div class="composer" style="padding:11px 12px 11px 16px">
+                      <span class="composer__text">追加指令…</span>
+                      <span class="composer__hint"><kbd>⏎</kbd> 发送 · <kbd>⇧⏎</kbd> 换行</span>
+                      <span class="composer__send" style="width:30px;height:30px">
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </main>
+
+                <aside class="d04-insp">
+                  <div>
+                    <p class="insp__label">工作区</p>
+                    <dl class="kv">
+                      <dt>目录</dt><dd style="font-family:var(--font-mono);font-size:12px">D:\WorkSpace-Codex\OpenAgent</dd>
+                      <dt>Git</dt><dd><span class="chip"><i class="dot dot--pending"></i>main · 3 个未提交</span></dd>
+                      <dt>Provider</dt><dd>Codex · <span style="color:var(--status-online)">Ready</span></dd>
+                    </dl>
+                  </div>
+
+                  <div>
+                    <p class="insp__label">本次任务</p>
+                    <dl class="kv">
+                      <dt>Tool Calls</dt><dd>7 次</dd>
+                      <dt>已耗时</dt><dd>00:42</dd>
+                      <dt>权限模式</dt><dd>请求批准</dd>
+                      <dt>待批准</dt><dd style="color:var(--risk-high)">1 项</dd>
+                    </dl>
+                  </div>
+
+                  <div>
+                    <p class="insp__label">工具调用</p>
+                    <div style="display:flex;flex-direction:column">
+                      <div class="d04-toolrow" style="padding:7px 0"><span class="mt" style="font-family:var(--font-mono)">git.status</span><span class="mt">0.2s</span></div>
+                      <div class="d04-toolrow" style="padding:7px 0"><span class="mt" style="font-family:var(--font-mono)">directory.list</span><span class="mt">0.1s</span></div>
+                      <div class="d04-toolrow" style="padding:7px 0"><span class="mt" style="font-family:var(--font-mono)">file.read ×2</span><span class="mt">0.3s</span></div>
+                      <div class="d04-toolrow" style="padding:7px 0"><span class="mt" style="font-family:var(--font-mono)">shell.exec</span><span class="mt">12.4s</span></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p class="insp__label">会话</p>
+                    <div class="d04-seg">
+                      <span class="on">对话</span><span>Trace</span><span>日志</span>
+                    </div>
+                    <p class="p" style="font-size:13px;margin-top:12px;color:var(--text-tertiary)">
+                      开发者模式下可查看完整 Trace：用户输入 → Plan → Tool Call → Approval → 执行 → 校验。</p>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Windows · 1440 × 900</figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--mobile">
+          <div class="stage">
+            <div class="phone">
+              <div class="phone__status"><span>9:41</span><span>◗ ◔ ▮</span></div>
+              <div class="phone__body">
+                <div style="padding:6px 20px 14px;display:flex;align-items:center;gap:10px">
+                  <span style="font:600 17px/1 var(--font-display)">分析 OpenAgent 编译问题</span>
+                </div>
+                <div style="padding:0 20px 14px;display:flex;gap:10px;align-items:center;border-bottom:var(--border-hair)">
+                  <span class="chip"><i class="dot dot--online"></i>运行中</span>
+                  <span class="chip">Codex</span>
+                  <span class="chip" style="margin-left:auto">00:42</span>
+                </div>
+
+                <div class="phone__scroll" style="padding-top:18px">
+                  <div class="stream" style="gap:16px">
+                    <div class="turn turn--user">
+                      <span class="turn__label">你</span>
+                      <p class="turn__body" style="font-size:15px">用 Codex 分析这个项目的编译问题。</p>
+                    </div>
+                    <div class="turn">
+                      <span class="turn__label">Agent · Codex</span>
+                      <p class="turn__body">先确认仓库状态，再跑一次构建拿到真实错误。</p>
+                    </div>
+                    <div>
+                      <div class="d04-toolrow"><span class="d04-diff">·</span><span><span class="nm">git.status</span></span><span class="mt">0.2s</span></div>
+                      <div class="d04-toolrow"><span class="d04-diff" style="color:var(--risk-high)">!</span><span><span class="nm">shell.exec</span></span><span class="mt">exit 1</span></div>
+                    </div>
+                    <div class="approve approve--high" style="padding:16px 18px 14px">
+                      <div class="approve__top" style="margin-bottom:10px">
+                        <span class="risk risk--high"><i class="risk__dot"></i>需要批准</span>
+                        <span class="micro">高风险</span>
+                      </div>
+                      <h4 class="approve__title" style="font-size:16px">修改 2 个文件</h4>
+                      <p class="approve__target" style="font-size:12px;margin-bottom:12px">AgentLoop.cs · PathGuard.cs</p>
+                      <div class="approve__actions" style="flex-direction:column;gap:8px">
+                        <button class="btn btn--primary" style="width:100%">批准</button>
+                        <button class="btn btn--ghost" style="width:100%">查看 diff</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="phone__foot" style="padding:12px 16px 8px">
+                  <div class="composer" style="border-radius:var(--r-full);padding:11px 10px 11px 18px">
+                    <span class="composer__text" style="font-size:15px">追加指令…</span>
+                    <span class="composer__send" style="width:30px;height:30px">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3 3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <nav class="tabbar">
+                  <span class="tab is-active"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 12.3 7.7 17.5 10 12.3 12.3 10 17.5 7.7 12.3 2.5 10 7.7 7.7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Agent</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>任务</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="2" y="3.5" width="16" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设备</span>
+                  <span class="tab"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5v2.2M10 15.3v2.2M17.5 10h-2.2M4.7 10H2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>设置</span>
+                </nav>
+                <div class="phone__home"><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Android · 390 × 844（Inspector 收进可展开的底部 Sheet）</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       方向 05 · 聚光
+       ===================================================================== -->
+  <section class="dir">
+    <div class="dir__head">
+      <div>
+        <p class="dir__no">方向 05</p>
+        <h2 class="dir__name">聚光 <em>Spotlight Primacy</em></h2>
+        <p class="dir__pos">浮层是产品本体，主窗口只是它的展开态。<kbd>Alt</kbd>+<kbd>Space</kbd> 唤起的
+          680px 面板不只是输入框，而是<b>完整的任务生命周期容器</b> —— 输入、计划、审批、流式输出、
+          结果，全部在浮层内闭环，不跳转、不打断心流。主窗口只在需要长时间观察或管理时才打开。</p>
+        <div class="dir__tags">
+          <span class="tag tag--key">浮层即产品</span>
+          <span class="tag">零跳转闭环</span>
+          <span class="tag">不打断心流</span>
+          <span class="tag">主窗口次要化</span>
+        </div>
+      </div>
+      <dl class="dir__facts">
+        <dt>信息架构</dt><dd>浮层（高频全部功能）→ 主窗口（低频管理）两级</dd>
+        <dt>适合场景</dt><dd>开发者白天的高频节奏：下任务、审批、看结果，全程不离开当前窗口</dd>
+        <dt>记忆点</dt><dd>审批与计划在同一浮层内就地完成，用户视线零位移</dd>
+        <dt>风险</dt><dd>与文档第 49 条「主窗口为主体」的描述有偏离，需要产品层接受
+          「主窗口次要化」；另外浮层承载审批时，误触成本更高，需要把「批准」做成需要
+          刻意确认的动作</dd>
+      </dl>
+    </div>
+
+    <div class="frames">
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--desktop">
+          <div class="stage">
+            <div class="d05-desk">
+              <div class="d05-ghost" style="left:60px;top:70px;width:760px;height:520px">
+                <i style="width:180px"></i><i style="width:320px"></i><i style="width:260px"></i><i style="width:400px"></i>
+              </div>
+              <div class="d05-ghost" style="left:860px;top:150px;width:520px;height:600px">
+                <i style="width:140px"></i><i style="width:240px"></i><i style="width:200px"></i>
+              </div>
+              <div class="scrim"></div>
+
+              <div class="d05-panel">
+                <div class="floatpanel__head">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="color:var(--accent)"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  <span style="font:600 15px/1 var(--font-ui)">Ask OpenAgent</span>
+                  <span class="d02-pill" style="margin-left:auto">OpenAgent Native</span>
+                  <span class="d02-pill">请求批准</span>
+                  <span class="capbtn" style="width:26px;height:26px">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                </div>
+
+                <div class="d05-input">
+                  <div class="d05-input__field">整理一下今天下载的文件。</div>
+                </div>
+
+                <div class="d05-sec">
+                  <div class="d05-sec__label">
+                    <span class="micro">执行计划 · 5 步</span>
+                    <span class="micro">预计 6 秒</span>
+                  </div>
+                  <div class="plan">
+                    <div class="plan__step"><span class="plan__n">1</span>扫描 <span class="code" style="margin-left:6px">D:\Downloads</span><span class="plan__risk">安全</span></div>
+                    <div class="plan__step"><span class="plan__n">2</span>按类型分类 35 个文件<span class="plan__risk">安全</span></div>
+                    <div class="plan__step"><span class="plan__n">3</span>创建目标文件夹<span class="plan__risk" style="color:var(--risk-low)">低</span></div>
+                    <div class="plan__step"><span class="plan__n">4</span>移动文件<span class="plan__risk" style="color:var(--risk-medium)">中 · 需批准</span></div>
+                    <div class="plan__step"><span class="plan__n">5</span>校验哈希并生成报告<span class="plan__risk">安全</span></div>
+                  </div>
+                </div>
+
+                <div class="d05-sec">
+                  <div class="approve" style="padding:16px 18px 15px">
+                    <div class="approve__top" style="margin-bottom:10px">
+                      <span class="risk"><i class="risk__dot"></i>需要你的批准 · 第 4 步</span>
+                      <span class="micro">可撤销</span>
+                    </div>
+                    <h4 class="approve__title" style="font-size:17px">移动 35 个文件到 2026-09-25\</h4>
+                    <div class="approve__facts" style="margin-bottom:14px">
+                      <span>35 个文件</span><span>1.2 GB</span><span>中风险</span>
+                    </div>
+                    <div class="approve__actions">
+                      <button class="btn btn--primary">批准并继续</button>
+                      <button class="btn btn--ghost">修改计划</button>
+                      <button class="btn btn--quiet">取消</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d05-sec" style="padding-bottom:16px">
+                  <div class="d05-stream">
+                    <span><b>✓</b> 步骤 1 · 扫描完成 · 35 项 / 1.2 GB</span>
+                    <span><b>✓</b> 步骤 2 · 分类完成 · 图片 23 / 文档 4 / 压缩包 2 / 其他 6</span>
+                    <span><b>✓</b> 步骤 3 · 已创建 D:\Downloads\2026-09-25\</span>
+                    <span style="color:var(--text-quaternary)">等待批准以继续…</span>
+                  </div>
+                </div>
+
+                <div class="d05-bar">
+                  <span>Agent：OpenAgent Native</span>
+                  <span>权限：请求批准</span>
+                  <span>设备：DESKTOP-XXXX · 直连</span>
+                  <span style="margin-left:auto"><kbd>Esc</kbd> 收起</span>
+                </div>
+              </div>
+
+              <div class="d05-strip">
+                <div class="d05-stripcard"><b>主窗口</b><span>任务中心 · 历史 · 设备</span></div>
+                <div class="d05-stripcard"><b>Devices</b><span>配对 · 信任 · 撤销</span></div>
+                <div class="d05-stripcard"><b>Settings</b><span>Provider · 权限 · Relay</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Windows · 1440 × 900（浮层浮于桌面之上，主窗口仅作管理入口）</figcaption>
+      </figure>
+
+      <figure class="frame">
+        <div class="stage-wrap stage-wrap--mobile">
+          <div class="stage">
+            <div class="phone">
+              <div class="phone__status"><span>9:41</span><span>◗ ◔ ▮</span></div>
+              <div class="phone__body" style="background:var(--bg-canvas);position:relative">
+                <div style="position:absolute;inset:0;padding:14px 20px">
+                  <p style="font:600 26px/32px var(--font-display);letter-spacing:-.022em;margin:0 0 6px">Good evening</p>
+                  <p style="font:var(--t-caption);color:var(--text-tertiary);margin:0 0 24px">DESKTOP-XXXX · 直连</p>
+                  <div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:var(--border-hair)">
+                      <span style="width:36px;height:36px;border-radius:var(--r-sm);border:var(--border-hair);flex:none"></span>
+                      <span><span style="display:block;font:var(--t-callout)">DESKTOP-XXXX</span><span style="display:block;font:var(--t-caption);color:var(--text-tertiary)">Windows 11 · CPU 23%</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:var(--border-hair)">
+                      <span style="width:36px;height:36px;border-radius:var(--r-sm);border:var(--border-hair);flex:none"></span>
+                      <span><span style="display:block;font:var(--t-callout)">Pixel 9</span><span style="display:block;font:var(--t-caption);color:var(--text-tertiary)">Android 15 · 电量 78%</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-top:var(--border-hair)">
+                      <span style="width:36px;height:36px;border-radius:var(--r-sm);border:var(--border-hair);flex:none"></span>
+                      <span><span style="display:block;font:var(--t-callout)">整理下载文件</span><span style="display:block;font:var(--t-caption);color:var(--text-tertiary)">正在执行 24/35</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div style="position:absolute;inset:0;background:var(--scrim)"></div>
+                <div style="position:relative;margin-top:auto;display:flex;flex-direction:column;
+                  border-radius:var(--r-xl) var(--r-xl) 0 0;background:var(--bg-raised);
+                  border:var(--hair) solid var(--border-default);border-bottom:0;overflow:hidden">
+                  <div style="padding:16px 20px 6px;display:flex;align-items:center;gap:10px">
+                    <span style="width:36px;height:4px;border-radius:999px;background:var(--text-quaternary)"></span>
+                  </div>
+                  <div style="padding:8px 20px 12px;display:flex;align-items:center;gap:10px">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="color:var(--accent)"><path d="M8 1.5 9.9 6.1 14.5 8 9.9 9.9 8 14.5 6.1 9.9 1.5 8 6.1 6.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    <span style="font:600 15px/1 var(--font-ui)">Ask OpenAgent</span>
+                    <span class="chip" style="margin-left:auto"><i class="dot dot--online"></i>直连</span>
+                  </div>
+
+                  <div style="padding:0 20px 14px">
+                    <div style="border:var(--hair) solid var(--border-default);border-radius:var(--r-md);
+                      padding:12px 14px;font:var(--t-body);background:var(--bg-surface)">
+                      整理一下今天下载的文件。
+                    </div>
+                  </div>
+
+                  <div style="padding:0 20px 14px">
+                    <p class="micro" style="margin-bottom:8px">执行计划 · 5 步</p>
+                    <div class="plan">
+                      <div class="plan__step" style="font-size:13px"><span class="plan__n">1</span>扫描 D:\Downloads<span class="plan__risk">安全</span></div>
+                      <div class="plan__step" style="font-size:13px"><span class="plan__n">2</span>分类 35 个文件<span class="plan__risk">安全</span></div>
+                      <div class="plan__step" style="font-size:13px"><span class="plan__n">3</span>创建目标文件夹<span class="plan__risk">低</span></div>
+                      <div class="plan__step" style="font-size:13px"><span class="plan__n">4</span>移动文件<span class="plan__risk" style="color:var(--risk-medium)">需批准</span></div>
+                    </div>
+                  </div>
+
+                  <div style="padding:0 20px 16px">
+                    <div class="approve" style="padding:15px 16px 14px">
+                      <div class="approve__top" style="margin-bottom:9px">
+                        <span class="risk"><i class="risk__dot"></i>需要批准</span>
+                        <span class="micro">可撤销</span>
+                      </div>
+                      <h4 class="approve__title" style="font-size:16px">移动 35 个文件</h4>
+                      <div class="approve__facts" style="margin-bottom:13px;font-size:12px"><span>1.2 GB</span><span>中风险</span></div>
+                      <div class="approve__actions" style="flex-direction:column;gap:8px">
+                        <button class="btn btn--primary" style="width:100%">批准并继续</button>
+                        <button class="btn btn--ghost" style="width:100%">修改计划</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="phone__home" style="flex:none"><i></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="frame__cap">Android · 390 × 844（Bottom Sheet 形态的同一浮层）</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       收尾：3 套色板 + 结论
+       ===================================================================== -->
+  <section class="tail">
+    <h2 class="tail__h">3 套候选色板</h2>
+    <p class="tail__p">三套都基于 OKLCH 构建，中性色带 0.008–0.014 chroma 的品牌色偏移（拒绝死灰），
+      各含明暗双主题。用上方的色板切换器可以把上面 10 张稿实时切到任意一套 —— 建议先选色板，
+      再选方向，因为色板是全局的，方向是结构的。</p>
+
+    <div class="swatchgrid">
+      <div class="swatchcard">
+        <div class="swatchcard__bar">
+          <i style="background:oklch(98.4% 0.003 250)"></i>
+          <i style="background:oklch(94.0% 0.005 250)"></i>
+          <i style="background:oklch(86.0% 0.006 250)"></i>
+          <i style="background:oklch(45.0% 0.009 250)"></i>
+          <i style="background:oklch(20.5% 0.010 250)"></i>
+          <i style="background:oklch(52.0% 0.145 258)"></i>
+        </div>
+        <div class="swatchcard__body">
+          <h3 class="swatchcard__name">A · 石墨 Graphite</h3>
+          <p class="swatchcard__desc">冷灰偏蓝 + 单一靛青强调色。最耐看，明暗双主题都稳，
+            与 WinUI 3 的 Fluent 灰阶最接近，落地成本最低。</p>
+          <div class="swatchcard__row"><b>强调色</b><span>oklch(52% 0.145 258)</span></div>
+          <div class="swatchcard__row"><b>中性偏移</b><span>hue 250 · C 0.003–0.010</span></div>
+          <div class="swatchcard__row"><b>契合品牌</b><span>Privacy · Control</span></div>
+        </div>
+      </div>
+
+      <div class="swatchcard">
+        <div class="swatchcard__bar">
+          <i style="background:oklch(97.6% 0.006 80)"></i>
+          <i style="background:oklch(93.2% 0.010 80)"></i>
+          <i style="background:oklch(85.0% 0.012 80)"></i>
+          <i style="background:oklch(46.0% 0.014 70)"></i>
+          <i style="background:oklch(21.0% 0.014 70)"></i>
+          <i style="background:oklch(40.0% 0.090 254)"></i>
+        </div>
+        <div class="swatchcard__body">
+          <h3 class="swatchcard__name">B · 纸白 Paper</h3>
+          <p class="swatchcard__desc">暖灰偏橙 + 低饱和深墨蓝。像印刷油墨落在纸上的感觉，
+            温度更高，适合强调「本地、离线、属于你自己」。</p>
+          <div class="swatchcard__row"><b>强调色</b><span>oklch(40% 0.090 254)</span></div>
+          <div class="swatchcard__row"><b>中性偏移</b><span>hue 70–80 · C 0.004–0.014</span></div>
+          <div class="swatchcard__row"><b>契合品牌</b><span>Local-first · Open</span></div>
+        </div>
+      </div>
+
+      <div class="swatchcard">
+        <div class="swatchcard__bar">
+          <i style="background:oklch(13.5% 0.012 265)"></i>
+          <i style="background:oklch(16.8% 0.013 265)"></i>
+          <i style="background:oklch(22.5% 0.014 265)"></i>
+          <i style="background:oklch(62.5% 0.012 265)"></i>
+          <i style="background:oklch(96.8% 0.005 265)"></i>
+          <i style="background:oklch(74.0% 0.115 200)"></i>
+        </div>
+        <div class="swatchcard__body">
+          <h3 class="swatchcard__name">C · 午夜 Midnight</h3>
+          <p class="swatchcard__desc">深蓝黑 + 电光青，暗色是第一公民。屏幕感最强，
+            符合「常驻后台的基础设施」气质；但离常见 AI 配色更近，需要更严格的用色纪律。</p>
+          <div class="swatchcard__row"><b>强调色</b><span>oklch(74% 0.115 200)</span></div>
+          <div class="swatchcard__row"><b>中性偏移</b><span>hue 265 · C 0.012–0.014</span></div>
+          <div class="swatchcard__row"><b>契合品牌</b><span>Cross-device</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict">
+      <h3>设计方建议</h3>
+      <p><b>色板取 A · 石墨</b>，方向取 <b>01 静默画布</b> 为默认形态、
+        <b>04 工作台</b> 作为 Coding Agent 场景的可切换布局、
+        <b>05 聚光</b> 作为 <kbd>Alt</kbd>+<kbd>Space</kbd> 的浮层形态。</p>
+      <p>理由：三者不是竞争关系，而是<b>同一个产品的三种尺度</b> —— 静默画布是日常形态，
+        工作台是复杂任务形态，聚光是瞬时形态。它们共享同一套 token、同一套组件语义，
+        因此可以共存，且不违反文档第 2 条「不允许为完成第一版而使用阻碍未来扩展的架构」。</p>
+      <p>02 对话即产品的问题不是不好，而是<b>太容易被误认为是 ChatGPT 客户端</b>；
+        03 环境仪表的信息架构值得吸收（设备一等公民、状态诚实），但把仪表层做成首页会稀释
+        「Agent 优先」的产品主张 —— 建议把它的仪表排版并入 01 的 Dashboard。</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var html = document.documentElement, body = document.body;
+  function seg(id, attr, apply) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      Array.prototype.forEach.call(el.querySelectorAll('button'), function (x) {
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      apply(b.getAttribute(attr));
+    });
+  }
+  seg('segPalette', 'data-p', function (v) { html.setAttribute('data-palette', v); });
+  seg('segTheme',   'data-t', function (v) { html.setAttribute('data-theme', v); });
+  seg('segZoom',    'data-z', function (v) { body.setAttribute('data-zoom', v); });
+})();
+</script>
+</body>
+</html>
