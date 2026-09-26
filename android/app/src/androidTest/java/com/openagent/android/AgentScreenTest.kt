@@ -24,6 +24,13 @@ import org.junit.runners.JUnit4
  * same composable the app does, with sample turns, asserts the artboard's parts
  * are on screen, and — with `-e hold <seconds>` — keeps the frame up so
  * scripts/android-shot-test.sh can screencap it and measure it against the design.
+ *
+ * The host activity does not go edge-to-edge, so the held frame's bottom 48dp is the
+ * emulator's navigation bar and the tab bar sits above it. That is the harness, not the
+ * app: the composer and tab bar are measured from the app's own start-page capture
+ * (`artifacts/shots/raw-agent-light.png`), which is edge-to-edge. Hiding the bar instead
+ * was tried and the emulator answers with its "Viewing full screen" tutorial overlay,
+ * which dims the whole frame.
  */
 @RunWith(JUnit4::class)
 class AgentScreenTest {

@@ -1565,6 +1565,41 @@ chrome 0 failures, worst top 4px), installers rebuilt (MSI 76,338,384 B `92c50cd
 EXE 77,063,685 B `319c2758…`), MSI payload 580 files byte-identical to the publish dir.
 
 
+## 2026-09-27 · The phone's 对话态 frame through the approved test route, and a gate that couldn't fail
+
+Artboards 09/10 need a host the emulator cannot see (it sits behind NAT, so no beacon).
+The approved way to reach that state is the Compose test that renders the same composable
+with sample turns and holds the frame; this actually ran it end to end on a throwaway AVD
+(1080×2400@420, created for it and deleted afterwards — `AILifeTest` and `QpApi29`
+untouched), producing `artifacts/shots/phone-chat-light.png` at the design's 390×844.
+
+**What it proves:** the message list draws with the artboard's 20dp gutter (leftmost ink
+at x=20 in both), and the assertions on the artboard's parts pass — `你`, the prompt,
+`AGENT · OPENAGENT`, the reply prose, `DESKTOP-XXXX · 直连`, `说点什么…`.
+
+**What it does not prove, and why:** absolute vertical positions. The test hosts the
+composable in the plain `ComponentActivity` from `ui-test-manifest`, which does not apply
+the status-bar inset the app's `MainActivity` does, so the whole list sits ~30px higher
+than the frame's. Row positions stay measured from the app's own edge-to-edge captures
+(`raw-agent-light.png` and friends), which the Android audit already gates.
+
+**Two dead ends, recorded so nobody repeats them.** Hiding the emulator's navigation bar
+to reclaim the bottom 48dp makes SystemUI answer with its "Viewing full screen / Got it"
+tutorial, which dims the entire frame — the capture becomes worthless. And doing it from
+the instrumentation thread throws `CalledFromWrongThreadException` (it needs `runOnIdle`).
+Both were tried, both reverted; the reason is now in the test's own docstring.
+
+**The real find is a gate that could not fail.** `android-shot-test.sh` ended with
+`exit $status` where `$status` came from `adb shell am instrument` — and that command
+returns 0 whether the tests pass or not. The failing run above printed `Tests run: 1,
+Failures: 1` and the script still exited 0, resized the frame and handed it over as
+evidence. The script now reads the verdict from `artifacts/instrument.log` (any
+`FAILURES!!!` / `Failures: N` / `Errors: N` / `INSTRUMENTATION_FAILED` fails it, and a
+missing `OK (` line fails it too) and asserts the PNG was rewritten by this run. Both
+branches verified: the passing log clears, the verbatim failing log fires, and a stale
+mtime trips the rewrite check. `bash -n` clean.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

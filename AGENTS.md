@@ -401,6 +401,13 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 另注：`scripts/ui-semantic-colour-audit.py` 是**报告**不是门禁——抗锯齿色调会让
 正确配对也留下约 4 条未匹配，真错也退 1，所以不能用它的退出码做判断。
 
+还有一类更隐蔽的：退出码**来自一个不传递测试结论的命令**。`adb shell am instrument`
+无论用例过没过都返回 0，所以 `android-shot-test.sh` 早期版本在断言真的失败
+（`Tests run: 1,  Failures: 1`）时照样退 0，还把失败帧缩放成交付物。
+现在判定改读 `artifacts/instrument.log`（`FAILURES!!!` / `Failures: N` / `Errors: N` /
+`INSTRUMENTATION_FAILED` 一律退 1，缺 `OK (` 也退 1），外加"本次真的重写了 PNG"的 mtime 断言；
+正反两支都验过（通过日志放行、逐字复制的失败日志触发、陈旧 mtime 触发）。
+
 ### 8.23 给 PowerShell 传 MSYS 路径会静默失败
 `bash` 里的 `$ROOT` 长成 `/d/WorkSpace/OpenAgent`，PowerShell **认不得**这种路径：
 `Start-Process -FilePath '/d/...'` 直接失败，而脚本若把它的输出丢进 `/dev/null`，

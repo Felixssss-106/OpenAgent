@@ -36,6 +36,7 @@ MSYS_NO_PATHCONV=1 "$ADB" -e shell am instrument -w \
 instrument=$!
 
 sleep 8
+before=$(stat -c %Y "$OUT" 2>/dev/null || echo 0)
 "$ADB" -e exec-out screencap -p > "$OUT" || { echo "screencap failed"; exit 1; }
 wait $instrument
 status=$?
@@ -49,4 +50,24 @@ im.resize((390, 844)).save(path)
 print(f"{path} -> 390x844")
 PY
 tail -3 "$ROOT/artifacts/instrument.log"
+
+# `adb shell am instrument` exits 0 whether the test passed or not, so the log is the
+# only verdict. Without this the script happily resized and shipped a frame of a state
+# whose assertions had just failed.
+if grep -qE "FAILURES!!!|Failures: [1-9]|Errors: [1-9]|INSTRUMENTATION_FAILED|^There w[as] [1-9]" \
+        "$ROOT/artifacts/instrument.log"; then
+    echo "FAILED: the instrumented test did not pass - see artifacts/instrument.log"
+    exit 1
+fi
+grep -qE "^OK \(" "$ROOT/artifacts/instrument.log" || {
+    echo "FAILED: no 'OK (' result line in artifacts/instrument.log"
+    exit 1
+}
+
+after=$(stat -c %Y "$OUT" 2>/dev/null || echo 0)
+if [ "$after" -le "$before" ]; then
+    echo "FAILED: $OUT was not rewritten by this run"
+    exit 1
+fi
+
 exit $status
