@@ -26,10 +26,10 @@ AI provider, the Agent CLI, the permission level, and the network path.
 - Windows background Agent + tray + Command Center (`Alt+Space`)
 - Tool system with risk levels (safe → critical) and a four-tier permission model
 - Task center: plan, tool calls, approvals, logs, output, errors
-- Android pairing (QR + one-time pair code), device presence, remote tasks
+- Android LAN discovery + command chat over a shared wire format
 - Local-first: settings, sessions, task history, audit logs stay on your device
 - External Agent CLI integration: Codex / Claude Code / OpenCode / Pi / generic
-- Planned: file transfer, remote screen, MCP, plugins, workflow
+- Planned: pairing/encryption, Cloudflare Relay, file transfer, remote screen, MCP, plugins
 
 ## Architecture
 
@@ -66,17 +66,20 @@ UI → Agent Service → Tool Registry → Permission Manager → Tool Executor
 ## Repository layout
 
 ```
-apps/       windows/ android/
-core/       agent/ protocol/ security/ storage/ transport/
-providers/  native/ codex/ claude/ opencode/ pi/ generic/
-tools/      filesystem/ shell/ process/ app/ system/ clipboard/ screen/
-plugins/    sdk/
-mcp/
-relay/      cloudflare/
-docs/ tests/ scripts/
+src/
+  apps/windows/   OpenAgent.Windows (exe) + OpenAgent.Windows.UI (WinUI 3 library)
+  core/           OpenAgent.Core / Agent / Transport / Storage / Security
+  tools/          OpenAgent.Tools — 11 built-in tools
+  providers/      OpenAgent.Providers — IAgentProvider, Native + CLI adapters
+  plugins/        OpenAgent.Plugins — contracts only
+  mcp/            OpenAgent.Mcp — contracts only
+  shared/         OpenAgent.Shared
+tests/            8 test projects, 266 tests
+android/          Kotlin + Jetpack Compose client (own Gradle project)
+docs/             protocol, dev-log, compatibility, development
+design/           tokens.css and motion.md — the design source of truth
+scripts/          gen-tokens.py, gen-tray-icon.py, build.ps1, test.ps1
 ```
-
-C# projects live under `src/` grouped by domain; see `OpenAgent.sln`.
 
 ## Getting started
 
@@ -85,18 +88,21 @@ C# projects live under `src/` grouped by domain; see `OpenAgent.sln`.
 - Windows 11 (or Windows 10 1809+) x64
 - [.NET 10 SDK](https://dotnet.microsoft.com/) — `winget install Microsoft.DotNet.SDK.10`
 - Windows App SDK / WinUI 3 (pulled in as a NuGet package, no separate install)
-- Visual Studio 2022+ *optional* — the projects are unpackaged and build from the
-  command line with `dotnet build`
-- Android: Android Studio + JDK 17+ + Android SDK (API 29+), only for `apps/android`
+- Visual Studio 2022+ *not required* — the app is unpackaged and builds from the
+  command line with `dotnet`
+- Android (only to build `android/`): Android SDK platform 35, Gradle 8.9+ via the
+  committed wrapper, and **JDK 17–21** (Gradle 8.x does not run on JDK 25)
 
 ### Build
 
+Every `dotnet` invocation needs `-p:Platform=x64`: the projects declare
+`<Platforms>x64</Platforms>` only, so a bare `dotnet build` fails to find a platform.
+
 ```powershell
-git clone https://github.com/openagent/openagent.git
-cd openagent
-dotnet restore
-dotnet build -c Release
-dotnet test
+git clone https://github.com/Felixssss-106/OpenAgent.git
+cd OpenAgent
+dotnet build OpenAgent.sln -c Release -p:Platform=x64
+dotnet test  OpenAgent.sln -c Release -p:Platform=x64   # 266 tests
 ```
 
 Or use the thin wrappers:
@@ -106,21 +112,43 @@ Or use the thin wrappers:
 ./scripts/test.ps1
 ```
 
+Android:
+
+```bash
+cd android
+JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
+```
+
 ### Run
 
 ```powershell
-dotnet run --project src/apps/windows/OpenAgent.Windows
+dotnet run --project src/apps/windows/OpenAgent.Windows -c Release -p:Platform=x64
 ```
+
+Or grab the self-contained build from
+[Releases](https://github.com/Felixssss-106/OpenAgent/releases) — unzip and run
+`OpenAgent.exe`; no .NET or Windows App SDK install required.
 
 ## Security
 
-- End-to-end encrypted device channel (X25519 key agreement, authenticated
-  encryption). The Relay only forwards ciphertext.
-- Pairing requires QR + one-time pair code + confirmation on both devices.
+**As of v1.0.0 the LAN channel is not yet secure**: beacons and command envelopes
+travel in cleartext, with no pairing, trust or encryption. Do not run this on an
+untrusted network.
+
+Implemented today:
+
 - Tools carry a risk level; high-risk tools always require approval.
+- Path policy rejects `..` traversal before any file tool runs.
 - API keys are stored with OS secure storage (DPAPI / Credential Manager on
   Windows, Android Keystore on Android) — never in SQLite or JSON.
-- No telemetry by default. No account required.
+- No telemetry. No account required.
+
+Planned, not implemented (see `docs/dev-log.md` → NOT IMPLEMENTED registry):
+
+- End-to-end encrypted device channel (X25519 key agreement, authenticated
+  encryption) and LAN pairing / trust.
+- QR + one-time pair code with confirmation on both devices.
+- Cloudflare Relay that forwards ciphertext only.
 
 Please report vulnerabilities privately, see [SECURITY.md](SECURITY.md).
 
@@ -138,9 +166,16 @@ installs, upgrades, logs in, or copies third-party credentials.
 
 ## Status
 
-Early development. Phase 0–2 (solution, Windows core, WinUI 3 UI) are the
-current focus. Anything not finished is marked `NOT IMPLEMENTED` in code and
-tracked in `docs/dev-log.md` — nothing is faked as working.
+**v1.0.0 — the first published release.** Both clients build and run: the Windows
+app starts from the self-contained zip, and the Android APK builds and installs from
+the committed Gradle wrapper.
+
+What is genuinely working is limited to what the code implements; anything not
+finished is a real `NotSupportedException("NOT IMPLEMENTED: …")` rather than a stub
+that pretends to succeed. The Agent is still deterministic keyword routing, not a
+model loop, and the device channel is still cleartext. See
+[`docs/dev-log.md`](docs/dev-log.md) for the registry and
+[`AGENTS.md`](AGENTS.md) for the constraints a contributor needs to know.
 
 ## Contributing
 

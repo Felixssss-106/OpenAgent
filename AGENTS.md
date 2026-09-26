@@ -7,9 +7,9 @@
 ## 1. 项目是什么
 
 **OpenAgent** — Windows × Android 开源 AI 跨设备控制中心。
-- **Windows 端**：.NET 10 / C# / WinUI 3（unpackaged），12 个产品工程 + 5 个测试工程
-- **Android 端**：Kotlin / Jetpack Compose / Material 3，`android/` Gradle 项目
-- **当前版本**：v1.0.0（tag `v1.0.0`，提交 `133e9ff`）
+- **Windows 端**：.NET 10 / C# / WinUI 3（unpackaged），12 个产品工程 + 8 个测试工程
+- **Android 端**：Kotlin / Jetpack Compose / Material 3，`android/` Gradle 项目（Gradle wrapper 已提交，APK 已可命令行构建）
+- **当前版本**：v1.0.0（首个公开发布版，Windows zip + Android APK 挂在 GitHub Release 上）
 - **规格真源**：根目录 `OpenAgent 完整项目总提示词.md`（9581 行，366 节）
 
 核心使命：让 Android 手机在同一局域网内发现 Windows 主机，并发送 AI 命令（如"打开记事本"）让 Windows 执行。
@@ -39,16 +39,24 @@ UI → Agent Service → Tool Registry → Permission Manager → Tool Executor
 # 全量构建（必须带 -p:Platform=x64）
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 
-# 测试（当前 259 个，全绿）
+# 测试（当前 266 个，全绿）
 dotnet test OpenAgent.sln -c Release -p:Platform=x64
+
+# 可分发产物（self-contained，解压即运行）
+dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
+  -c Release -p:Platform=x64 -r win-x64 --self-contained true -o artifacts/windows/win-x64
 ```
+> `OpenAgent.pri`（XAML 资源索引）必须出现在 publish 输出里，否则应用启动即崩（见 §8.9）。
 
 ### Android（Kotlin）
 ```bash
 cd android
-./gradlew :app:assembleDebug
+JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
 ```
-> ⚠️ 当前沙盒**无 Android SDK**，APK 需在 Android Studio 中构建。
+- 需要 JDK **17–21**（Gradle 8.14.3 不支持 PATH 上的 JDK 25），直接用 Android Studio 自带 JBR。
+- Release 签名读 `android/keystore.properties`（已 gitignore）；缺失时 release 退回 debug 签名，干净 checkout 仍可构建。
+- `android/local.properties` 提供 `sdk.dir`（`ANDROID_HOME` 未设置）。
+- 两个文件里的 Windows 路径必须用**正斜杠**（见 §8.10）。
 
 ### 项目结构
 ```
@@ -61,7 +69,7 @@ OpenAgent/
 │   ├── plugins/               # OpenAgent.Plugins (仅契约)
 │   ├── mcp/                   # OpenAgent.Mcp (仅契约)
 │   └── shared/                # OpenAgent.Shared
-├── tests/                     # 5 个测试工程（Core / Providers / Transport / Tools / UI）
+├── tests/                     # 8 个测试工程（Core / Agent / Storage / Security / Providers / Transport / Tools / UI）
 ├── android/                   # Kotlin + Jetpack Compose 客户端
 ├── docs/
 │   ├── protocol.md            # 跨设备线格式真源（beacon + JSON envelope）
@@ -143,7 +151,7 @@ using global::Windows.System.VirtualKey;
 ### 测试项目清单
 | 项目 | 数量 | 覆盖 |
 |------|------|------|
-| `OpenAgent.Core.Tests` | 25 | 事件总线、任务状态机、权限策略 |
+| `OpenAgent.Core.Tests` | 36 | 事件总线、任务状态机、权限策略 |
 | `OpenAgent.Providers.Tests` | 40 | Native 路由、CLI 发现、CLI 适配器 |
 | `OpenAgent.Transport.Tests` | 24 | Beacon codec、Envelope codec、UDP 发现、载荷投递、inbound 事件 |
 | `OpenAgent.Tools.Tests` | 56 | 11 个工具 + 路径策略 |
@@ -151,7 +159,7 @@ using global::Windows.System.VirtualKey;
 | `OpenAgent.Agent.Tests` | 15 | 代理编排 |
 | `OpenAgent.Storage.Tests` | 9 | SQLite 存储 |
 | `OpenAgent.Security.Tests` | 25 | 安全策略 |
-| **总计** | **259** | |
+| **总计** | **266** | |
 
 ### WinUI 测试陷阱
 **测试项目不能带 `UseWinUI` 或 `Microsoft.WindowsAppSDK` 包引用**。否则 testhost 因 `Microsoft.TestPlatform.CoreUtilities` 加载冲突崩溃。
@@ -237,6 +245,35 @@ var line = LanBeaconFrame.Encode(frame) + "\n";
 var line = Encoding.UTF8.GetString(LanBeaconFrame.Encode(frame)) + "\n";
 ```
 
+### 8.8 `app.manifest` 里的 `dpiHosting` 让 exe 根本无法启动
+`<dpiHosting>` 取值只接受布尔（`true`/`false`），写成 `PerMonitorV2` 会让 SxS 清单激活失败：
+```
+SideBySide 事件 79：命名空间 http://schemas.microsoft.com/SMI/2020/WindowsSettings^dpiHosting 未注册
+```
+构建期对应 warning `81010002: Unrecognized Element "dpiHosting"`。unpackaged WinUI 3 只需要
+`<dpiAwareness>PerMonitorV2</dpiAwareness>`，删掉 `dpiHosting` 即可。
+**只要出现这条 warning 就当错误处理**——它不是风格提示，是产物不可运行。
+
+### 8.9 `dotnet publish` 会丢掉 `OpenAgent.pri`
+应用自己的资源索引由 Appx/Pri 目标写进 `$(TargetDir)$(ProjectPriFileName)`，不在 publish 的
+`ResolvedFileToPublish` 集合里，于是发布目录缺 `.pri`，XAML 初始化即崩：
+```
+Application Error 1000：故障模块 Microsoft.UI.Xaml.dll，异常码 0xc000027b
+```
+修法是在 csproj 里把 `$(ProjectPriFullPath)` 挂进 `ComputeFilesToPublish`（已落地）。
+**冒烟测试必须针对 publish 目录，而不是 `bin`**——两者文件集合不同。
+
+### 8.10 `.properties` 文件里的单反斜杠路径会被吃掉
+`java.util.Properties` 会反转义 `\`，`C:\Users\…` 变成 `C:Users…`：
+- `local.properties` → AGP SDK 定位 `IOException: Invalid file path`
+- `keystore.properties` → `Keystore file 'D:\...\android\app\D:WorkSpace…jks' not found`
+
+统一写正斜杠：`sdk.dir=C:/Users/.../Sdk`。
+
+### 8.11 Compose：`Modifier.padding` 是扩展函数
+`padding` 定义在 `androidx.compose.foundation.layout`，不是 `Modifier` 的成员。全限定接收者
+`androidx.compose.ui.Modifier.padding(...)` 仍会 `Unresolved reference 'padding'`——必须 import 扩展本身。
+
 ---
 
 ## 9. 数据与安全
@@ -263,10 +300,39 @@ var line = Encoding.UTF8.GetString(LanBeaconFrame.Encode(frame)) + "\n";
 
 ## 11. 推进建议（优先级）
 
+v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来的优先级：
+
 1. **LAN 配对 + 加密**（让"跨设备"真正安全可信）
 2. **Cloudflare Relay**（让不在同一局域网的两端互通）
 3. **Agent 真模型循环**（把 Native 关键词路由换成真实模型推理）
-4. **Android APK 构建验证**（在 Android Studio 中构建并测试与 Windows 的互操作）
+4. **Android 端互操作验证**（APK 已能构建并签名；剩下是装到真机/模拟器上跑通 beacon↔envelope）
+
+> 注：原第 4 条"Android APK 构建验证"已完成——工具链齐备，且构建暴露出一个真实编译错误（§8.11）。
+
+---
+
+## 11.1 发布流程（v1.0.0 起）
+
+```bash
+# 1. 全绿门禁
+dotnet build OpenAgent.sln -c Release -p:Platform=x64
+dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 266
+
+# 2. Windows 产物
+dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
+  -c Release -p:Platform=x64 -r win-x64 --self-contained true -o artifacts/windows/win-x64
+#    → 校验 artifacts/windows/win-x64/OpenAgent.pri 存在，且 exe 能起窗口
+
+# 3. Android 产物
+cd android && JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
+#    → apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
+
+# 4. 发布
+gh release create v1.0.0 <win-zip> <release-apk> --title ... --notes ...
+```
+
+**发布前必须做的两件事**：冒烟测试跑 publish 目录（不是 `bin`）；`git grep` 扫一遍
+token / 私钥 / 本机绝对路径。
 
 ---
 
@@ -287,4 +353,4 @@ var line = Encoding.UTF8.GetString(LanBeaconFrame.Encode(frame)) + "\n";
 
 ---
 
-*本文档最后更新：2026-09-26，对应提交 `133e9ff`（v1.0.0）*
+*本文档最后更新：2026-09-26，对应 v1.0.0 首个发布版。文中所有数字（266 测试、8 测试工程、12 产品工程）与工具链结论均为本机实测，不是转抄。*

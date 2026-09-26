@@ -40,4 +40,16 @@
     <Content Include="Assets\tray.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- The generated resource index lands in the build output only through the
+       Appx/Pri targets, so `dotnet publish` silently drops it and the app dies
+       at XAML init with 0xc000027b. Carry it into the publish payload. -->
+  <Target Name="IncludeProjectPriFileInPublish" BeforeTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(ProjectPriFullPath)" Condition="Exists('$(ProjectPriFullPath)')">
+        <RelativePath>$(ProjectPriFileName)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
 </Project>

@@ -19,7 +19,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [1.0.0] — 2026-09-26
 
+First published release. Assets on the GitHub Release: a self-contained
+Windows x64 zip and a signed Android `app-release.apk`.
+
+### Fixed
+
+- **The Windows executable could not start at all.** `app.manifest` carried a
+  `<dpiHosting>` element with a non-boolean value, which made SxS manifest
+  activation fail (`SideBySide` 79, build warning `81010002`). Removed; the app
+  now opens its window.
+- **Published builds crashed at XAML init.** `dotnet publish` dropped the
+  generated `OpenAgent.pri` resource index, so `ms-appx:///` lookups failed with
+  `0xc000027b` inside `Microsoft.UI.Xaml.dll`. The project now carries
+  `$(ProjectPriFullPath)` into the publish payload.
+- **The Android module did not compile.** `MainActivity` called the
+  `Modifier.padding` extension without importing it
+  (`Unresolved reference 'padding'`).
+- Release APKs are now signed with a real release key from
+  `android/keystore.properties` instead of falling back to the debug key.
+
 ### Added
+
+- Gradle wrapper committed under `android/`, so the APK builds from a clean
+  checkout with `./gradlew assembleRelease`.
+- Release packaging verified end to end: `dotnet publish` + window smoke test on
+  Windows, `apksigner verify --print-certs` on Android.
 
 - Repository scaffolding: solution, 12 C# projects + CI, license and docs
   (Phase 0).

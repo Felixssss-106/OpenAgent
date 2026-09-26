@@ -436,6 +436,82 @@ written to compile in Android Studio with AGP 8.7.3 + Kotlin 2.0.21.
 
 ---
 
+## 2026-09-26 · v1.0.0 actually released — first launch of the Windows app ever
+
+**Context**
+
+The previous entry described v1.0.0 as a foundation release with "259 passing"
+tests and an Android project that was "source-verified". Taking over the project
+meant measuring instead of repeating those claims. Three of them did not survive
+contact with the machine:
+
+| Earlier claim | Measured |
+|---|---|
+| 259 tests | **266** (`Core.Tests` is 36, not 25) |
+| 5 test projects | **8** |
+| "no Android SDK in this sandbox" | SDK, Gradle 8.14.3, NDK, emulator and Android Studio all present |
+| Android is "source-verified / will compile" | **did not compile** |
+| Windows shell is visible and working | **the exe had never started** |
+
+**Change**
+
+- `src/apps/windows/OpenAgent.Windows/app.manifest`: dropped
+  `<dpiHosting>PerMonitorV2</dpiHosting>`. The element takes a boolean; the
+  invalid value made SxS activation fail outright, so `OpenAgent.exe` could not
+  launch at all — `SideBySide` event 79, `Start-Process` "应用程序配置不正确".
+  The build-time warning `81010002: Unrecognized Element "dpiHosting"` was the
+  same fact, and had been ignored every release. `assemblyIdentity` version
+  corrected to `1.0.0.0`.
+- `OpenAgent.Windows.csproj`: new `IncludeProjectPriFileInPublish` target carries
+  `$(ProjectPriFullPath)` into `ResolvedFileToPublish`. `dotnet publish` had been
+  omitting the app's own `OpenAgent.pri` resource index, so the published build
+  died during XAML initialisation: `Application Error` 1000 in
+  `Microsoft.UI.Xaml.dll`, exception code `0xc000027b`.
+- `android/`: committed the Gradle wrapper (8.14.3), added `keystore.properties`
+  driven release signing with a debug-signing fallback for clean checkouts, and
+  fixed `MainActivity.kt` — `Modifier.padding` is an extension from
+  `androidx.compose.foundation.layout` and was called through a fully qualified
+  receiver without importing it (`Unresolved reference 'padding'`).
+- `.gitignore`: `keystore.properties`, `*.jks`, `*.keystore`.
+- `docs/compatibility.md`: removed hard-coded local paths (they leaked the
+  machine username into what is now a public repository) and recorded the
+  toolchain as measured, including the `.properties` forward-slash trap.
+- `README.md`: the build commands were missing `-p:Platform=x64` and therefore
+  failed; the clone URL pointed at a repository that does not exist; the
+  repository layout described a tree this project never had; and the Security
+  section claimed end-to-end encryption and QR pairing as if shipped. Both are
+  still `NOT IMPLEMENTED`, so the section now separates *implemented* from
+  *planned* and warns the LAN channel is cleartext.
+- `AGENTS.md`: numbers corrected, release procedure documented, five new
+  pitfalls (§8.8–8.11) recorded.
+
+**Reason**
+
+The user directed the project to its first published release across both
+platforms. A release is only real if the shipped artefacts start, so the work was
+blocked until the Windows binary actually opened a window.
+
+**Test**
+
+- `dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings.
+- `dotnet test OpenAgent.sln -c Release -p:Platform=x64` → **266 passing**, 0 failed.
+- `dotnet publish … -r win-x64 --self-contained true` → 492 files, `OpenAgent.pri`
+  present; launched from the publish directory: window title `OpenAgent`,
+  `Responding=True`, ~144 MB working set.
+- `./gradlew assembleDebug assembleRelease` → BUILD SUCCESSFUL;
+  `app-release.apk` signed by `CN=OpenAgent, OU=Releases` (verified with
+  `apksigner --print-certs`), `app-debug.apk` still debug-signed.
+
+**Known issues**
+
+- The Android APK is build- and signature-verified, **not** yet installed and
+  driven on a device or emulator, so cross-device LAN interop with the Windows
+  app is still unproven end to end.
+- The `v1.0.0` tag now points at the first commit whose Windows binary launches.
+  It was moved from the earlier commit, which was local-only and never pushed.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
