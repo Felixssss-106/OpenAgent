@@ -93,6 +93,41 @@ def window_bands(a, w, x0, x1, refx0, refx1, y0, y1):
     return bands(a, x0, right, y0, y1, ref)
 
 
+DIVIDER = {"light": (229, 229, 234), "dark": (44, 44, 46)}
+
+# The divider under the page title spans the content column, so its left and right ends
+# are set by the shell rather than by the data below it — the one measurement that catches
+# a content-column width change. Tolerance 4, not 3: the settings page's rounded card
+# corners land on a different row of the arc and read up to 3px wide.
+DIVIDER_TOLERANCE = 4
+
+
+def divider_span(a, theme, y0=150, y1=210):
+    want = np.array(DIVIDER[theme])
+    for y in range(y0, y1):
+        hit = np.where(np.abs(a[y, 320:1420] - want).max(axis=1) <= 8)[0]
+        if len(hit) > 600:
+            return int(hit.min()) + 320, int(hit.max()) + 320
+    return None
+
+
+def compare_divider(design, build, theme, page, kind):
+    """Fail when the artboard draws a divider the build does not, or draws it wider."""
+    d, b = divider_span(design, theme), divider_span(build, theme)
+    if d is None and b is None:
+        return [], f"{page}/{theme} {kind}: no divider on this page"
+    if d is None:
+        return [], f"{page}/{theme} {kind}: build draws a divider the artboard does not"
+    if b is None:
+        return [f"{page}/{theme} {kind}: artboard divider at x {d[0]}..{d[1]} not drawn"], ""
+    bad = []
+    for name, want, got in (("left", d[0], b[0]), ("right", d[1], b[1])):
+        if abs(want - got) > DIVIDER_TOLERANCE:
+            bad.append(f"{page}/{theme} {kind}: divider {name} at {got}, artboard draws {want}")
+    note = "" if bad else f"{page}/{theme} {kind}: divider x {b[0]}..{b[1]}"
+    return bad, note
+
+
 def chrome_gate(d, b, h, page, theme):
     """Fail on chrome the artboard draws and the build does not draw, or draws elsewhere.
 
@@ -127,6 +162,11 @@ def chrome_gate(d, b, h, page, theme):
         extra = [x for x in build if not any(abs(x[0] - t) <= CHROME_TOLERANCE for t, _ in design)]
         if extra:
             notes.append(f"{page}/{theme} {label}: {len(extra)} build-only band(s) {extra}")
+
+    bad, note = compare_divider(d, b, theme, page, "divider")
+    failures += bad
+    if note:
+        notes.append(note)
     return failures, notes, worst
 
 

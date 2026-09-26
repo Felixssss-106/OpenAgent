@@ -1725,6 +1725,36 @@ artboard and the build — a first sample that read as "the build is pure black"
 inside the panel because the build's panel starts at y=221, 71px higher than the artboard's.
 
 
+## 2026-09-27 · The content column's width is now asserted too, and a coverage audit of all 30 frames
+
+The gates checked the sidebar, the page header rows and the interactive states, but nothing
+measured how wide the content column is — a change to the shell's content margin would move
+every page's body and no assertion would notice. The divider under the page title spans
+that column, so its left and right ends are shell geometry rather than data.
+
+Measured across all 14 pairs: six secondary pages × both themes draw the divider at
+**x 336..1343 in the build and in the artboard — 0px apart**. The settings page's match
+lands at 1px (light) and 3px (dark) because the row the scan catches there is a card's
+rounded top edge rather than a straight divider, so the tolerance is 4 and the reason is
+written next to it. The agent page draws no divider at all, in the frames and in the build,
+which is reported as a skip rather than a pass. Proven to fail by clipping the divider's
+right end to x=1100 in a copy: `FAIL tools/light divider: divider right at 1099, artboard
+draws 1343`, exit 1; restored, exit 0.
+
+**Coverage of the 30 frames, read out of the gate tables rather than remembered:**
+
+| Frames | Covered by |
+|---|---|
+| 01/02, 13–24 (14) | `ui-band-sweep.py --gate` (sidebar head/foot + page header + divider span) and `ui-colour-audit.py` |
+| 03–06 (4) | `ui-state-check.py` — driven, colour landmarks, card/panel geometry |
+| 07/08, 09/10, 25–30 (10) | `ui-android-audit.py`, from the release APK and held test frames |
+| 11/12 (2) | not covered — the phone cannot receive an approval state; deferred by the user behind LAN pairing/encryption |
+
+28 of 30 are compared against the shipped build and gated. The remaining two are not a
+verification gap but an unimplemented feature, and it is the same blocker behind the phone's
+effort pill, its tool-disclosure block and its task-status vocabulary.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
