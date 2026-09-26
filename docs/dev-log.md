@@ -801,6 +801,25 @@ Three defects fell out, none of them visible from the states previously checked:
   value wrap, so 设备标识 ran into its own label and out of the 46dp row. The value
   is now single-line, right-aligned, ellipsised.
 
+Artboards 09/10 were then re-held and re-capped against the current code (light and
+dark, through the same instrumented frame), and the comparison is honest about what
+is still missing: the phone draws the turn list, the meta line, the device pill and
+the composer exactly as designed, but not the `已使用 file.list 运行了命令` disclosure
+block or the `思考强度 · 中` pill, because the LAN envelope carries text only — there
+is no tool-call or reasoning-effort data arriving from the host to render. Both belong
+to the pairing/encryption work, not to this pass; drawing them would mean inventing
+data. The frame's content also starts higher than the artboard because the test host
+has no status bar to inset against; the installed app insets correctly (see the 07/08
+captures).
+
+Windows got the same treatment for the state no `--page=` switch reaches: a real
+command run through UI Automation, so artboard 04's tool-call block was measured on
+the shipped binary — `已使用 system.get_info 运行了命令`, the argument row, the 纯文本
+card, and the elapsed label. That last one looked absent in a downscaled composite and
+was not: the design's `0.4s` and the build's `0.0s` are the same ink (peak 111 on the
+dark canvas), the same 9-row height, and end at the same x=1342. Faint is what the
+artboard drew.
+
 **Verified:** `dotnet build` clean, `dotnet test` 266/266 across 8 projects,
 `assembleRelease` green, installers rebuilt (MSI 76,334,288 B / EXE 77,061,565 B)
 with only the known `ICE03 File.Language` reports the gate already documents.
