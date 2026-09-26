@@ -12,6 +12,22 @@ namespace OpenAgent.Windows.UI.Services;
 /// </summary>
 public static class UiBrushes
 {
+    /// <summary>
+    /// Last-resort colours for when a token is genuinely absent from the merged
+    /// dictionaries. They mirror the light Pixso palette so a miss degrades to
+    /// something on-palette instead of an arbitrary grey, and they live here
+    /// because the same handful was previously repeated at every call site.
+    /// </summary>
+    public static class Fallback
+    {
+        public const string Accent = "#FF007AFF";
+        public const string Error = "#FFFF3B30";
+        public const string StatusNeutral = "#FF8E8E93";
+        public const string StatusText = "#FF6E6E73";
+        public const string ChipBackground = "#FFE5E5EA";
+        public const string ChipForeground = "#FF6E6E73";
+    }
+
     public static Brush Get(string key, string fallbackHex)
     {
         var resources = Application.Current?.Resources;
@@ -25,7 +41,11 @@ public static class UiBrushes
         return new SolidColorBrush(Parse(fallbackHex));
     }
 
-    public static Brush Status(string key) => Get(key, "#FF8A8F98");
+    public static Brush Status(string key) => Get(key, Fallback.StatusNeutral);
+
+    /// <summary>Brush for a fallback hex, for view-model defaults that are built
+    /// before a token key is known.</summary>
+    public static Brush FromHex(string hex) => new SolidColorBrush(Parse(hex));
 
     private static global::Windows.UI.Color Parse(string hex)
     {

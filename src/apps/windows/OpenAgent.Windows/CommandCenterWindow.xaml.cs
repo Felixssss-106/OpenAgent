@@ -317,6 +317,17 @@ public sealed partial class CommandCenterWindow : Window
     /// The real chain: create a task, plan one tool call, execute it, stream the
     /// outcome into the step list (spec sections 97, 132).
     /// </summary>
+    /// <summary>
+    /// Places a command typed elsewhere into the bar without running it, so the
+    /// user still sees and confirms exactly what is about to execute.
+    /// </summary>
+    public void Prefill(string prompt)
+    {
+        InputBox.Text = prompt;
+        InputBox.Select(prompt.Length, 0);
+        InputBox.Focus(Microsoft.UI.Xaml.FocusState.Pointer);
+    }
+
     private async Task RunAsync(string prompt)
     {
         if (_tasks is null || _executor is null || _registry is null || _approvals is null)
@@ -442,8 +453,8 @@ public sealed partial class CommandCenterWindow : Window
 
         ApprovalTitle.Text = $"需要批准 · {displayName}";
         ApprovalRiskText.Text = ToolViewMapper.RiskLabel(risk);
-        ApprovalRiskChip.Background = UiBrushes.Get(ToolViewMapper.RiskBackgroundKey(risk), "#FFF0F2F5");
-        ApprovalRiskText.Foreground = UiBrushes.Get(ToolViewMapper.RiskBrushKey(risk), "#FF52565A");
+        ApprovalRiskChip.Background = UiBrushes.Get(ToolViewMapper.RiskBackgroundKey(risk), UiBrushes.Fallback.ChipBackground);
+        ApprovalRiskText.Foreground = UiBrushes.Get(ToolViewMapper.RiskBrushKey(risk), UiBrushes.Fallback.ChipForeground);
         ApprovalArgsText.Text = plan.ArgumentsJson;
         ApprovalNoteText.Text = approval.Reversible
             ? "该操作可逆。"
@@ -667,7 +678,7 @@ public sealed partial class CommandCenterWindow : Window
             VerticalAlignment = VerticalAlignment.Center,
             Fill = UiBrushes.Get(
                 isError ? TaskViewMapper.StatusErrorBrushKey : "AccentBrush",
-                isError ? "#FFE0484A" : "#FF5B8DEF"),
+                isError ? UiBrushes.Fallback.Error : UiBrushes.Fallback.Accent),
         };
 
         var label = new TextBlock
@@ -680,7 +691,7 @@ public sealed partial class CommandCenterWindow : Window
 
         if (isError)
         {
-            label.Foreground = UiBrushes.Get(TaskViewMapper.StatusErrorBrushKey, "#FFE0484A");
+            label.Foreground = UiBrushes.Get(TaskViewMapper.StatusErrorBrushKey, UiBrushes.Fallback.Error);
         }
 
         var row = new StackPanel
@@ -715,7 +726,7 @@ public sealed partial class CommandCenterWindow : Window
         var check = new Path
         {
             Data = geometry,
-            Stroke = UiBrushes.Get("AccentBrush", "#FF5B8DEF"),
+            Stroke = UiBrushes.Get("AccentBrush", UiBrushes.Fallback.Accent),
             StrokeThickness = 2,
             Width = 18,
             Height = 18,

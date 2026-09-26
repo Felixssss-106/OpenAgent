@@ -46,8 +46,8 @@ public sealed partial class ToolsPage : Page
                 Description = Describe(tool),
                 Glyph = ToolViewMapper.Glyph(tool.Id),
                 RiskLabel = ToolViewMapper.RiskLabel(tool.Risk),
-                RiskBackground = UiBrushes.Get(ToolViewMapper.RiskBackgroundKey(tool.Risk), "#FFF0F2F5"),
-                RiskForeground = UiBrushes.Get(ToolViewMapper.RiskBrushKey(tool.Risk), "#FF52565A"),
+                RiskBackground = UiBrushes.Get(ToolViewMapper.RiskBackgroundKey(tool.Risk), UiBrushes.Fallback.ChipBackground),
+                RiskForeground = UiBrushes.Get(ToolViewMapper.RiskBrushKey(tool.Risk), UiBrushes.Fallback.ChipForeground),
             })
             .ToList();
 
@@ -74,6 +74,6 @@ public class ToolItem
     public string Description { get; set; } = string.Empty;
     public string Glyph { get; set; } = string.Empty;
     public string RiskLabel { get; set; } = string.Empty;
-    public Brush RiskBackground { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
-    public Brush RiskForeground { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+    public Brush RiskBackground { get; set; } = UiBrushes.FromHex(UiBrushes.Fallback.StatusNeutral);
+    public Brush RiskForeground { get; set; } = UiBrushes.FromHex(UiBrushes.Fallback.StatusNeutral);
 }

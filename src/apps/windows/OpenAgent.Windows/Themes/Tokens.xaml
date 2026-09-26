@@ -6,24 +6,29 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <Color x:Key="BgCanvasColor">#FFF8FAFC</Color>
-            <Color x:Key="BgSurfaceColor">#FFFCFDFF</Color>
+            <Color x:Key="BgCanvasColor">#FFFFFFFF</Color>
+            <Color x:Key="BgSurfaceColor">#FFF7F7FA</Color>
             <Color x:Key="BgRaisedColor">#FFFEFFFF</Color>
-            <Color x:Key="BgSunkenColor">#FFF0F3F5</Color>
-            <Color x:Key="BgInsetColor">#FFE9EBEE</Color>
-            <Color x:Key="BorderSubtleColor">#FFE0E3E6</Color>
-            <Color x:Key="BorderDefaultColor">#FFCED1D5</Color>
-            <Color x:Key="BorderStrongColor">#FFA1A5A9</Color>
-            <Color x:Key="TextPrimaryColor">#FF14181C</Color>
-            <Color x:Key="TextSecondaryColor">#FF52565A</Color>
-            <Color x:Key="TextTertiaryColor">#FF7D8185</Color>
-            <Color x:Key="TextQuaternaryColor">#FFA1A5A9</Color>
+            <Color x:Key="BgSunkenColor">#FFF2F2F7</Color>
+            <Color x:Key="BgInsetColor">#FFE5E5EA</Color>
+            <Color x:Key="BorderSubtleColor">#FFE5E5EA</Color>
+            <Color x:Key="BorderDefaultColor">#FFD1D1D6</Color>
+            <Color x:Key="BorderStrongColor">#FFAEAEB2</Color>
+            <Color x:Key="TextPrimaryColor">#FF1D1D1F</Color>
+            <Color x:Key="TextSecondaryColor">#FF6E6E73</Color>
+            <Color x:Key="TextTertiaryColor">#FF8E8E93</Color>
+            <Color x:Key="TextQuaternaryColor">#FFAEAEB2</Color>
             <Color x:Key="TextInverseColor">#FFFCFDFF</Color>
-            <Color x:Key="AccentColor">#FF2D67BB</Color>
-            <Color x:Key="AccentHoverColor">#FF1654A9</Color>
-            <Color x:Key="AccentQuietColor">#FFE2EEFF</Color>
+            <Color x:Key="AccentColor">#FF007AFF</Color>
+            <Color x:Key="AccentHoverColor">#FF0064D6</Color>
+            <Color x:Key="AccentQuietColor">#FFE8F2FF</Color>
             <Color x:Key="AccentTextColor">#FF174F9E</Color>
-            <Color x:Key="OnAccentColor">#FFFDFDFF</Color>
+            <Color x:Key="OnAccentColor">#FFFFFFFF</Color>
+            <Color x:Key="SidebarColor">#FFF2F2F7</Color>
+            <Color x:Key="SidebarAccentColor">#FFE5E5EA</Color>
+            <Color x:Key="TabHighlightColor">#FFFFFFFF</Color>
+            <Color x:Key="IconColor">#FF1D1D1F</Color>
+            <Color x:Key="IconMutedColor">#FF8E8E93</Color>
             <Color x:Key="FocusRingColorColor">#733C79D1</Color>
             <Color x:Key="ScrimColor">#521B2025</Color>
             <Color x:Key="RiskSafeColor">#FF46607C</Color>
@@ -36,10 +41,13 @@
             <Color x:Key="RiskHighBgColor">#FFFFEAE5</Color>
             <Color x:Key="RiskCriticalColor">#FFAA001F</Color>
             <Color x:Key="RiskCriticalBgColor">#FFFFE4E1</Color>
-            <Color x:Key="StatusOnlineColor">#FF067D4D</Color>
-            <Color x:Key="StatusPendingColor">#FFAA6A00</Color>
+            <Color x:Key="StatusOnlineColor">#FF34C759</Color>
+            <Color x:Key="StatusOnlineBgColor">#FFE9F9EE</Color>
+            <Color x:Key="StatusPendingColor">#FFFF9500</Color>
+            <Color x:Key="StatusPendingBgColor">#FFFFF4E5</Color>
             <Color x:Key="StatusOfflineColor">#FF8F9397</Color>
-            <Color x:Key="StatusErrorColor">#FFBA2B2E</Color>
+            <Color x:Key="StatusErrorColor">#FFFF3B30</Color>
+            <Color x:Key="StatusErrorBgColor">#FFFFECEA</Color>
             <SolidColorBrush x:Key="BgCanvasBrush" Color="{StaticResource BgCanvasColor}" />
             <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurfaceColor}" />
             <SolidColorBrush x:Key="BgRaisedBrush" Color="{StaticResource BgRaisedColor}" />
@@ -58,6 +66,11 @@
             <SolidColorBrush x:Key="AccentQuietBrush" Color="{StaticResource AccentQuietColor}" />
             <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource AccentTextColor}" />
             <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
+            <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
+            <SolidColorBrush x:Key="SidebarAccentBrush" Color="{StaticResource SidebarAccentColor}" />
+            <SolidColorBrush x:Key="TabHighlightBrush" Color="{StaticResource TabHighlightColor}" />
+            <SolidColorBrush x:Key="IconBrush" Color="{StaticResource IconColor}" />
+            <SolidColorBrush x:Key="IconMutedBrush" Color="{StaticResource IconMutedColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
             <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
@@ -71,29 +84,37 @@
             <SolidColorBrush x:Key="RiskCriticalBrush" Color="{StaticResource RiskCriticalColor}" />
             <SolidColorBrush x:Key="RiskCriticalBgBrush" Color="{StaticResource RiskCriticalBgColor}" />
             <SolidColorBrush x:Key="StatusOnlineBrush" Color="{StaticResource StatusOnlineColor}" />
+            <SolidColorBrush x:Key="StatusOnlineBgBrush" Color="{StaticResource StatusOnlineBgColor}" />
             <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
+            <SolidColorBrush x:Key="StatusPendingBgBrush" Color="{StaticResource StatusPendingBgColor}" />
             <SolidColorBrush x:Key="StatusOfflineBrush" Color="{StaticResource StatusOfflineColor}" />
             <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}" />
+            <SolidColorBrush x:Key="StatusErrorBgBrush" Color="{StaticResource StatusErrorBgColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-            <Color x:Key="BgCanvasColor">#FF090D10</Color>
-            <Color x:Key="BgSurfaceColor">#FF0F1317</Color>
+            <Color x:Key="BgCanvasColor">#FF0A0A0A</Color>
+            <Color x:Key="BgSurfaceColor">#FF1C1C1E</Color>
             <Color x:Key="BgRaisedColor">#FF181C21</Color>
-            <Color x:Key="BgSunkenColor">#FF05080B</Color>
-            <Color x:Key="BgInsetColor">#FF1F2328</Color>
-            <Color x:Key="BorderSubtleColor">#FF1B2024</Color>
-            <Color x:Key="BorderDefaultColor">#FF2B3035</Color>
-            <Color x:Key="BorderStrongColor">#FF4C5055</Color>
-            <Color x:Key="TextPrimaryColor">#FFF1F4F6</Color>
-            <Color x:Key="TextSecondaryColor">#FFADB1B6</Color>
-            <Color x:Key="TextTertiaryColor">#FF82878B</Color>
-            <Color x:Key="TextQuaternaryColor">#FF5F6468</Color>
+            <Color x:Key="BgSunkenColor">#FF000000</Color>
+            <Color x:Key="BgInsetColor">#FF2C2C2E</Color>
+            <Color x:Key="BorderSubtleColor">#FF2C2C2E</Color>
+            <Color x:Key="BorderDefaultColor">#FF3A3A3C</Color>
+            <Color x:Key="BorderStrongColor">#FF48484A</Color>
+            <Color x:Key="TextPrimaryColor">#FFF5F5F7</Color>
+            <Color x:Key="TextSecondaryColor">#FFAEAEB2</Color>
+            <Color x:Key="TextTertiaryColor">#FF8E8E93</Color>
+            <Color x:Key="TextQuaternaryColor">#FF6E6E73</Color>
             <Color x:Key="TextInverseColor">#FF090D10</Color>
-            <Color x:Key="AccentColor">#FF6499E8</Color>
-            <Color x:Key="AccentHoverColor">#FF78ACF9</Color>
-            <Color x:Key="AccentQuietColor">#FF17273E</Color>
+            <Color x:Key="AccentColor">#FF2E8DFF</Color>
+            <Color x:Key="AccentHoverColor">#FF66ABFF</Color>
+            <Color x:Key="AccentQuietColor">#FF003B82</Color>
             <Color x:Key="AccentTextColor">#FF89B9FF</Color>
-            <Color x:Key="OnAccentColor">#FF06090E</Color>
+            <Color x:Key="OnAccentColor">#FF000000</Color>
+            <Color x:Key="SidebarColor">#FF1C1C1E</Color>
+            <Color x:Key="SidebarAccentColor">#FF3A3A3C</Color>
+            <Color x:Key="TabHighlightColor">#FF3A3A3C</Color>
+            <Color x:Key="IconColor">#FFF5F5F7</Color>
+            <Color x:Key="IconMutedColor">#FF8E8E93</Color>
             <Color x:Key="FocusRingColorColor">#8070A6F5</Color>
             <Color x:Key="ScrimColor">#8F010204</Color>
             <Color x:Key="RiskSafeColor">#FF90A7C0</Color>
@@ -106,10 +127,13 @@
             <Color x:Key="RiskHighBgColor">#FF3B2119</Color>
             <Color x:Key="RiskCriticalColor">#FFFA6863</Color>
             <Color x:Key="RiskCriticalBgColor">#FF3E1D1A</Color>
-            <Color x:Key="StatusOnlineColor">#FF5CC38C</Color>
-            <Color x:Key="StatusPendingColor">#FFEBB353</Color>
+            <Color x:Key="StatusOnlineColor">#FF30D158</Color>
+            <Color x:Key="StatusOnlineBgColor">#FF12301C</Color>
+            <Color x:Key="StatusPendingColor">#FFFF9F0A</Color>
+            <Color x:Key="StatusPendingBgColor">#FF3A2A10</Color>
             <Color x:Key="StatusOfflineColor">#FF65696F</Color>
-            <Color x:Key="StatusErrorColor">#FFF66D67</Color>
+            <Color x:Key="StatusErrorColor">#FFFF453A</Color>
+            <Color x:Key="StatusErrorBgColor">#FF3A1512</Color>
             <SolidColorBrush x:Key="BgCanvasBrush" Color="{StaticResource BgCanvasColor}" />
             <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurfaceColor}" />
             <SolidColorBrush x:Key="BgRaisedBrush" Color="{StaticResource BgRaisedColor}" />
@@ -128,6 +152,11 @@
             <SolidColorBrush x:Key="AccentQuietBrush" Color="{StaticResource AccentQuietColor}" />
             <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource AccentTextColor}" />
             <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
+            <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
+            <SolidColorBrush x:Key="SidebarAccentBrush" Color="{StaticResource SidebarAccentColor}" />
+            <SolidColorBrush x:Key="TabHighlightBrush" Color="{StaticResource TabHighlightColor}" />
+            <SolidColorBrush x:Key="IconBrush" Color="{StaticResource IconColor}" />
+            <SolidColorBrush x:Key="IconMutedBrush" Color="{StaticResource IconMutedColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
             <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
@@ -141,9 +170,12 @@
             <SolidColorBrush x:Key="RiskCriticalBrush" Color="{StaticResource RiskCriticalColor}" />
             <SolidColorBrush x:Key="RiskCriticalBgBrush" Color="{StaticResource RiskCriticalBgColor}" />
             <SolidColorBrush x:Key="StatusOnlineBrush" Color="{StaticResource StatusOnlineColor}" />
+            <SolidColorBrush x:Key="StatusOnlineBgBrush" Color="{StaticResource StatusOnlineBgColor}" />
             <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
+            <SolidColorBrush x:Key="StatusPendingBgBrush" Color="{StaticResource StatusPendingBgColor}" />
             <SolidColorBrush x:Key="StatusOfflineBrush" Color="{StaticResource StatusOfflineColor}" />
             <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}" />
+            <SolidColorBrush x:Key="StatusErrorBgBrush" Color="{StaticResource StatusErrorBgColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -175,9 +207,9 @@
 
     <!-- Radii: only two steps are used for containers and pills -->
     <CornerRadius x:Key="RadiusXs">6</CornerRadius>
-    <CornerRadius x:Key="RadiusSm">10</CornerRadius>
-    <CornerRadius x:Key="RadiusMd">14</CornerRadius>
-    <CornerRadius x:Key="RadiusLg">20</CornerRadius>
+    <CornerRadius x:Key="RadiusSm">12</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">19</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">28</CornerRadius>
     <CornerRadius x:Key="RadiusXl">28</CornerRadius>
     <CornerRadius x:Key="RadiusPill">999</CornerRadius>
 

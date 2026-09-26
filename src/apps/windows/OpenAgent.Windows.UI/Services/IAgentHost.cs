@@ -29,6 +29,14 @@ public interface IAgentHost
     /// <summary>Devices currently visible to the transport.</summary>
     Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ask the shell to surface the Command Center with <paramref name="prompt"/>
+    /// already typed. Nothing executes here — the user still presses send — so a
+    /// command written on any page stays under their control instead of being
+    /// discarded by a button with nowhere to go.
+    /// </summary>
+    void RequestCommandCenter(string prompt);
 }
 
 /// <summary>

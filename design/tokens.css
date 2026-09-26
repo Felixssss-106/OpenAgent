@@ -51,7 +51,7 @@
   --rhythm: 22px;
 
   /* --- 圆角：连续圆角取向，桌面克制 / 移动更圆 ------------------------------ */
-  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+  --r-xs: 6px; --r-sm: 12px; --r-md: 19px; --r-lg: 28px; --r-xl: 28px; --r-full: 999px;
 
   /* --- 描边：深度主要靠 1px 发丝线，而非阴影 --------------------------------- */
   --hair: 1px;
@@ -244,37 +244,83 @@
    --------------------------------------------------------------------------- */
 
 [data-theme="light"] {
-  --risk-safe:      oklch(48.0% 0.055 250);
-  --risk-safe-bg:   oklch(94.5% 0.010 250);
-  --risk-low:       oklch(46.0% 0.100 165);
-  --risk-low-bg:    oklch(94.5% 0.024 165);
-  --risk-medium:    oklch(52.0% 0.130 72);
+  --bg-canvas: #FFFFFF;
+  --bg-surface: #F7F7FA;
+  --bg-sunken: #F2F2F7;
+  --bg-inset: #E5E5EA;
+  --border-subtle: #E5E5EA;
+  --border-default: #D1D1D6;
+  --border-strong: #AEAEB2;
+  --text-primary: #1D1D1F;
+  --text-secondary: #6E6E73;
+  --text-tertiary: #8E8E93;
+  --text-quaternary: #AEAEB2;
+  --accent: #007AFF;
+  --accent-hover: #0064D6;
+  --accent-quiet: #E8F2FF;
+  --on-accent: #FFFFFF;
+  --sidebar: #F2F2F7;
+  --sidebar-accent: #E5E5EA;
+  --tab-highlight: #FFFFFF;
+  --icon: #1D1D1F;
+  --icon-muted: #8E8E93;
+  --status-online: #34C759;
+  --status-online-bg: #E9F9EE;
+  --status-error: #FF3B30;
+  --status-error-bg: #FFECEA;
+  --status-pending: #FF9500;
+  --status-pending-bg: #FFF4E5;
+  --risk-safe: oklch(48.0% 0.055 250);
+  --risk-safe-bg: oklch(94.5% 0.010 250);
+  --risk-low: oklch(46.0% 0.100 165);
+  --risk-low-bg: oklch(94.5% 0.024 165);
+  --risk-medium: oklch(52.0% 0.130 72);
   --risk-medium-bg: oklch(95.5% 0.035 78);
-  --risk-high:      oklch(50.0% 0.170 32);
-  --risk-high-bg:   oklch(95.5% 0.028 32);
-  --risk-critical:  oklch(46.0% 0.195 22);
+  --risk-high: oklch(50.0% 0.170 32);
+  --risk-high-bg: oklch(95.5% 0.028 32);
+  --risk-critical: oklch(46.0% 0.195 22);
   --risk-critical-bg: oklch(94.5% 0.038 22);
-  --status-online:  oklch(52.0% 0.120 158);
-  --status-pending: oklch(58.0% 0.135 72);
   --status-offline: oklch(66.0% 0.008 250);
-  --status-error:   oklch(52.0% 0.180 25);
 }
 
 [data-theme="dark"] {
-  --risk-safe:      oklch(72.0% 0.045 250);
-  --risk-safe-bg:   oklch(26.0% 0.012 250);
-  --risk-low:       oklch(74.0% 0.115 165);
-  --risk-low-bg:    oklch(27.0% 0.032 165);
-  --risk-medium:    oklch(80.0% 0.130 78);
+  --bg-canvas: #0A0A0A;
+  --bg-surface: #1C1C1E;
+  --bg-sunken: #000000;
+  --bg-inset: #2C2C2E;
+  --border-subtle: #2C2C2E;
+  --border-default: #3A3A3C;
+  --border-strong: #48484A;
+  --text-primary: #F5F5F7;
+  --text-secondary: #AEAEB2;
+  --text-tertiary: #8E8E93;
+  --text-quaternary: #6E6E73;
+  --accent: #2E8DFF;
+  --accent-hover: #66ABFF;
+  --accent-quiet: #003B82;
+  --on-accent: #000000;
+  --sidebar: #1C1C1E;
+  --sidebar-accent: #3A3A3C;
+  --tab-highlight: #3A3A3C;
+  --icon: #F5F5F7;
+  --icon-muted: #8E8E93;
+  --status-online: #30D158;
+  --status-online-bg: #12301C;
+  --status-error: #FF453A;
+  --status-error-bg: #3A1512;
+  --status-pending: #FF9F0A;
+  --status-pending-bg: #3A2A10;
+  --risk-safe: oklch(72.0% 0.045 250);
+  --risk-safe-bg: oklch(26.0% 0.012 250);
+  --risk-low: oklch(74.0% 0.115 165);
+  --risk-low-bg: oklch(27.0% 0.032 165);
+  --risk-medium: oklch(80.0% 0.130 78);
   --risk-medium-bg: oklch(28.5% 0.040 78);
-  --risk-high:      oklch(72.0% 0.155 38);
-  --risk-high-bg:   oklch(28.0% 0.042 38);
-  --risk-critical:  oklch(70.0% 0.180 25);
+  --risk-high: oklch(72.0% 0.155 38);
+  --risk-high-bg: oklch(28.0% 0.042 38);
+  --risk-critical: oklch(70.0% 0.180 25);
   --risk-critical-bg: oklch(27.5% 0.052 25);
-  --status-online:  oklch(74.0% 0.125 158);
-  --status-pending: oklch(80.0% 0.130 78);
   --status-offline: oklch(52.0% 0.010 250);
-  --status-error:   oklch(70.0% 0.170 25);
 }
 
 /* ---------------------------------------------------------------------------

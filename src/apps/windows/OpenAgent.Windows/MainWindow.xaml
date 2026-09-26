@@ -28,19 +28,15 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border
+                    <!-- The actual brand mark rather than a stock contact glyph;
+                         Assets/tray.png is the same ring the installer .ico and the
+                         Android launcher icons are generated from. -->
+                    <Image
                         Grid.Column="0"
                         Width="28"
                         Height="28"
-                        CornerRadius="8"
-                        Background="{ThemeResource AccentBrush}">
-                        <FontIcon
-                            Glyph="&#xE99A;"
-                            FontSize="14"
-                            Foreground="{ThemeResource OnAccentBrush}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
+                        Source="ms-appx:///Assets/tray.png"
+                        Stretch="Uniform" />
                     <TextBlock
                         Grid.Column="1"
                         Text="OpenAgent"
@@ -67,8 +63,14 @@
                     <NavigationViewItem.Content>
                         <Grid>
                             <TextBlock Text="任务" VerticalAlignment="Center" />
-                            <InfoBadge
-                                Value="4"
+                            <!-- Plain count, right-aligned: the design shows a quiet
+                                 number here, not an attention badge. -->
+                            <TextBlock
+                                x:Name="TaskCount"
+                                Text="0"
+                                Visibility="Collapsed"
+                                Style="{StaticResource TypeCaption}"
+                                Foreground="{ThemeResource TextQuaternaryBrush}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Margin="0,0,4,0" />
@@ -83,8 +85,12 @@
                     <NavigationViewItem.Content>
                         <Grid>
                             <TextBlock Text="设备" VerticalAlignment="Center" />
-                            <InfoBadge
-                                Value="2"
+                            <TextBlock
+                                x:Name="DeviceCount"
+                                Text="0"
+                                Visibility="Collapsed"
+                                Style="{StaticResource TypeCaption}"
+                                Foreground="{ThemeResource TextQuaternaryBrush}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Margin="0,0,4,0" />
@@ -123,7 +129,7 @@
 
             <NavigationView.PaneFooter>
                 <TextBlock
-                    Text="OpenAgent 0.4.2"
+                    x:Name="VersionText"
                     Style="{StaticResource TypeCaption}"
                     Foreground="{ThemeResource TextQuaternaryBrush}"
                     Margin="16,0,16,16" />

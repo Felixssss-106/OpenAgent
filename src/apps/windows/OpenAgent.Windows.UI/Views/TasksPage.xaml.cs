@@ -50,8 +50,8 @@ public sealed partial class TasksPage : Page
                     ? TaskViewMapper.StatusLabel(task.Status)
                     : $"{TaskViewMapper.StatusLabel(task.Status)} · {task.Error}",
                 DurationText = TaskViewMapper.DurationText(task, now),
-                StatusBrush = UiBrushes.Get(TaskViewMapper.StatusBrushKey(task.Status), "#FF8A8F98"),
-                StatusTextBrush = UiBrushes.Get(TaskViewMapper.StatusTextBrushKey(task.Status), "#FF7D8185"),
+                StatusBrush = UiBrushes.Get(TaskViewMapper.StatusBrushKey(task.Status), UiBrushes.Fallback.StatusNeutral),
+                StatusTextBrush = UiBrushes.Get(TaskViewMapper.StatusTextBrushKey(task.Status), UiBrushes.Fallback.StatusText),
             })
             .ToList();
 
@@ -102,6 +102,6 @@ public class TaskItem
     public string Name { get; set; } = string.Empty;
     public string StatusLabel { get; set; } = string.Empty;
     public string DurationText { get; set; } = string.Empty;
-    public Brush StatusBrush { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
-    public Brush StatusTextBrush { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+    public Brush StatusBrush { get; set; } = UiBrushes.FromHex(UiBrushes.Fallback.StatusNeutral);
+    public Brush StatusTextBrush { get; set; } = UiBrushes.FromHex(UiBrushes.Fallback.StatusNeutral);
 }

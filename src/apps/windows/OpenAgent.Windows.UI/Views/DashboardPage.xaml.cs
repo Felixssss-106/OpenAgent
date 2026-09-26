@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
@@ -37,7 +38,9 @@ public sealed partial class DashboardPage : Page
         if (string.IsNullOrEmpty(text))
             return;
 
-        // TODO: Route to command center / agent service
+        // Hand it to the Command Center, which owns the real execution pipeline.
+        // This used to clear the box and drop the command on the floor.
+        AgentHost.Current.RequestCommandCenter(text);
         CommandInput.Text = string.Empty;
     }
 }

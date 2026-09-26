@@ -73,4 +73,7 @@ internal sealed class AgentHostAdapter : IAgentHost
                 Metrics: device.Metrics ?? string.Empty))
             .ToArray();
     }
+
+    public void RequestCommandCenter(string prompt) =>
+        ((App)Microsoft.UI.Xaml.Application.Current).ShowCommandCenter(prompt);
 }

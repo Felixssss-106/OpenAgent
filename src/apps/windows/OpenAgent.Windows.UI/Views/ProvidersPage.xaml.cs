@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
@@ -35,5 +36,5 @@ public class ProviderItem
     public string Name { get; set; } = "";
     public string Model { get; set; } = "";
     public string StatusLabel { get; set; } = "";
-    public Brush StatusBrush { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+    public Brush StatusBrush { get; set; } = UiBrushes.FromHex(UiBrushes.Fallback.StatusNeutral);
 }

@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="48,40,48,24">
+    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="{StaticResource ContentPadding}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -53,7 +53,7 @@
                             Grid.Column="0"
                             Width="32"
                             Height="32"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource RadiusSm}"
                             Background="{ThemeResource BgInsetBrush}">
                             <FontIcon
                                 Glyph="{x:Bind Glyph}"

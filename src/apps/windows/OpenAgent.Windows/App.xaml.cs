@@ -209,16 +209,19 @@ public partial class App : Application
         }
     }
 
-    public void ShowCommandCenter()
+    public void ShowCommandCenter(string? prefill = null)
     {
-        if (_commandCenter is not null)
+        if (_commandCenter is null)
         {
-            _commandCenter.Activate();
-            return;
+            _commandCenter = new CommandCenterWindow();
+            _commandCenter.Closed += (_, _) => _commandCenter = null;
         }
 
-        _commandCenter = new CommandCenterWindow();
-        _commandCenter.Closed += (_, _) => _commandCenter = null;
+        if (!string.IsNullOrWhiteSpace(prefill))
+        {
+            _commandCenter.Prefill(prefill);
+        }
+
         _commandCenter.Activate();
     }
 

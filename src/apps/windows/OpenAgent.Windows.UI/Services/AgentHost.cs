@@ -55,4 +55,8 @@ public sealed class NullAgentHost : IAgentHost
     public Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<DeviceSummary>>(Array.Empty<DeviceSummary>());
+
+    public void RequestCommandCenter(string prompt)
+    {
+    }
 }

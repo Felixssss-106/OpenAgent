@@ -53,7 +53,16 @@ def oklch_to_srgb(lightness: float, chroma: float, hue: float):
 
 
 def to_hex(value: str) -> str:
-    """'oklch(52.0% 0.145 258)' or 'oklch(24% 0.012 250 / 0.32)' -> '#AARRGGBB'."""
+    """'#RRGGBB', '#AARRGGBB' or 'oklch(52.0% 0.145 258 / 0.32)' -> '#AARRGGBB'.
+
+    Pixso variables are plain hex and scripts/sync-pixso-tokens.py writes them
+    straight into tokens.css, so both spellings have to work here.
+    """
+    hex_match = re.match(r"^\s*#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})\s*$", value)
+    if hex_match:
+        digits = hex_match.group(1).upper()
+        return digits if len(digits) == 8 else f"#FF{digits}"
+
     match = re.search(
         r"oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*(?:/\s*([\d.]+)\s*)?\)", value
     )
@@ -87,19 +96,22 @@ def parse_block(css: str, selector: str) -> dict:
     return out
 
 
-# Tokens that are exposed as brushes in WinUI.
+# Tokens that are exposed as brushes in WinUI. Names are the ones the XAML already
+# references; Pixso's "primary" arrives here as "accent" (see sync-pixso-tokens.py).
 COLOUR_TOKENS = [
     "bg-canvas", "bg-surface", "bg-raised", "bg-sunken", "bg-inset",
     "border-subtle", "border-default", "border-strong",
     "text-primary", "text-secondary", "text-tertiary", "text-quaternary", "text-inverse",
     "accent", "accent-hover", "accent-quiet", "accent-text", "on-accent",
+    "sidebar", "sidebar-accent", "tab-highlight", "icon", "icon-muted",
     "focus-ring-color", "scrim",
 ]
 
 RISK_TOKENS = [
     "risk-safe", "risk-safe-bg", "risk-low", "risk-low-bg", "risk-medium", "risk-medium-bg",
     "risk-high", "risk-high-bg", "risk-critical", "risk-critical-bg",
-    "status-online", "status-pending", "status-offline", "status-error",
+    "status-online", "status-online-bg", "status-pending", "status-pending-bg",
+    "status-offline", "status-error", "status-error-bg",
 ]
 
 

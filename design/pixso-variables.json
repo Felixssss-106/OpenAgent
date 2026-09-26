@@ -1,0 +1,274 @@
+{
+  "variableSets": {
+    "OpenAgent Color": {
+      "modes": [
+        "Light",
+        "Dark"
+      ]
+    },
+    "OpenAgent Dimension": {
+      "modes": [
+        "Default"
+      ]
+    }
+  },
+  "variables": {
+    "text-primary": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#1D1D1F",
+        "Dark": "#F5F5F7"
+      }
+    },
+    "bg-inset": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#E5E5EA",
+        "Dark": "#2C2C2E"
+      }
+    },
+    "bg-sunken": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#F2F2F7",
+        "Dark": "#000000"
+      }
+    },
+    "bg-surface": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#F7F7FA",
+        "Dark": "#1C1C1E"
+      }
+    },
+    "bg-canvas": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FFFFFF",
+        "Dark": "#0A0A0A"
+      }
+    },
+    "text-secondary": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#6E6E73",
+        "Dark": "#AEAEB2"
+      }
+    },
+    "text-tertiary": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#8E8E93",
+        "Dark": "#8E8E93"
+      }
+    },
+    "text-quaternary": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#AEAEB2",
+        "Dark": "#6E6E73"
+      }
+    },
+    "border-subtle": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#E5E5EA",
+        "Dark": "#2C2C2E"
+      }
+    },
+    "border-default": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#D1D1D6",
+        "Dark": "#3A3A3C"
+      }
+    },
+    "border-strong": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#AEAEB2",
+        "Dark": "#48484A"
+      }
+    },
+    "primary": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#007AFF",
+        "Dark": "#2E8DFF"
+      }
+    },
+    "primary-hover": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#0064D6",
+        "Dark": "#66ABFF"
+      }
+    },
+    "primary-quiet": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#E8F2FF",
+        "Dark": "#003B82"
+      }
+    },
+    "primary-foreground": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FFFFFF",
+        "Dark": "#000000"
+      }
+    },
+    "success": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#34C759",
+        "Dark": "#30D158"
+      }
+    },
+    "success-surface": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#E9F9EE",
+        "Dark": "#12301C"
+      }
+    },
+    "error": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FF3B30",
+        "Dark": "#FF453A"
+      }
+    },
+    "error-surface": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FFECEA",
+        "Dark": "#3A1512"
+      }
+    },
+    "warning": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FF9500",
+        "Dark": "#FF9F0A"
+      }
+    },
+    "warning-surface": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FFF4E5",
+        "Dark": "#3A2A10"
+      }
+    },
+    "icon": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#1D1D1F",
+        "Dark": "#F5F5F7"
+      }
+    },
+    "icon-muted": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#8E8E93",
+        "Dark": "#8E8E93"
+      }
+    },
+    "sidebar": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#F2F2F7",
+        "Dark": "#1C1C1E"
+      }
+    },
+    "sidebar-accent": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#E5E5EA",
+        "Dark": "#3A3A3C"
+      }
+    },
+    "radius-sm": {
+      "type": "number",
+      "value": 12
+    },
+    "radius-m": {
+      "type": "number",
+      "value": 19
+    },
+    "radius-lg": {
+      "type": "number",
+      "value": 28
+    },
+    "radius-pill": {
+      "type": "number",
+      "value": 999
+    },
+    "space-1": {
+      "type": "number",
+      "value": 4
+    },
+    "space-2": {
+      "type": "number",
+      "value": 8
+    },
+    "space-3": {
+      "type": "number",
+      "value": 12
+    },
+    "space-4": {
+      "type": "number",
+      "value": 16
+    },
+    "space-5": {
+      "type": "number",
+      "value": 24
+    },
+    "space-6": {
+      "type": "number",
+      "value": 32
+    },
+    "space-7": {
+      "type": "number",
+      "value": 48
+    },
+    "space-8": {
+      "type": "number",
+      "value": 64
+    },
+    "tab-highlight": {
+      "type": "color",
+      "variableSet": "OpenAgent Color",
+      "values": {
+        "Light": "#FFFFFF",
+        "Dark": "#3A3A3C"
+      }
+    }
+  },
+  "instruction": "You MUST use these variables with $ prefix instead of hardcoding. Use write_variables for variable set and variable create/update/rename/delete."
+}

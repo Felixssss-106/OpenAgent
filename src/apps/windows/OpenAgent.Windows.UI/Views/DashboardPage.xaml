@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
 
         <!-- Content area -->
-        <Grid Grid.Row="0" Padding="48,40,48,24">
+        <Grid Grid.Row="0" Padding="{StaticResource ContentPadding}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -26,10 +26,11 @@
                 LineHeight="56"
                 Margin="0,0,0,16" />
 
-            <!-- Status pill -->
+            <!-- Status pill. bg-inset, not bg-sunken: sunken is pure black in the
+                 dark theme, which turned this into an unreadable hole. -->
             <Border
                 Grid.Row="1"
-                Background="{ThemeResource BgSunkenBrush}"
+                Background="{ThemeResource BgInsetBrush}"
                 BorderBrush="{ThemeResource BorderSubtleBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource RadiusPill}"
@@ -93,7 +94,7 @@
                             Grid.Column="0"
                             Background="Transparent"
                             BorderThickness="0"
-                            PlaceholderText="再让它按拍摄日期分成子文件夹…"
+                            PlaceholderText="输入指令…"
                             FontSize="15"
                             VerticalAlignment="Center" />
                         <TextBlock
