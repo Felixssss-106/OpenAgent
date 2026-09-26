@@ -40,6 +40,10 @@ CASES = [
     ("29", "artifacts/shots/raw-devices-dark.png", "dark"),
     ("07", "artifacts/shots/raw-agent-light.png", "light"),
     ("08", "artifacts/shots/raw-agent-dark.png", "dark"),
+    # The 对话态 is not reachable on an emulator (no host), and the instrumented frame
+    # that renders it came back scrolled, with the composer half under the navigation
+    # scrim -- an unusable input, so it is not listed as a case. Artboards 09/10 rest on
+    # the held-frame comparison in docs/dev-log.md instead.
 ]
 
 
@@ -116,14 +120,18 @@ def main():
             print(f"  {'ok  ' if ok else 'FAIL'}  card hairline at native scale: {px} "
                   f"(want near {HAIR[theme]})")
 
+        # Both sides are already at the artboard's 390dp scale, so compare magnitudes
+        # directly. Presence alone is not enough: a frame that lost 13/14ths of its
+        # accent still has "some", and a gate that accepts that is decoration.
         dp = accent_count(d, theme)
         bp = accent_count(b, theme)
         if dp < 30:
             print(f"  --    artboard has no accent here ({dp}px); skipping")
         else:
-            ok = bp >= 30
+            ok = dp * 0.4 <= bp <= dp * 2.5
             failed += 0 if ok else 1
-            print(f"  {'ok  ' if ok else 'FAIL'}  accent {ACCENT[theme]}: design {dp}px build {bp}px")
+            print(f"  {'ok  ' if ok else 'FAIL'}  accent {ACCENT[theme]}: design {dp}px build {bp}px "
+                  f"(want {int(dp * 0.4)}..{int(dp * 2.5)} at 390 scale)")
         print()
 
     print(f"failures: {failed}")

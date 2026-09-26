@@ -1327,6 +1327,38 @@ start screen) failed the hairline check for a card that isn't there. Added to th
 release flow next to `ui-verify.sh`. Verification AVD deleted.
 
 
+## 2026-09-27 · Trying to extend the phone gate to the chat state, and finding the gate was soft
+
+**Attempt** — artboards 09/10 had never been measured numerically, only compared by eye,
+so the instrumented chat frame was captured at native 1080 resolution and added to
+`ui-android-audit.py`.
+
+**The input was bad, and it was not made to look good.** The frame came back scrolled:
+the message list was off-screen and the composer sat half under the navigation-bar
+scrim. Rather than tune a threshold until a broken capture "passed", the two chat cases
+were dropped with a comment saying why, and 09/10 stay covered by the held-frame
+comparison already recorded.
+
+**But the attempt exposed a soft check.** The build showed 32 accent pixels against the
+artboard's 1441 and the audit **still reported ok**, because the rule was "at least 30
+pixels exist". A gate that accepts a 13× deficit is decoration. Fixed to compare
+magnitudes at the same 390dp scale (`design × 0.4 … design × 2.5`).
+
+**And a second bug found on the way**: the first fix divided the build count by
+resolution scale a second time, even though the loader had already resized to 390 — which
+made every page fail (build 69px read as "9px"). Both sides are at 390 now, no division.
+
+**Verified three ways**
+- current release APK: **exit 0, zero failures** (gutter 19 vs 20, hairline exactly
+  (229,229,234) / (44,44,46), accent 696/682, 718/690, 68/69, 86/79, 40/73, 80/75);
+- pre-fix capture → `FAIL gutter: design 20dp build 23dp` + `FAIL card hairline: None`,
+  exit 1;
+- the bad chat frame, used as a negative control this time → `FAIL accent: design 696px
+  build 32px (want 278..1740)` — the deficit the old rule let through.
+
+Verification AVD deleted.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
