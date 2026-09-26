@@ -1359,6 +1359,51 @@ made every page fail (build 69px read as "9px"). Both sides are at 390 now, no d
 Verification AVD deleted.
 
 
+## 2026-09-27 · Widening the Windows gate from one page to all fourteen, and what the pixels refused to agree on
+
+The Windows gate only ever asserted 8 landmark colours on the agent page, so a change to
+the shell could drift every other page and still exit 0. Extended `ui-band-sweep.py` with
+a `--gate` mode that hard-asserts the sidebar chrome on all 14 pairs, which is the part
+every page shares and therefore the part with one right answer.
+
+**First run failed 12 of 14 pairs, all on the same 4px.** The artboard's nav row inked
+`y=198..215`, the build inked `y=199..211`. Row-by-row sampling settled it: two rows that
+sit 29px apart in the artboard (tops 319, 348) sit 29px apart in the build too (317, 346),
+and each band is the same height — only the *bottom* of the text differs. Band bottoms are
+where the descender of whatever glyphs happen to be there stop, which is typeface output,
+not placement. Band tops are placement. The gate now asserts tops only, and reports the
+worst height delta without failing on it. Tolerance 4px, because the observed worst top
+drift is 3px and a gate sitting on its own edge will flap on the next unrelated change.
+
+**The 30 artboards disagree with each other.** Sampling the row above the account block:
+
+```
+artboard 01 y=759: (229,229,234) uniform   ← hairline drawn
+artboard 13 y=759: (242,242,247) uniform   ← sidebar background, nothing drawn
+artboard 18 y=759: (242,242,247) uniform   ← same
+build  any page  : (229,229,234) at y=759  ← drawn everywhere
+```
+
+So the frames are internally inconsistent and the shell is consistent. Failing the build
+for one frame's oversight would be bending chrome to match a mistake, and passing it would
+mean the gate ignores real dividers. The gate's rule became directional: **every band the
+artboard draws must be present where the artboard draws it; bands only the build draws are
+reported, not failed.** Same reasoning covers the nav list, whose length is real data.
+
+**Proved the gate can fail, two ways.** Pointed it at captures taken before the shell was
+aligned to the artboards (`now-dashboard.png` → 15 failures, `dbg-settings.png` → 17, old
+`p-tasks/l-tasks/pub-settings-dark/d-tools` → 0), then made a controlled drift: copying
+`cur-agent-light.png` and sliding the sidebar's head block down 8px inside the sidebar
+column only → `exit 1`, naming exactly the five head bands that left their slots and
+leaving the six foot bands passing. Scratch capture deleted.
+
+**End-to-end**: `bash scripts/ui-verify.sh` re-shot all 14 from `artifacts/windows/win-x64`
+and exited 0 — worst landmark ΔE 0.0 (tolerance 12), chrome 0 failures, worst top 3px /
+height 4px. `AGENTS.md` §8.25 records the tops-vs-bottoms distinction and the
+frames-disagree rule, because the natural first attempt is to gate heights and then
+"fix" a 4px non-problem.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

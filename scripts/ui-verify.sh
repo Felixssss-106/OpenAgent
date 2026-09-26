@@ -2,9 +2,10 @@
 # Regenerate the Windows UI parity evidence against the shipped publish directory.
 #
 # Captures every page in both themes from artifacts/windows/win-x64 (the tree the MSI
-# is proven byte-identical to), then runs the two audits over the new captures:
-# landmark colours and row-band positions. Fails if any page did not produce a fresh
-# screenshot, and fails if any landmark colour drifts.
+# is proven byte-identical to), then runs three audits over the new captures: landmark
+# colours, row-band positions (report only), and the sidebar chrome gate. Fails if any
+# page did not produce a fresh screenshot, if a landmark colour drifts, or if chrome the
+# artboards draw is missing or misplaced in the build.
 #
 #   scripts/ui-verify.sh                # capture + audit
 #   SKIP_SHOTS=1 scripts/ui-verify.sh   # audit the existing captures only
@@ -59,12 +60,21 @@ echo
 echo "--- row bands (positions only; counts differ by content) ---"
 python scripts/ui-band-sweep.py cur
 
+echo
+echo "--- sidebar chrome (asserted, all 14 captures) ---"
+python scripts/ui-band-sweep.py --gate
+chrome=$?
+
 if [ $colours -ne 0 ]; then
     echo "FAILED: a landmark colour drifted from the artboard"
     exit 1
 fi
+if [ $chrome -ne 0 ]; then
+    echo "FAILED: sidebar chrome the artboards draw is missing or misplaced in the build"
+    exit 1
+fi
 if [ "${SKIP_SHOTS:-0}" = "1" ]; then
-    echo "OK: landmark colours match (existing captures, no re-shoot)"
+    echo "OK: landmark colours and sidebar chrome match (existing captures, no re-shoot)"
 else
-    echo "OK: 14 captures regenerated and landmark colours match"
+    echo "OK: 14 captures regenerated, landmark colours and sidebar chrome match"
 fi

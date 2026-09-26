@@ -413,6 +413,21 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 现在每拍一张都比对 `stat -c %Y` 与本次起始时间，没被重写就 `FAILED` 并退 1；
 反向也验过（把 exe 路径改坏 → `FAILED: ... was not rewritten by this run`，exit 1）。
 
+### 8.25 逐行扫描只能断言"上边界"，不能断言"下边界"
+`ui-band-sweep.py` 把侧栏按行切成墨迹带（band），第一版对每条带同时断言起点和终点，
+12/14 张直接失败——差的是 4px 的**带高**。逐像素打样才看清：同一行标签在效果图里墨到
+`y=215`，在成品里墨到 `y=211`，而**相邻两行的间距两边都是 29px**（319/348 对 317/346）。
+带高由字形下伸部决定，是字体光栅化的产物，任何边距常量都挪不动它；带上边界才是布局。
+现在只断言起点（容差 4px，实测最差 3px），终点只报数不断言。
+同一原因也让一条效果图带在成品里被切成两条（行内 1px 空隙），所以"多出来的带"只记 note。
+
+另一条只能靠打样发现的：**30 张效果图自己就不一致**——账号行上方那条分隔线在 01 里画在
+`y=759`，在 13/14/15/16/17/18 里根本没画，而外壳每张都画。这种差异绝不许去"对齐某一张"，
+门禁的口径因此是"画了的都在不在该在的位置"，而不是"两边逐条相等"。
+
+门禁有效性两向验过：把 `cur-agent-light.png` 侧栏头部整体下移 8px → exit 1 并点名 5 条带；
+拿外壳对齐前的旧图（`now-dashboard.png`、`dbg-settings.png`）当成品喂进去 → 15/17 条 FAIL。
+
 ---
 
 ## 9. 数据与安全
@@ -456,7 +471,8 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 266
-bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色并核对地标色（能失败才算门禁，见 §8.22）
+bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核对地标色 + 断言侧栏外壳几何
+#                                （能失败才算门禁，见 §8.22；几何口径见 §8.25）
 #    → Android 侧另跑：python scripts/ui-android-audit.py
 #      需要 artifacts/shots/raw-<page>-<theme>.png（adb exec-out screencap，**不要缩放**）；
 #      它查内容边距、卡片发丝描边、主色存在性，薄色只在原始分辨率上可判。
