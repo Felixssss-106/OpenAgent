@@ -5,9 +5,10 @@
 
     <Button
         x:Name="RootButton"
+        Height="43"
         Background="Transparent"
         BorderThickness="0"
-        Padding="16,14"
+        Padding="0"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
         Click="RootButton_Click">
@@ -21,15 +22,12 @@
             <TextBlock
                 Grid.Column="0"
                 x:Name="TitleBlock"
-                Style="{StaticResource TypeBody}"
-                VerticalAlignment="Center" />
+                Style="{StaticResource RowTitle}" />
 
             <TextBlock
                 Grid.Column="1"
                 x:Name="ValueBlock"
-                Style="{StaticResource TypeCaption}"
-                Foreground="{ThemeResource TextTertiaryBrush}"
-                VerticalAlignment="Center"
+                Style="{StaticResource RowNote}"
                 Margin="0,0,4,0" />
 
             <FontIcon

@@ -6,61 +6,39 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="{StaticResource ContentPadding}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Border Style="{StaticResource PageShell}">
+        <ScrollViewer
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto"
+            Padding="0,0,0,24">
+            <Grid Style="{StaticResource ContentColumn}">
+                <StackPanel>
+                <TextBlock
+                    Text="插件"
+                    Style="{StaticResource TypePageTitle}" />
+                <TextBlock
+                    Text="插件加载器尚未实现，因此这里没有可列出的插件。"
+                    Style="{StaticResource PageSubtitle}" />
+                <Border Style="{StaticResource HairLine}" />
 
-        <TextBlock
-            Grid.Row="0"
-            Text="插件"
-            Style="{StaticResource TypeTitle}"
-            Margin="0,0,0,8" />
-
-        <TextBlock
-            Grid.Row="1"
-            Text="0 个已安装"
-            Style="{StaticResource TypeCaption}"
-            Foreground="{ThemeResource TextTertiaryBrush}"
-            Margin="0,0,0,24" />
-
-        <Border
-            Grid.Row="2"
-            BorderBrush="{ThemeResource BorderSubtleBrush}"
-            BorderThickness="0,0,0,1"
-            Margin="0,0,0,16" />
-
-        <!-- Empty state -->
-        <StackPanel
-            Grid.Row="3"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="12">
-            <Border
-                Width="56"
-                Height="56"
-                CornerRadius="{StaticResource RadiusLg}"
-                Background="{ThemeResource BgSunkenBrush}"
-                HorizontalAlignment="Center">
-                <FontIcon
-                    Glyph="&#xE8A0;"
-                    FontSize="22"
-                    Foreground="{ThemeResource TextQuaternaryBrush}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center" />
-            </Border>
-            <TextBlock
-                Text="还没有安装插件"
-                Style="{StaticResource TypeHeading}"
-                HorizontalAlignment="Center" />
-            <TextBlock
-                Text="插件以独立进程运行，崩溃不会带崩主程序。"
-                Style="{StaticResource TypeCaption}"
-                Foreground="{ThemeResource TextTertiaryBrush}"
-                HorizontalAlignment="Center" />
-        </StackPanel>
-    </Grid>
+                <Border
+                    Style="{StaticResource ListCard}"
+                    Padding="24"
+                    Margin="0,20,0,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            Text="0 个已安装"
+                            FontSize="{StaticResource TypeHeadingSize}"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource TextPrimaryBrush}" />
+                        <TextBlock
+                            Text="插件以独立进程运行，崩溃不会带崩主程序。加载器与 manifest 校验完成后，已安装的插件会列在这里。"
+                            Style="{StaticResource RowNote}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Border>
 </Page>

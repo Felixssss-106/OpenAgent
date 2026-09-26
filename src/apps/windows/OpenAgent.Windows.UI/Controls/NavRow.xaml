@@ -1,0 +1,62 @@
+<UserControl
+    x:Class="OpenAgent.Windows.UI.Controls.NavRow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Sidebar / tab row exactly as the Pixso frames draw it: a 36px capsule with a
+         17px icon at x=22, label at x=49 and a quiet count on the right. The template
+         is replaced wholesale because the stock Button hover state repaints the fill
+         and the design defines no hover colour for these rows. -->
+    <Button
+        x:Name="RootButton"
+        Height="36"
+        Padding="10,0,12,0"
+        Background="Transparent"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Click="RootButton_Click">
+        <Button.Template>
+            <ControlTemplate TargetType="Button">
+                <Border
+                    x:Name="Pill"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{StaticResource Capsule36}">
+                    <ContentPresenter
+                        Padding="{TemplateBinding Padding}"
+                        VerticalAlignment="Center" />
+                </Border>
+            </ControlTemplate>
+        </Button.Template>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ContentPresenter
+                Grid.Column="0"
+                x:Name="IconHost"
+                Width="17"
+                Height="17"
+                VerticalAlignment="Center" />
+
+            <TextBlock
+                Grid.Column="1"
+                x:Name="LabelBlock"
+                Margin="10,0,0,0"
+                FontSize="14"
+                VerticalAlignment="Center"
+                TextTrimming="CharacterEllipsis" />
+
+            <TextBlock
+                Grid.Column="2"
+                x:Name="CountBlock"
+                FontSize="12"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Visibility="Collapsed" />
+        </Grid>
+    </Button>
+</UserControl>

@@ -4,138 +4,180 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:OpenAgent.Windows.UI.Controls"
     mc:Ignorable="d"
     Title="OpenAgent">
 
-    <Grid Background="{ThemeResource BgCanvasBrush}">
-        <NavigationView
-            x:Name="NavView"
-            IsBackButtonVisible="Collapsed"
-            IsSettingsVisible="False"
-            PaneDisplayMode="Left"
-            OpenPaneLength="240"
-            Background="Transparent"
-            SelectionChanged="NavView_SelectionChanged">
+    <!-- Structure copied from the artboards: a full-width 44px caption bar over a
+         body of sidebar (240) + main. The caption bar is deliberately blank — the
+         system draws the caption buttons and the design draws no window chrome. -->
+    <Grid x:Name="Root" Background="{ThemeResource BgCanvasBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <NavigationView.PaneHeader>
-                <!-- Doubles as the window drag region (MainWindow.SetTitleBar). -->
-                <Grid
-                    x:Name="AppTitleBar"
-                    Height="48"
-                    Margin="16,8,16,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Background="Transparent" />
 
-                    <!-- The actual brand mark rather than a stock contact glyph;
-                         Assets/tray.png is the same ring the installer .ico and the
-                         Android launcher icons are generated from. -->
-                    <Image
-                        Grid.Column="0"
-                        Width="28"
-                        Height="28"
-                        Source="ms-appx:///Assets/tray.png"
-                        Stretch="Uniform" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border
+                Grid.Column="0"
+                Background="{ThemeResource SidebarBrush}"
+                BorderBrush="{ThemeResource BorderSubtleBrush}"
+                BorderThickness="0,0,1,0">
+                <Grid Padding="12,16,12,24">
+                    <!-- Auto rows: a fixed row height would swallow the margins that
+                     carry the design's rhythm, collapsing the section labels. -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Brand sits in the sidebar, aligned with the nav columns:
+                         icon at x=22, label at x=49. -->
+                    <Grid Grid.Row="0" Height="36">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <PathIcon
+                            Grid.Column="0"
+                            Width="17"
+                            Height="17"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource AccentBrush}"
+                            Data="M7.5,4.6 C8.2,8.3 9,9.1 12.7,10 C9,10.9 8.2,11.7 7.5,15.4 C6.8,11.7 6,10.9 2.3,10 C6,9.1 6.8,8.3 7.5,4.6 Z M13.6,1.2 C14,3 14.4,3.4 16.2,3.8 C14.4,4.2 14,4.6 13.6,6.4 C13.2,4.6 12.8,4.2 11,3.8 C12.8,3.4 13.2,3 13.6,1.2 Z M4.1,1 C4.3,2.2 4.5,2.4 5.7,2.6 C4.5,2.8 4.3,3 4.1,4.2 C3.9,3 3.7,2.8 2.5,2.6 C3.7,2.4 3.9,2.2 4.1,1 Z" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="OpenAgent"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextPrimaryBrush}" />
+                    </Grid>
+
+                    <TextBox
+                        Grid.Row="1"
+                        x:Name="SearchBox"
+                        Margin="0,14,0,0"
+                        Style="{StaticResource SearchBox}"
+                        PlaceholderText="搜索…" />
+
                     <TextBlock
-                        Grid.Column="1"
-                        Text="OpenAgent"
-                        Style="{StaticResource TypeBody}"
-                        FontWeight="SemiBold"
-                        VerticalAlignment="Center"
-                        Margin="10,0,0,0" />
+                        Grid.Row="2"
+                        Text="工作区"
+                        Style="{StaticResource SectionLabel}"
+                        Margin="0,20,0,6" />
+
+                    <ui:NavRow
+                        Grid.Row="3"
+                        x:Name="NavAgent"
+                        Key="agent"
+                        Label="Agent"
+                       
+                        IsSelected="True"
+                        Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <PathIcon
+                                Width="17"
+                                Height="17"
+                                Data="M7.5,4.6 C8.2,8.3 9,9.1 12.7,10 C9,10.9 8.2,11.7 7.5,15.4 C6.8,11.7 6,10.9 2.3,10 C6,9.1 6.8,8.3 7.5,4.6 Z M13.6,1.2 C14,3 14.4,3.4 16.2,3.8 C14.4,4.2 14,4.6 13.6,6.4 C13.2,4.6 12.8,4.2 11,3.8 C12.8,3.4 13.2,3 13.6,1.2 Z M4.1,1 C4.3,2.2 4.5,2.4 5.7,2.6 C4.5,2.8 4.3,3 4.1,4.2 C3.9,3 3.7,2.8 2.5,2.6 C3.7,2.4 3.9,2.2 4.1,1 Z" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <ui:NavRow Grid.Row="4" x:Name="NavTasks" Key="tasks" Label="任务" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xE9D5;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <ui:NavRow Grid.Row="5" x:Name="NavDevices" Key="devices" Label="设备" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xE7F4;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <TextBlock
+                        Grid.Row="6"
+                        Text="能力"
+                        Style="{StaticResource SectionLabel}"
+                        Margin="0,20,0,6" />
+
+                    <ui:NavRow Grid.Row="7" x:Name="NavTools" Key="tools" Label="工具" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xEC7A;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <ui:NavRow Grid.Row="8" x:Name="NavProviders" Key="providers" Label="Provider" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xE774;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <ui:NavRow Grid.Row="9" x:Name="NavPlugins" Key="plugins" Label="插件" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xE8A0;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <!-- 设置 sits above the version card, below a hairline: the design
+                         keeps the one critical destination out of the very bottom slot. -->
+                    <Border
+                        Grid.Row="11"
+                        Height="1"
+                        Margin="0,0,0,12"
+                        Background="{ThemeResource BorderSubtleBrush}" />
+
+                    <ui:NavRow Grid.Row="12" x:Name="NavSettings" Key="settings" Label="设置" Invoked="Nav_Invoked">
+                        <ui:NavRow.Icon>
+                            <FontIcon Glyph="&#xE713;" FontSize="17" />
+                        </ui:NavRow.Icon>
+                    </ui:NavRow>
+
+                    <Border
+                        Grid.Row="13"
+                        Height="56"
+                        Margin="0,12,0,0"
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource Capsule56}">
+                        <StackPanel VerticalAlignment="Center" Margin="12,0,0,0">
+                            <TextBlock
+                                x:Name="VersionText"
+                                FontSize="13"
+                                Foreground="{ThemeResource TextSecondaryBrush}" />
+                            <TextBlock
+                                Text="已是最新版本"
+                                FontSize="11"
+                                Margin="0,2,0,0"
+                                Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        </StackPanel>
+                    </Border>
                 </Grid>
-            </NavigationView.PaneHeader>
+            </Border>
 
-            <NavigationView.MenuItems>
-                <NavigationViewItemHeader Content="状态" />
-
-                <NavigationViewItem Content="Dashboard" Tag="dashboard">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE80F;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Tag="tasks">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE9D5;" />
-                    </NavigationViewItem.Icon>
-                    <NavigationViewItem.Content>
-                        <Grid>
-                            <TextBlock Text="任务" VerticalAlignment="Center" />
-                            <!-- Plain count, right-aligned: the design shows a quiet
-                                 number here, not an attention badge. -->
-                            <TextBlock
-                                x:Name="TaskCount"
-                                Text="0"
-                                Visibility="Collapsed"
-                                Style="{StaticResource TypeCaption}"
-                                Foreground="{ThemeResource TextQuaternaryBrush}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Margin="0,0,4,0" />
-                        </Grid>
-                    </NavigationViewItem.Content>
-                </NavigationViewItem>
-
-                <NavigationViewItem Tag="devices">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE7F4;" />
-                    </NavigationViewItem.Icon>
-                    <NavigationViewItem.Content>
-                        <Grid>
-                            <TextBlock Text="设备" VerticalAlignment="Center" />
-                            <TextBlock
-                                x:Name="DeviceCount"
-                                Text="0"
-                                Visibility="Collapsed"
-                                Style="{StaticResource TypeCaption}"
-                                Foreground="{ThemeResource TextQuaternaryBrush}"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Margin="0,0,4,0" />
-                        </Grid>
-                    </NavigationViewItem.Content>
-                </NavigationViewItem>
-
-                <NavigationViewItemHeader Content="能力" />
-
-                <NavigationViewItem Content="工具" Tag="tools">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEC7A;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="Provider" Tag="providers">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE774;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-
-                <NavigationViewItem Content="插件" Tag="plugins">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8A0;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="设置" Tag="settings">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
-
-            <NavigationView.PaneFooter>
-                <TextBlock
-                    x:Name="VersionText"
-                    Style="{StaticResource TypeCaption}"
-                    Foreground="{ThemeResource TextQuaternaryBrush}"
-                    Margin="16,0,16,16" />
-            </NavigationView.PaneFooter>
-
-            <Frame x:Name="ContentFrame" />
-        </NavigationView>
+            <Frame Grid.Column="1" x:Name="ContentFrame" />
+        </Grid>
     </Grid>
 </Window>

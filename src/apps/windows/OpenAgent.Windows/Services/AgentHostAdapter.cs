@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OpenAgent.Agent;
 using OpenAgent.Core.Domain;
+using OpenAgent.Providers;
 using OpenAgent.Tools;
 using OpenAgent.Transport;
 using OpenAgent.Windows.UI.Services;
@@ -21,16 +22,23 @@ internal sealed class AgentHostAdapter : IAgentHost
     private readonly AgentTaskService _tasks;
     private readonly ToolRegistry _registry;
     private readonly ITransport _transport;
+    private readonly ProviderRegistry _providers;
 
-    public AgentHostAdapter(AgentTaskService tasks, ToolRegistry registry, ITransport transport)
+    public AgentHostAdapter(
+        AgentTaskService tasks,
+        ToolRegistry registry,
+        ITransport transport,
+        ProviderRegistry providers)
     {
         ArgumentNullException.ThrowIfNull(tasks);
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(transport);
+        ArgumentNullException.ThrowIfNull(providers);
 
         _tasks = tasks;
         _registry = registry;
         _transport = transport;
+        _providers = providers;
     }
 
     public Task<IReadOnlyList<AgentTask>> RecentTasksAsync(
@@ -76,4 +84,25 @@ internal sealed class AgentHostAdapter : IAgentHost
 
     public void RequestCommandCenter(string prompt) =>
         ((App)Microsoft.UI.Xaml.Application.Current).ShowCommandCenter(prompt);
+
+    /// <summary>
+    /// The default agent leads, then everything discovered on PATH. Registration
+    /// is the claim being made here — a provider appears in this list only because
+    /// the host really can hand it a prompt.
+    /// </summary>
+    public Task<IReadOnlyList<ProviderSummary>> ProvidersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var defaultId = ProviderRegistry.DefaultProviderId;
+        return Task.FromResult<IReadOnlyList<ProviderSummary>>(
+            _providers.All
+                .Select(provider => new ProviderSummary(
+                    provider.Id,
+                    provider.DisplayName,
+                    provider.Id == defaultId ? "内置 · 规则引擎" : "CLI · " + provider.Id,
+                    provider.Id == defaultId))
+                .OrderBy(provider => provider.IsDefault ? 0 : 1)
+                .ThenBy(provider => provider.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                .ToArray());
+    }
 }

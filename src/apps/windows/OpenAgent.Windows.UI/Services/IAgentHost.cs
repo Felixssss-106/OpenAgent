@@ -30,6 +30,10 @@ public interface IAgentHost
     Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
         CancellationToken cancellationToken = default);
 
+    /// <summary>Every agent the host can actually drive, default first.</summary>
+    Task<IReadOnlyList<ProviderSummary>> ProvidersAsync(
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Ask the shell to surface the Command Center with <paramref name="prompt"/>
     /// already typed. Nothing executes here — the user still presses send — so a
@@ -54,3 +58,14 @@ public sealed record DeviceSummary(
     string SystemInfo,
     /// <summary>Optional live metrics; may be empty for devices that report none.</summary>
     string Metrics);
+
+/// <summary>
+/// One agent the host can drive. <paramref name="Kind"/> is the quiet second line
+/// under the name — "内置" for the bundled agent, the CLI command for a discovered
+/// one — so the page never claims a provider is something it is not.
+/// </summary>
+public sealed record ProviderSummary(
+    string Id,
+    string DisplayName,
+    string Kind,
+    bool IsDefault);

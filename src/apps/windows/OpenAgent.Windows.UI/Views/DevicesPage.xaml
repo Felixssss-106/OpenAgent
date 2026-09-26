@@ -7,101 +7,78 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="{StaticResource ContentPadding}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Border Style="{StaticResource PageShell}">
+        <ScrollViewer
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto"
+            Padding="0,0,0,24">
+            <Grid Style="{StaticResource ContentColumn}">
+                <StackPanel>
+                <TextBlock
+                    Text="设备"
+                    Style="{StaticResource TypePageTitle}" />
+                <TextBlock
+                    x:Name="StatsText"
+                    Style="{StaticResource PageSubtitle}" />
+                <Border Style="{StaticResource HairLine}" />
 
-        <!-- Title -->
-        <TextBlock
-            Grid.Row="0"
-            Text="设备"
-            Style="{StaticResource TypeTitle}"
-            Margin="0,0,0,8" />
-
-        <!-- Stats -->
-        <TextBlock
-            Grid.Row="1"
-            x:Name="StatsText"
-            Text="2 台已配对 · 1 台在线"
-            Style="{StaticResource TypeCaption}"
-            Foreground="{ThemeResource TextTertiaryBrush}"
-            Margin="0,0,0,24" />
-
-        <!-- Separator -->
-        <Border
-            Grid.Row="2"
-            BorderBrush="{ThemeResource BorderSubtleBrush}"
-            BorderThickness="0,0,0,1"
-            Margin="0,0,0,16" />
-
-        <!-- Device list -->
-        <ListView
-            Grid.Row="3"
-            x:Name="DeviceList"
-            Background="Transparent"
-            BorderThickness="0"
-            SelectionMode="None"
-            IsItemClickEnabled="True">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:DeviceItem">
-                    <Border
-                        Background="{ThemeResource BgSurfaceBrush}"
-                        BorderBrush="{ThemeResource BorderSubtleBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource RadiusMd}"
-                        Padding="20,16"
-                        Margin="0,0,0,12">
-                        <Grid RowSpacing="6">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <!-- Name + tag -->
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-                                <TextBlock
-                                    Text="{x:Bind Name}"
-                                    Style="{StaticResource TypeBody}"
-                                    FontWeight="SemiBold" />
-                                <TextBlock
-                                    Text="&#x00B7;"
-                                    Foreground="{ThemeResource TextQuaternaryBrush}" />
-                                <TextBlock
-                                    Text="{x:Bind Tag}"
-                                    Style="{StaticResource TypeCaption}"
-                                    Foreground="{ThemeResource TextTertiaryBrush}" />
-                            </StackPanel>
-
-                            <!-- System info -->
-                            <TextBlock
-                                Grid.Row="1"
-                                Text="{x:Bind SystemInfo}"
-                                Style="{StaticResource TypeCaption}"
-                                Foreground="{ThemeResource TextTertiaryBrush}" />
-
-                            <!-- Metrics -->
-                            <TextBlock
-                                Grid.Row="2"
-                                Text="{x:Bind Metrics}"
-                                Style="{StaticResource TypeCaption}"
-                                Foreground="{ThemeResource TextSecondaryBrush}" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                </Style>
-            </ListView.ItemContainerStyle>
-        </ListView>
-    </Grid>
+                <!-- Each device is its own card, not a row in one list: the
+                     artboards give a device three lines of detail. -->
+                <ListView
+                    x:Name="DeviceList"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    SelectionMode="None"
+                    Padding="0,20,0,0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:DeviceItem">
+                            <Border
+                                Background="{ThemeResource BgSurfaceBrush}"
+                                BorderBrush="{ThemeResource BorderSubtleBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusLg}"
+                                Padding="24"
+                                Margin="0,0,0,20">
+                                <StackPanel Spacing="6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            Text="{x:Bind Name}"
+                                            FontSize="{StaticResource TypeHeadingSize}"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource TextPrimaryBrush}" />
+                                        <TextBlock
+                                            Text="·"
+                                            FontSize="{StaticResource TypeHeadingSize}"
+                                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                        <TextBlock
+                                            Text="{x:Bind Tag}"
+                                            FontSize="{StaticResource TypeHeadingSize}"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource TextPrimaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Text="{x:Bind SystemInfo}"
+                                        Style="{StaticResource RowNote}" />
+                                    <TextBlock
+                                        Text="{x:Bind Metrics}"
+                                        FontSize="{StaticResource TypeCaptionSize}"
+                                        Foreground="{ThemeResource TextSecondaryBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Border>
 </Page>

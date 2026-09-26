@@ -34,6 +34,15 @@
   --t-caption-size: 13px;   --t-caption-lh: 18px;  --t-caption-w: 400; --t-caption-ls:  0;
   --t-micro-size:   11px;   --t-micro-lh:   16px;  --t-micro-w:   600; --t-micro-ls:    0.062em;
 
+  /* --- 起始页问候语 ---------------------------------------------------------
+     不在通用阶梯里：设计稿把它当作页面唯一的展示级文字，Windows 56px、
+     Android 44px，行高 108%，强制两行（"Good" 独占一行）。
+     实测 01/02 画板：两行基线间距 60，"Good" 大写高 41。 */
+  --t-hero-size:    56px;   --t-hero-lh:    60px;  --t-hero-w:  700; --t-hero-ls: -0.022em;
+  --t-hero-mobile-size: 44px; --t-hero-mobile-lh: 48px;
+  /* 页面标题（13~18 画板实测：任务/设备/工具等页的大标题） */
+  --t-page-title-size: 30px; --t-page-title-lh: 36px; --t-page-title-w: 700;
+
   --t-display: var(--t-display-w) var(--t-display-size)/var(--t-display-lh) var(--font-display);
   --t-title:   var(--t-title-w)   var(--t-title-size)/var(--t-title-lh)     var(--font-display);
   --t-heading: var(--t-heading-w) var(--t-heading-size)/var(--t-heading-lh) var(--font-ui);
@@ -52,6 +61,41 @@
 
   /* --- 圆角：连续圆角取向，桌面克制 / 移动更圆 ------------------------------ */
   --r-xs: 6px; --r-sm: 12px; --r-md: 19px; --r-lg: 28px; --r-xl: 28px; --r-full: 999px;
+
+  /* --- 胶囊实现半径 ---------------------------------------------------------
+     设计规范里胶囊统一写 999（见 WorkBuddy 设计记忆：只有 28 与 999 两档）。
+     CSS 会把 999 钳制成"直边 + 半圆端"的体育场形，但 WinUI 的 CornerRadius 不会
+     —— 四角同为超大值时它按比例压缩，宽扁元素会被渲染成完整椭圆。
+     所以胶囊必须写成"高度的一半"。以下按设计稿实测高度列出，命名即高度。
+     实测来源：01-windows-起始页 状态胶囊 H=40/R=20、输入条 H≈67/R=33.5，
+     两者宽度随行的衰减都与 R=H/2 的胶囊模型吻合（误差 ≤2px）。 */
+  /* --- 胶囊实现半径 ---------------------------------------------------------
+     设计规范里胶囊统一写 999（见 WorkBuddy 设计记忆：只有 28 与 999 两档）。
+     CSS 会把 999 钳制成"直边 + 半圆端"的体育场形，但 WinUI 的 CornerRadius 不会
+     —— 四角同为超大值时它按比例压缩，宽扁元素会被渲染成完整椭圆。
+     所以胶囊必须写成"高度的一半"，命名即高度。以下高度全部实测自
+     design/pixso-final 的原生尺寸导出图（1 图像像素 = 1 逻辑像素）：
+       24 审批态风险标签   28 对话态按钮/输入条内小胶囊   32 审批按钮
+       36 侧栏导航项与搜索框 40 起始页系统消息胶囊        44 审批卡按钮
+       52 Android 输入框   56 Windows 输入框与版本卡
+     校验方式：沿中线最宽点向上下逐行量宽度衰减，与 D(t)=R-√(R²-t²) 吻合。 */
+  --r-capsule-24: 12px;
+  --r-capsule-28: 14px;
+  --r-capsule-32: 16px;
+  --r-capsule-36: 18px;
+  --r-capsule-40: 20px;
+  --r-capsule-44: 22px;
+  --r-capsule-52: 26px;
+  --r-capsule-56: 28px;
+
+  /* --- 布局骨架（实测自 1440×900 画板） -------------------------------------
+     标题栏全宽 44；侧栏 240，其右 1px 发丝线；主区 1200。
+     内容列宽 1008 且在主区水平居中 → 左边缘 240 + (1200-1008)/2 = 336。 */
+  --caption-height: 44px;
+  --sidebar-width: 240px;
+  --content-width: 1008px;
+  --content-width-mobile: 350px;
+
 
   /* --- 描边：深度主要靠 1px 发丝线，而非阴影 --------------------------------- */
   --hair: 1px;

@@ -29,7 +29,12 @@ public sealed partial class DashboardPage : Page
             >= 18 and < 22 => "Good evening",
             _ => "Good night"
         };
-        GreetingText.Text = greeting;
+
+        // The artboards force two lines with "Good" alone on the first; a single
+        // wrapping TextBlock would put the break somewhere else at other widths.
+        var space = greeting.IndexOf(' ');
+        GreetingLine1.Text = greeting[..space];
+        GreetingLine2.Text = greeting[(space + 1)..];
     }
 
     private void SendButton_Click(object sender, RoutedEventArgs e)

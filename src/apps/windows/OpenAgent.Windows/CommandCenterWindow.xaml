@@ -125,8 +125,9 @@
                             <Border
                                 x:Name="ApprovalRiskChip"
                                 Grid.Column="1"
-                                Padding="10,4"
-                                CornerRadius="{StaticResource RadiusPill}"
+                                Height="24"
+                                Padding="10,0"
+                                CornerRadius="{StaticResource Capsule24}"
                                 Background="{ThemeResource BgInsetBrush}"
                                 VerticalAlignment="Center">
                                 <TextBlock
@@ -165,8 +166,9 @@
                             <Button
                                 x:Name="RejectButton"
                                 Content="拒绝"
-                                CornerRadius="{StaticResource RadiusPill}"
-                                Padding="16,6"
+                                CornerRadius="{StaticResource Capsule32}"
+                                Height="32"
+                                Padding="16,0"
                                 Click="RejectButton_Click" />
                             <Button
                                 x:Name="ApproveButton"
@@ -174,8 +176,9 @@
                                 Background="{ThemeResource AccentBrush}"
                                 Foreground="{ThemeResource OnAccentBrush}"
                                 BorderThickness="0"
-                                CornerRadius="{StaticResource RadiusPill}"
-                                Padding="16,6"
+                                CornerRadius="{StaticResource Capsule32}"
+                                Height="32"
+                                Padding="16,0"
                                 Click="ApproveButton_Click" />
                         </StackPanel>
                     </Grid>
@@ -205,8 +208,9 @@
                             Background="{ThemeResource AccentBrush}"
                             Foreground="{ThemeResource OnAccentBrush}"
                             BorderThickness="0"
-                            CornerRadius="{StaticResource RadiusPill}"
-                            Padding="16,6"
+                            CornerRadius="{StaticResource Capsule32}"
+                            Height="32"
+                            Padding="16,0"
                             Click="SendButton_Click" />
                     </Grid>
                 </Border>

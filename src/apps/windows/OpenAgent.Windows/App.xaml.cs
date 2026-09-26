@@ -69,7 +69,27 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Activate();
 
-        ApplyTheme(ReadThemeSetting());
+        // Two switches exist for the screenshot comparison in scripts/ui-shot.ps1:
+        // open one page directly, and render it in a chosen theme without writing
+        // that choice to the settings store. Anything else is left alone.
+        var theme = ReadThemeSetting();
+        foreach (var argument in Environment.GetCommandLineArgs())
+        {
+            if (argument.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
+            {
+                MainWindow.NavigateTo(argument["--page=".Length..]);
+            }
+            else if (string.Equals(argument, "--theme=light", StringComparison.OrdinalIgnoreCase))
+            {
+                theme = ElementTheme.Light;
+            }
+            else if (string.Equals(argument, "--theme=dark", StringComparison.OrdinalIgnoreCase))
+            {
+                theme = ElementTheme.Dark;
+            }
+        }
+
+        ApplyTheme(theme);
 
         RegisterCommandCenterHotkey(MainWindow);
         CreateTrayIcon();
@@ -92,6 +112,7 @@ public partial class App : Application
 
         var tasks = Services.GetService<AgentTaskService>();
         var registry = Services.GetService<ToolRegistry>();
+        var providers = Services.GetService<ProviderRegistry>();
         var logger = Services.GetService<ILogger<App>>();
         transport.InboundMessage += (_, e) =>
         {
@@ -101,9 +122,9 @@ public partial class App : Application
                 "LAN inbound {Type} from {From} to {To}: {Text}",
                 e.Message.Type, e.Message.From, e.Message.To, e.Message.Text);
         };
-        if (tasks is not null && registry is not null)
+        if (tasks is not null && registry is not null && providers is not null)
         {
-            AgentHost.Register(new AgentHostAdapter(tasks, registry, transport));
+            AgentHost.Register(new AgentHostAdapter(tasks, registry, transport, providers));
         }
     }
 

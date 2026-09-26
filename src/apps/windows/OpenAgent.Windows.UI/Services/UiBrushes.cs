@@ -26,6 +26,9 @@ public static class UiBrushes
         public const string StatusText = "#FF6E6E73";
         public const string ChipBackground = "#FFE5E5EA";
         public const string ChipForeground = "#FF6E6E73";
+        public const string Quaternary = "#FFAEAEB2";
+        public const string Online = "#FF34C759";
+        public const string Transparent = "#00000000";
     }
 
     public static Brush Get(string key, string fallbackHex)

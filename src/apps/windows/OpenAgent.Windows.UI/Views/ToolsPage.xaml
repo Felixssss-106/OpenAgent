@@ -7,93 +7,65 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="{StaticResource ContentPadding}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Page.Resources>
+        <!-- One row shape for every group: the tool id on the left, its risk and
+             reversibility as coloured text on the right. -->
+        <DataTemplate x:Key="ToolRow" x:DataType="local:ToolItem">
+            <Grid Height="42">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Text="{x:Bind Name}"
+                    Style="{StaticResource RowTitle}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Text="{x:Bind RiskLabel}"
+                    FontSize="{StaticResource TypeCaptionSize}"
+                    VerticalAlignment="Center"
+                    Foreground="{x:Bind RiskForeground}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
 
-        <TextBlock
-            Grid.Row="0"
-            Text="工具"
-            Style="{StaticResource TypeTitle}"
-            Margin="0,0,0,8" />
+    <Border Style="{StaticResource PageShell}">
+        <ScrollViewer
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto"
+            Padding="0,0,0,24">
+            <Grid Style="{StaticResource ContentColumn}">
+                <StackPanel>
+                <TextBlock
+                    Text="工具"
+                    Style="{StaticResource TypePageTitle}" />
+                <TextBlock
+                    x:Name="StatsText"
+                    Style="{StaticResource PageSubtitle}" />
+                <Border Style="{StaticResource HairLine}" />
 
-        <TextBlock
-            Grid.Row="1"
-            x:Name="StatsText"
-            Style="{StaticResource TypeCaption}"
-            Foreground="{ThemeResource TextTertiaryBrush}"
-            Margin="0,0,0,24" />
-
-        <Border
-            Grid.Row="2"
-            BorderBrush="{ThemeResource BorderSubtleBrush}"
-            BorderThickness="0,0,0,1"
-            Margin="0,0,0,16" />
-
-        <ListView
-            Grid.Row="3"
-            x:Name="ToolList"
-            Background="Transparent"
-            BorderThickness="0"
-            SelectionMode="None">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:ToolItem">
-                    <Grid Padding="12,14" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border
-                            Grid.Column="0"
-                            Width="32"
-                            Height="32"
-                            CornerRadius="{StaticResource RadiusSm}"
-                            Background="{ThemeResource BgInsetBrush}">
-                            <FontIcon
-                                Glyph="{x:Bind Glyph}"
-                                FontSize="14"
-                                Foreground="{ThemeResource TextSecondaryBrush}"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
-                        </Border>
-
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="{x:Bind Name}" Style="{StaticResource TypeBody}" />
-                            <TextBlock
-                                Text="{x:Bind Description}"
-                                Style="{StaticResource TypeCaption}"
-                                Foreground="{ThemeResource TextTertiaryBrush}" />
-                        </StackPanel>
-
-                        <Border
-                            Grid.Column="2"
-                            Background="{x:Bind RiskBackground}"
-                            CornerRadius="{StaticResource RadiusPill}"
-                            Padding="10,4"
-                            VerticalAlignment="Center">
-                            <TextBlock
-                                Text="{x:Bind RiskLabel}"
-                                Style="{StaticResource TypeMicro}"
-                                Foreground="{x:Bind RiskForeground}" />
-                        </Border>
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Background" Value="{ThemeResource BgSurfaceBrush}" />
-                    <Setter Property="BorderBrush" Value="{ThemeResource BorderSubtleBrush}" />
-                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                </Style>
-            </ListView.ItemContainerStyle>
-        </ListView>
-    </Grid>
+                <!-- One card per family: the artboards group the catalogue by what
+                     a tool touches rather than one long list. -->
+                <ItemsControl x:Name="ToolGroups" Margin="0,4,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:ToolGroup">
+                            <StackPanel>
+                                <TextBlock
+                                    Text="{x:Bind Title}"
+                                    Style="{StaticResource SectionHeading}" />
+                                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                                    <ListView
+                                        ItemsSource="{x:Bind Items}"
+                                        ItemTemplate="{StaticResource ToolRow}"
+                                        Style="{StaticResource RowList}" />
+                                </Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Border>
 </Page>
