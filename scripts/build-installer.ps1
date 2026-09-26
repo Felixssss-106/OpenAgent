@@ -58,6 +58,7 @@ Write-Host 'building MSI ...'
 # harvested component is 32-bit and Windows Installer redirects ProgramFiles64Folder
 # to Program Files (x86) — ICE80 catches it, so validate right after.
 dotnet wix build installer/OpenAgent.wxs -arch x64 `
+    -ext WixToolset.UI.wixext `
     -d "Version=$Version" -d "PublishDir=$publishDir" -d "Icon=$icon" `
     -o $msi
 if ($LASTEXITCODE -ne 0) { throw "MSI build failed with exit code $LASTEXITCODE" }

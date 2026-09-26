@@ -86,8 +86,10 @@ OpenAgent/
 │   └── motion.md              # 动效真源
 └── scripts/
     ├── gen-tokens.py          # CSS → Themes/Tokens.xaml（不要手改 xaml）
+    ├── oa_mark.py             # 图形 mark 的唯一来源（形状+配色）
     ├── gen-tray-icon.py       # 托盘图标生成
     ├── gen-installer-icon.py  # 多尺寸 app.ico（安装包用）
+    ├── gen-android-icons.py   # 安卓 mipmap + 自适应图标（复用 oa_mark）
     └── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle
 ```
 

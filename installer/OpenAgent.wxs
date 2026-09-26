@@ -1,4 +1,5 @@
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
   <!--
     MSI for the unpackaged WinUI 3 build. Consumed directly and as the payload of
@@ -16,6 +17,12 @@
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of OpenAgent is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- Browse-for-folder step. Without this the install path is fixed and only
+         reachable through msiexec property overrides. WixUI_InstallDir is
+         Welcome → InstallDir → VerifyReady → Progress → Finish; it has no licence
+         page, so no RTF asset is needed. -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
     <Icon Id="AppIco" SourceFile="$(var.Icon)" />
     <Property Id="ARPPRODUCTICON" Value="AppIco" />
@@ -35,6 +42,7 @@
     <StandardDirectory Id="ProgramMenuFolder">
       <Directory Id="ApplicationMenuFolder" Name="OpenAgent" />
     </StandardDirectory>
+    <StandardDirectory Id="DesktopFolder" />
   </Fragment>
 
   <!-- The whole self-contained publish tree: app, WinUI runtime, .NET runtime.
@@ -62,6 +70,20 @@
                        Value="1"
                        KeyPath="yes" />
         <RemoveFolder Id="RemoveApplicationMenuFolder" On="uninstall" />
+      </Component>
+
+      <Component Directory="DesktopFolder" Bitness="always64">
+        <Shortcut Id="DesktopShortcut"
+                  Name="OpenAgent"
+                  Target="[INSTALLFOLDER]OpenAgent.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIco" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\OpenAgent\Installer"
+                       Name="DesktopShortcut"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
       </Component>
 
       <!-- Uninstall leaves no empty install directory behind. -->

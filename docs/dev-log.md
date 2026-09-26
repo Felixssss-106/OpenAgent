@@ -574,6 +574,46 @@ The user asked for real Windows installers (exe + msi) instead of a zip to unzip
   available here — so SmartScreen will warn. Unverified: a real per-machine
   install/uninstall through Windows Installer, which needs elevation.
 
+## 2026-09-26 · Installer shortcuts + install folder, Android launcher icons
+
+**Change**
+
+- `installer/OpenAgent.wxs`: added `ui:WixUI Id="WixUI_InstallDir"` so the install
+  path is browsable instead of fixed, and a `DesktopFolder` component so the
+  installer creates a desktop shortcut next to the Start Menu one.
+- `installer/Bundle.wxs`: swapped `WixStandardBootstrapperApplication` for
+  `WixInternalUIBootstrapperApplication`. The standard BA has no install-location
+  UI at all — confirmed by scanning the extension assembly, which contains no
+  `InstallFolder`/`Browse` authoring — so forwarding the MSI's dialogs is what makes
+  the `.exe` honour the same choice.
+- `scripts/oa_mark.py`: the mark's shape and colour moved out of
+  `gen-installer-icon.py` into one module, because a second platform now renders it.
+- `scripts/gen-android-icons.py`: emits legacy mipmaps (mdpi–xxxhdpi), an adaptive
+  icon whose background is the accent colour resource rather than a bitmap, a round
+  variant and a monochrome layer; `AndroidManifest.xml` points `icon`/`roundIcon`
+  at them. The app previously shipped no launcher icon at all.
+
+**Test**
+
+- MSI `Shortcut` table contains both rows: `StartMenuShortcut → ApplicationMenuFolder`
+  and `DesktopShortcut → DesktopFolder`.
+- `Dialog` table contains `InstallDirDlg`, and that dialog has a `Folder` PathEdit
+  plus a `ChangeFolder` push button — the browse step is really in the package.
+- Administrative install still extracts cleanly; MSI 76,317,904 B, EXE 77,049,939 B.
+- The rebuilt release APK was installed on an API 36 emulator and the icon rendered
+  correctly in system UI (blue squircle, white ring, "OpenAgent"). Measured the
+  adaptive foreground: the ring spans 56% of the 108dp canvas, inside the 66dp
+  (~61%) safe zone, so no launcher mask clips it. An earlier 1.45 scale put it at
+  68% and was rejected for exactly that reason.
+- Verification AVD deleted afterwards; pre-existing AVDs untouched.
+
+**Known issues**
+
+- The `.exe` forwarding to MSI internal UI is not runtime-verified: it needs an
+  elevated run, and this session is not administrator. The MSI side is verified.
+- Neither installer is Authenticode-signed.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

@@ -18,11 +18,12 @@
           AboutUrl="https://github.com/Felixssss-106/OpenAgent"
           UpdateUrl="https://github.com/Felixssss-106/OpenAgent/releases/latest">
 
+    <!-- Forwards to the MSI's own WixUI dialogs, so the .exe offers the same
+         "browse for install folder" step as the standalone .msi. The alternative
+         (WixStandardBootstrapperApplication) has no install-location UI at all. -->
     <BootstrapperApplication>
-      <bal:WixStandardBootstrapperApplication
-          xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
-          Theme="hyperlinkLicense"
-          LicenseUrl="https://www.apache.org/licenses/LICENSE-2.0" />
+      <bal:WixInternalUIBootstrapperApplication
+          xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" />
     </BootstrapperApplication>
 
     <Chain>

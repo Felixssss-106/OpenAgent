@@ -129,9 +129,10 @@ Get the installer from
 | `OpenAgent-1.0.0-x64.exe` | You want a normal installer with a licence and progress page. |
 | `OpenAgent-1.0.0-x64.msi` | You are deploying silently or via management software. |
 
-Both are per-machine and install to `%ProgramFiles%\OpenAgent`; the `.exe` is a
-wrapper around the same `.msi`. No .NET or Windows App SDK redistributable is
-required — the runtime ships inside the package.
+Both are per-machine, let you choose the install folder (default
+`%ProgramFiles%\OpenAgent`), and create a desktop plus Start Menu shortcut. The
+`.exe` is a wrapper around the same `.msi`. No .NET or Windows App SDK
+redistributable is required — the runtime ships inside the package.
 
 ```powershell
 # silent install, e.g. for management tooling
