@@ -1272,6 +1272,32 @@ quantisation buckets, so it exits 1 on true and false alike. The pass/fail decis
 on the landmark audit, which compares specific pixels rather than whole colour sets.
 
 
+## 2026-09-27 · The one-command gate was not capturing anything, and said it was
+
+**Caught while running the completion audit for real** — instead of quoting previous
+results, `bash scripts/ui-verify.sh` was executed end to end and its output inspected.
+It exited 0 and printed "OK: captures regenerated", but `grep -c '^client 1440x900'` on
+the log returned **0**: not one screenshot had been taken. The audits were reading the
+captures left over from an earlier run.
+
+**Two causes, both mine**
+
+- `Start-Process -FilePath '/d/WorkSpace/…/OpenAgent.exe'` — a Git Bash path handed to a
+  Windows program. PowerShell cannot start it, and because the launch output went to
+  `/dev/null`, nothing surfaced. Fixed with `cygpath -w` for every path crossing into
+  PowerShell, including `-File` for `capture-window.ps1`.
+- No assertion that the work happened. Fixed by comparing each target PNG's mtime
+  against the run's start time and failing if it was not rewritten.
+
+**Verified in both directions** — correct run: 14 `client 1440x900` lines, 14 files
+newer than the run start, landmark colours ΔE 0.0, exit **0**. Broken run (exe path
+pointed at `C:\nonexistent`): `FAILED: artifacts/shots/cur-agent-light.png was not
+rewritten by this run`, exit **1**. Recorded as AGENTS §8.23 and §8.24.
+
+The Windows evidence is therefore regenerated from the shipped publish directory by a
+single command that can actually fail, rather than being a recollection of a run.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

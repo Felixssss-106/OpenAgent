@@ -401,6 +401,18 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 另注：`scripts/ui-semantic-colour-audit.py` 是**报告**不是门禁——抗锯齿色调会让
 正确配对也留下约 4 条未匹配，真错也退 1，所以不能用它的退出码做判断。
 
+### 8.23 给 PowerShell 传 MSYS 路径会静默失败
+`bash` 里的 `$ROOT` 长成 `/d/WorkSpace/OpenAgent`，PowerShell **认不得**这种路径：
+`Start-Process -FilePath '/d/...'` 直接失败，而脚本若把它的输出丢进 `/dev/null`，
+表现就是"什么都没发生但流程继续"。跨界传路径一律先 `cygpath -w`，
+`-File` 参数同理（要写 `D:\...\scripts\capture-window.ps1`）。
+
+### 8.24 截图类脚本必须断言"这次真的写出了文件"
+`ui-verify.sh` 第一版把启动与截图的输出都吞掉了，上面那条路径错误导致**一张都没拍**，
+但它照样打印 "captures regenerated" 并退 0——审计读的是上一轮留下的旧图。
+现在每拍一张都比对 `stat -c %Y` 与本次起始时间，没被重写就 `FAILED` 并退 1；
+反向也验过（把 exe 路径改坏 → `FAILED: ... was not rewritten by this run`，exit 1）。
+
 ---
 
 ## 9. 数据与安全
