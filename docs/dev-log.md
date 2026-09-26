@@ -913,6 +913,34 @@ one after it; from the first provider row on, the two agree within 2px (214-228 
 content: real device/tool/provider/plugin data against the artboards' sample rows.
 
 
+## 2026-09-27 · Counting blue pixels to prove the send-disc fix, and two ways that went wrong first
+
+**Result**
+
+The composer fix was eyeballed before; measured now, on the release APK: accent-blue
+ink in the bottom band of artboard 07 is **968 px**, the shipped build before the
+change had **187 px** (only the selected tab — the disc was `bgInset`), after it
+**896 px** with its centroid 16px right / 14px up of the design's. So the disc is
+filled like the artboard, and the residual offset is the ~10px the emulator's
+three-button navigation bar steals from the layout — device chrome, not app geometry.
+
+**Two measurement errors worth remembering**
+
+- The first pass measured `rel-a-agent-390.png`, captured *before* the rebuild, and
+  reported the 07 pair as broken. A screenshot is only evidence for the build it came
+  from; re-shoot after every change.
+- Comparing design and build at a fixed `y` is wrong when the two have different
+  bottom chrome (gesture pill vs three buttons): the same row lands on the composer in
+  one and on empty space in the other, which is how "tab bar 34px narrower" got
+  manufactured out of nothing. Landmark-relative or whole-region measurements only.
+
+**Side finding**: the phone's connected states cannot be driven from the emulator at
+all. `UdpLanTransport` only broadcasts its own beacon and records peers it hears; it
+never answers a peer's beacon, and the emulator sits behind NAT so the broadcast never
+arrives. One-directional by design, so AGENTS §11's "still needs a real device on the
+same Wi-Fi" holds — checked rather than assumed.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
