@@ -18,6 +18,17 @@ public static class CommandPlanner
     private static readonly string[] ProcessKeywords = { "进程", "process", "tasklist" };
     private static readonly string[] SystemKeywords = { "系统", "内存", "内存占用", "cpu", "性能", "配置", "system", "info" };
 
+    /// <summary>
+    /// The default encoder escapes every non-ASCII character, so the approval card
+    /// showed a Chinese target as {"target":"\u8BB0\u4E8B\u672C"}. This JSON is
+    /// never embedded in markup, so the relaxed encoder is safe here and readable
+    /// where it is shown.
+    /// </summary>
+    private static readonly JsonSerializerOptions ArgumentsEncoding = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     /// <summary>Null means "no registered tool matches", and the caller says so.</summary>
     public static CommandPlan? Plan(string? prompt, IReadOnlyList<ToolSummary> tools)
     {
@@ -36,7 +47,7 @@ public static class CommandPlanner
             {
                 return new CommandPlan(
                     launchTool.Id,
-                    JsonSerializer.Serialize(new Dictionary<string, string> { ["target"] = target }),
+                    JsonSerializer.Serialize(new Dictionary<string, string> { ["target"] = target }, ArgumentsEncoding),
                     $"启动 {target}");
             }
         }

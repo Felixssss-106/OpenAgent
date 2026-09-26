@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using OpenAgent.Agent;
 using OpenAgent.Providers;
 using OpenAgent.Security;
@@ -27,12 +26,12 @@ public partial class App : Application
     private static Mutex? s_instanceMutex;
 
     private HotkeyManager? _hotkey;
-    private CommandCenterWindow? _commandCenter;
     private TaskbarIcon? _trayIcon;
 
     public App()
     {
         InitializeComponent();
+
     }
 
     /// <summary>The main shell, so pages can reach it without walking the tree.</summary>
@@ -134,21 +133,32 @@ public partial class App : Application
     /// </summary>
     private void CreateTrayIcon()
     {
-        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tray.png");
-        if (!File.Exists(iconPath))
-            return;
-
-        var openCommand = new XamlUICommand();
-        openCommand.ExecuteRequested += (_, _) => ShowCommandCenter();
-
-        _trayIcon = new TaskbarIcon
+        try
         {
-            ToolTipText = "OpenAgent",
-            IconSource = new BitmapImage(new Uri(iconPath)),
-            DoubleClickCommand = openCommand,
-            ContextFlyout = BuildTrayMenu(),
-            MenuActivation = PopupActivationMode.RightClick,
-        };
+            var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "tray.ico");
+            if (!File.Exists(iconPath))
+                return;
+
+            var openCommand = new XamlUICommand();
+            openCommand.ExecuteRequested += (_, _) => ShowCommandCenter();
+
+            // A real .ico rather than IconSource + PNG: H.NotifyIcon converts an
+            // ImageSource through GDI, which throws on a PNG and leaves the tray empty.
+            _trayIcon = new TaskbarIcon
+            {
+                ToolTipText = "OpenAgent",
+                Icon = new global::System.Drawing.Icon(iconPath),
+                DoubleClickCommand = openCommand,
+                ContextFlyout = BuildTrayMenu(),
+                MenuActivation = PopupActivationMode.RightClick,
+            };
+        }
+        catch (Exception ex)
+        {
+            // Losing the tray must never cost the shell its window.
+            _trayIcon = null;
+            System.Diagnostics.Debug.WriteLine($"Tray icon unavailable: {ex.Message}");
+        }
     }
 
     /// <summary>Open the shell / the command center, or quit for real.</summary>
@@ -230,20 +240,20 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// Alt+Space raises the Agent surface. It used to open a separate overlay
+    /// window with its own copy of the conversation UI; the artboards keep one
+    /// Agent screen inside the shell, so the hotkey now goes there.
+    /// </summary>
     public void ShowCommandCenter(string? prefill = null)
     {
-        if (_commandCenter is null)
+        if (MainWindow is not Windows.MainWindow shell)
         {
-            _commandCenter = new CommandCenterWindow();
-            _commandCenter.Closed += (_, _) => _commandCenter = null;
+            return;
         }
 
-        if (!string.IsNullOrWhiteSpace(prefill))
-        {
-            _commandCenter.Prefill(prefill);
-        }
-
-        _commandCenter.Activate();
+        shell.ShowFromTray();
+        shell.ShowAgentPrompt(prefill);
     }
 
     // --- Theme -------------------------------------------------------------
@@ -284,6 +294,11 @@ public partial class App : Application
             // Non-fatal: the theme still applies for this session.
         }
 
+        // Only the root element is themed. Setting Application.RequestedTheme at
+        // runtime — or even before the first window — fails the XAML engine over on
+        // this Windows App SDK (fail-fast 0xc000027b, combase RPC_E_CALL_REJECTED),
+        // so brushes fetched in code resolve their palette through the themed tree.
+        // See UiBrushes.Context.
         if (MainWindow?.Content is FrameworkElement root)
         {
             root.RequestedTheme = theme;

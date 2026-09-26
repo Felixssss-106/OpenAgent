@@ -263,4 +263,45 @@
         <Setter Property="Foreground" Value="{ThemeResource TextQuaternaryBrush}" />
     </Style>
 
+    <!-- Buttons. Each is a capsule whose radius is half its height, and none of
+         them keep the stock template: WinUI's default button paints a 1px border
+         and a grey hover fill, and the artboards show neither. -->
+    <Style x:Key="PillButton" TargetType="Button">
+        <Setter Property="CornerRadius" Value="{StaticResource Capsule44}" />
+        <Setter Property="Background" Value="{ThemeResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource OnAccentBrush}" />
+        <Setter Property="FontSize" Value="{StaticResource TypeBodySize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{StaticResource Capsule44}">
+                        <ContentPresenter
+                            Padding="{TemplateBinding Padding}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="QuietPillButton" TargetType="Button" BasedOn="{StaticResource PillButton}">
+        <Setter Property="Background" Value="{ThemeResource BgSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource BorderDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{ThemeResource TextPrimaryBrush}" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
+    <Style x:Key="BareButton" TargetType="Button" BasedOn="{StaticResource PillButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{ThemeResource TextSecondaryBrush}" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
 </ResourceDictionary>

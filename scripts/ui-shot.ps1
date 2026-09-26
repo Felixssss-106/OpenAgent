@@ -36,7 +36,12 @@ $argList = @()
 if ($Page) { $argList += "--page=$Page" }
 if ($Theme) { $argList += "--theme=$Theme" }
 
-$p = Start-Process -FilePath "$dir\OpenAgent.exe" -WorkingDirectory $dir -ArgumentList $argList -PassThru
+# Start-Process rejects an empty ArgumentList array.
+if ($argList.Count -gt 0) {
+    $p = Start-Process -FilePath "$dir\OpenAgent.exe" -WorkingDirectory $dir -ArgumentList $argList -PassThru
+} else {
+    $p = Start-Process -FilePath "$dir\OpenAgent.exe" -WorkingDirectory $dir -PassThru
+}
 Start-Sleep -Milliseconds $SettleMs
 if ($p.HasExited) { throw "app exited immediately, code $($p.ExitCode)" }
 

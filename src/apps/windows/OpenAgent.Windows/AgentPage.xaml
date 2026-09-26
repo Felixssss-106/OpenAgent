@@ -1,0 +1,402 @@
+<Page
+    x:Class="OpenAgent.Windows.AgentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Loaded="Page_Loaded"
+    NavigationCacheMode="Required">
+
+    <!-- One surface, three states, exactly as the artboards draw them
+         (design/pixso-final/01…06): 起始页 shows a greeting, one status capsule and
+         the composer; 对话态 drops the greeting and streams the exchange above the
+         same composer; 审批态 fades the meta row and composer out and puts the
+         approval card in their place. -->
+    <Grid Background="{ThemeResource BgCanvasBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            x:Name="StartState"
+            Grid.Row="0"
+            Style="{StaticResource ContentColumn}"
+            Margin="96,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="55*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="45*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="1">
+                <TextBlock
+                    x:Name="GreetingLine1"
+                    Style="{StaticResource TypeHero}"
+                    Height="60"
+                    VerticalAlignment="Top" />
+                <TextBlock
+                    x:Name="GreetingLine2"
+                    Style="{StaticResource TypeHero}"
+                    Height="60"
+                    VerticalAlignment="Top" />
+
+                <Border
+                    Height="40"
+                    Margin="0,56,0,0"
+                    Background="{ThemeResource BgSunkenBrush}"
+                    BorderBrush="{ThemeResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Capsule40}"
+                    Padding="14,0"
+                    HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon
+                            Glyph="&#xE946;"
+                            FontSize="13"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        <TextBlock
+                            x:Name="ProviderReadyText"
+                            Text="OpenAgent Native 已就绪"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextSecondaryBrush}" />
+                        <TextBlock
+                            Text="&#x00B7;"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        <TextBlock
+                            x:Name="DeviceNameText"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextSecondaryBrush}" />
+                        <TextBlock
+                            Text="&#x00B7;"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        <TextBlock
+                            Text="权限：请求批准"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer
+            x:Name="ChatScroll"
+            Grid.Row="0"
+            Visibility="Collapsed"
+            Padding="96,24,96,24"
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                x:Name="ChatColumn"
+                Style="{StaticResource ContentColumn}"
+                Spacing="0" />
+        </ScrollViewer>
+
+        <Grid Grid.Row="1" Margin="96,0,96,24">
+            <!-- meta row and composer share one lifetime: they appear together in
+                 对话态 and fade out together when the approval card takes over. -->
+            <StackPanel
+                x:Name="ComposerBlock"
+                Style="{StaticResource ContentColumn}">
+                <Grid
+                    x:Name="MetaRow"
+                    Height="28"
+                    Margin="0,0,0,14"
+                    Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Left">
+                        <Border
+                            Height="28"
+                            Background="{ThemeResource BgSurfaceBrush}"
+                            BorderBrush="{ThemeResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Capsule28}"
+                            Padding="14,0">
+                            <TextBlock
+                                x:Name="DevicePillText"
+                                FontSize="{StaticResource TypeCaptionSize}"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextSecondaryBrush}" />
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Ellipse
+                                Width="8"
+                                Height="8"
+                                VerticalAlignment="Center"
+                                Fill="{ThemeResource StatusOnlineBrush}" />
+                            <TextBlock
+                                x:Name="MetaText"
+                                FontSize="{StaticResource TypeCaptionSize}"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextTertiaryBrush}" />
+                            <TextBlock
+                                Text="权限：请求批准"
+                                FontSize="{StaticResource TypeCaptionSize}"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextTertiaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button
+                        x:Name="EffortButton"
+                        Height="28"
+                        Padding="14,0"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource QuietPillButton}"
+                        Click="EffortButton_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                Glyph="&#xE945;"
+                                FontSize="12"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource AccentBrush}" />
+                            <TextBlock
+                                x:Name="EffortLabel"
+                                FontSize="{StaticResource TypeCaptionSize}"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextSecondaryBrush}" />
+                            <FontIcon
+                                Glyph="&#xE70D;"
+                                FontSize="9"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout x:Name="EffortFlyout" ShouldConstrainToRootBounds="False">
+                                <StackPanel Width="260" Spacing="12">
+                                    <Grid>
+                                        <TextBlock
+                                            Text="思考强度"
+                                            FontSize="{StaticResource TypeBodySize}"
+                                            Foreground="{ThemeResource TextPrimaryBrush}" />
+                                        <TextBlock
+                                            x:Name="EffortFlyoutValue"
+                                            HorizontalAlignment="Right"
+                                            FontSize="{StaticResource TypeBodySize}"
+                                            Foreground="{ThemeResource AccentBrush}" />
+                                    </Grid>
+
+                                    <Slider
+                                        x:Name="EffortSlider"
+                                        Minimum="0"
+                                        Maximum="3"
+                                        StepFrequency="1"
+                                        SmallChange="1"
+                                        LargeChange="1"
+                                        ValueChanged="OnEffortChanged" />
+
+                                    <Grid>
+                                        <TextBlock Text="关闭" HorizontalAlignment="Left" FontSize="{StaticResource TypeCaptionSize}" Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                        <TextBlock Text="低" HorizontalAlignment="Left" Margin="72,0,0,0" FontSize="{StaticResource TypeCaptionSize}" Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                        <TextBlock Text="中" HorizontalAlignment="Right" Margin="0,0,72,0" FontSize="{StaticResource TypeCaptionSize}" Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                        <TextBlock Text="高" HorizontalAlignment="Right" FontSize="{StaticResource TypeCaptionSize}" Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                    </Grid>
+
+                                    <TextBlock
+                                        Text="平衡响应速度与推理深度"
+                                        FontSize="{StaticResource TypeCaptionSize}"
+                                        TextWrapping="Wrap"
+                                        Foreground="{ThemeResource TextQuaternaryBrush}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </Grid>
+
+                <Border
+                    Height="56"
+                    Background="{ThemeResource BgSurfaceBrush}"
+                    BorderBrush="{ThemeResource BorderDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Capsule56}"
+                    Padding="20,0,12,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="CommandInput"
+                            Grid.Column="0"
+                            Style="{StaticResource InputBox}"
+                            PlaceholderText="输入指令…"
+                            KeyDown="CommandInput_KeyDown"
+                            VerticalAlignment="Center" />
+
+                        <TextBlock
+                            Grid.Column="1"
+                            x:Name="ComposerHint"
+                            Text="Alt + Space"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            Margin="0,0,28,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+
+                        <Button
+                            Grid.Column="2"
+                            x:Name="SendButton"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Background="{ThemeResource AccentBrush}"
+                            Foreground="{ThemeResource OnAccentBrush}"
+                            BorderThickness="0"
+                            Click="SendButton_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="{StaticResource Capsule32}">
+                                        <ContentPresenter
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <FontIcon
+                                Glyph="&#xE74A;"
+                                FontSize="14"
+                                Foreground="{ThemeResource OnAccentBrush}" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- 审批态: 760px wide so it aligns with the answer column, left-aligned
+                 because the artboards hang it off the same left edge as every other
+                 block, 28px corners because a 44px capsule sits inside it, and a
+                 warning-coloured stroke because this card asks for permission. -->
+            <Border
+                x:Name="ApprovalCard"
+                Width="760"
+                Visibility="Collapsed"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Background="{ThemeResource BgSurfaceBrush}"
+                BorderBrush="{ThemeResource StatusPendingBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource RadiusLg}"
+                Padding="24">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="ApprovalCardShift" Y="0" />
+                </Border.RenderTransform>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Ellipse
+                            Width="8"
+                            Height="8"
+                            VerticalAlignment="Center"
+                            Fill="{ThemeResource StatusPendingBrush}" />
+                        <TextBlock
+                            Text="需要你的批准"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            FontWeight="SemiBold"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource StatusPendingBrush}" />
+                        <TextBlock
+                            Text="&#x00B7;"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                        <TextBlock
+                            x:Name="ApprovalReversibleText"
+                            Text="可撤销"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                    </StackPanel>
+
+                    <TextBlock
+                        x:Name="ApprovalTitle"
+                        FontSize="24"
+                        FontWeight="SemiBold"
+                        Margin="0,8,0,0"
+                        TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextPrimaryBrush}" />
+
+                    <TextBlock
+                        x:Name="ApprovalArgsText"
+                        FontSize="{StaticResource TypeCaptionSize}"
+                        Margin="0,4,0,0"
+                        TextWrapping="Wrap"
+                        IsTextSelectionEnabled="True"
+                        Foreground="{ThemeResource TextTertiaryBrush}" />
+
+                    <StackPanel
+                        x:Name="ApprovalFacts"
+                        Orientation="Horizontal"
+                        Spacing="20"
+                        Margin="0,14,0,0">
+                        <TextBlock
+                            x:Name="ApprovalNoteText"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            Foreground="{ThemeResource TextSecondaryBrush}" />
+                        <TextBlock
+                            x:Name="ApprovalRiskText"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            Foreground="{ThemeResource StatusPendingBrush}" />
+                        <TextBlock
+                            x:Name="ApprovalCountdown"
+                            FontSize="{StaticResource TypeCaptionSize}"
+                            Foreground="{ThemeResource TextQuaternaryBrush}" />
+                    </StackPanel>
+
+                    <Grid
+                        Margin="0,36,0,0"
+                        HorizontalAlignment="Left"
+                        ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button
+                            Grid.Column="0"
+                            x:Name="ApproveButton"
+                            Content="批准"
+                            Height="44"
+                            Padding="24,0"
+                            Background="{ThemeResource AccentBrush}"
+                            Foreground="{ThemeResource OnAccentBrush}"
+                            BorderThickness="0"
+                            Style="{StaticResource PillButton}"
+                            Click="ApproveButton_Click"
+                            PointerPressed="OnApprovePointerPressed"
+                            PointerReleased="OnApprovePointerReleased" />
+
+                        <Button
+                            Grid.Column="1"
+                            x:Name="PlanButton"
+                            Content="修改计划"
+                            Height="44"
+                            Padding="24,0"
+                            Style="{StaticResource QuietPillButton}"
+                            Click="PlanButton_Click" />
+
+                        <Button
+                            Grid.Column="2"
+                            x:Name="RejectButton"
+                            Content="取消"
+                            Height="44"
+                            Padding="12,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{ThemeResource TextSecondaryBrush}"
+                            Style="{StaticResource BareButton}"
+                            Click="RejectButton_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

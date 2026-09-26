@@ -19,6 +19,13 @@ public sealed class NativeAgentProvider : IAgentProvider
     private static readonly string[] ProcessKeywords = { "进程", "process", "tasklist" };
     private static readonly string[] SystemKeywords = { "系统", "内存", "内存占用", "cpu", "性能", "配置", "system", "info" };
 
+    /// <summary>Plan arguments are shown to the user, so 记事本 has to stay
+    /// 记事本 rather than turning into \u8BB0\u4E8B\u672C on the approval card.</summary>
+    private static readonly JsonSerializerOptions ArgumentsEncoding = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     public string Id => ProviderId;
     public string DisplayName => "OpenAgent Native Agent";
 
@@ -103,7 +110,7 @@ public sealed class NativeAgentProvider : IAgentProvider
             {
                 return new ProviderPlan(
                     launchTool.Id,
-                    JsonSerializer.Serialize(new Dictionary<string, string> { ["target"] = target }),
+                    JsonSerializer.Serialize(new Dictionary<string, string> { ["target"] = target }, ArgumentsEncoding),
                     $"启动 {target}");
             }
         }

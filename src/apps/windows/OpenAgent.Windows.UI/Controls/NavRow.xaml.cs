@@ -31,6 +31,7 @@ public sealed partial class NavRow : UserControl
     public NavRow()
     {
         InitializeComponent();
+        ActualThemeChanged += (_, _) => ApplyState();
         ApplyState();
     }
 

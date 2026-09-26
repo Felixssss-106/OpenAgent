@@ -7,8 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using OpenAgent.Core.Tasks;
 using OpenAgent.Windows.UI.Controls;
-using OpenAgent.Windows.UI.Services;
-using OpenAgent.Windows.UI.Views;
+using OpenAgent.Windows.UI.Services;using OpenAgent.Windows.UI.Views;
 
 namespace OpenAgent.Windows;
 
@@ -38,7 +37,7 @@ public partial class MainWindow : Window
         };
         SearchBox.KeyDown += SearchBox_KeyDown;
         Select("agent");
-        ContentFrame.Navigate(typeof(DashboardPage));
+        ContentFrame.Navigate(typeof(AgentPage));
     }
 
     /// <summary>
@@ -69,8 +68,50 @@ public partial class MainWindow : Window
         appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
         SetTitleBar(AppTitleBar);
 
+        if (Content is FrameworkElement root)
+        {
+            UiBrushes.Context = root;
+            root.ActualThemeChanged += (_, _) => ApplyCaptionColors();
+        }
+
+        ApplyCaptionColors();
+
         // The shell lives in the tray, so the close button hides it.
         appWindow.Closing += AppWindow_Closing;
+    }
+
+    /// <summary>
+    /// The artboards draw no caption buttons, so the real ones have to disappear
+    /// into the 44px strip: transparent background, glyph in the current text
+    /// colour. Left alone they paint an opaque black block over the top-right
+    /// corner of the client area in either theme.
+    /// </summary>
+    private void ApplyCaptionColors()
+    {
+        var light = Content is FrameworkElement root && root.ActualTheme == ElementTheme.Light;
+        var bar = AppWindow.TitleBar;
+
+        var glyph = light
+            ? global::Windows.UI.Color.FromArgb(0xFF, 0x1A, 0x1A, 0x1A)
+            : global::Windows.UI.Color.FromArgb(0xFF, 0xE8, 0xE8, 0xEA);
+        var hover = light
+            ? global::Windows.UI.Color.FromArgb(0x14, 0x1A, 0x1A, 0x1A)
+            : global::Windows.UI.Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF);
+        var pressed = light
+            ? global::Windows.UI.Color.FromArgb(0x24, 0x1A, 0x1A, 0x1A)
+            : global::Windows.UI.Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF);
+
+        var transparent = global::Windows.UI.Color.FromArgb(0, 0, 0, 0);
+        bar.ButtonBackgroundColor = transparent;
+        bar.ButtonInactiveBackgroundColor = transparent;
+        bar.ButtonForegroundColor = glyph;
+        bar.ButtonHoverForegroundColor = glyph;
+        bar.ButtonPressedForegroundColor = glyph;
+        bar.ButtonInactiveForegroundColor = light
+            ? global::Windows.UI.Color.FromArgb(0x8A, 0x1A, 0x1A, 0x1A)
+            : global::Windows.UI.Color.FromArgb(0x8A, 0xE8, 0xE8, 0xEA);
+        bar.ButtonHoverBackgroundColor = hover;
+        bar.ButtonPressedBackgroundColor = pressed;
     }
 
     private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
@@ -109,7 +150,7 @@ public partial class MainWindow : Window
 
         var page = key switch
         {
-            "agent" => typeof(DashboardPage),
+            "agent" => typeof(AgentPage),
             "tasks" => typeof(TasksPage),
             "devices" => typeof(DevicesPage),
             "tools" => typeof(ToolsPage),
@@ -123,6 +164,21 @@ public partial class MainWindow : Window
         {
             ContentFrame.Navigate(page);
         }
+    }
+
+    /// <summary>
+    /// Brings the Agent surface forward and types a command into it without
+    /// running it, so a command written elsewhere is still confirmed here.
+    /// </summary>
+    public void ShowAgentPrompt(string? prompt)
+    {
+        NavigateTo("agent");
+        if (string.IsNullOrWhiteSpace(prompt) || ContentFrame.Content is not AgentPage page)
+        {
+            return;
+        }
+
+        page.Prefill(prompt.Trim());
     }
 
     private void Select(string key)

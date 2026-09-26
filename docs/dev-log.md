@@ -614,6 +614,75 @@ The user asked for real Windows installers (exe + msi) instead of a zip to unzip
 - Neither installer is Authenticode-signed.
 
 
+## 2026-09-26 · Agent surface, theme palette, and why every screenshot went black
+
+Pixso is the design source of truth, so the released shell was rebuilt against
+`design/pixso-final/01…06` and verified by screenshotting the running app and
+measuring it, not by eye.
+
+**What changed**
+
+- `AgentPage` replaces both `DashboardPage` and `CommandCenterWindow`: 起始页,
+  对话态 and 审批态 are one surface, and Alt+Space raises it inside the shell
+  instead of opening a second window with a copy of the same UI.
+- 对话态 now draws what artboard 03 draws: a disclosure row per tool call with the
+  measured duration right-aligned, and the result in a full-width sunken card.
+  审批态 hangs the 760px card off the same left edge as every other block.
+- The composer's meta row carries the device pill, the link state and a 思考强度
+  picker (`agent.reasoning-effort`, persisted). No provider reads that setting
+  yet — it is stored and shown, not fake-wired to something that ignores it.
+- Plan arguments are serialized with a relaxed encoder, so a Chinese target shows
+  as 记事本 instead of `{"target":"\u8BB0\u4E8B\u672C"}` on the approval card.
+- Caption buttons are transparent with theme-coloured glyphs. Left alone they
+  painted an opaque black slab over the top-right of the client area.
+
+**Two real defects found while measuring**
+
+- `H.NotifyIcon` converts an `IconSource` through GDI and throws on a PNG
+  (`Argument 'picture' must be a picture that can be used as a Icon`), so the
+  tray icon never appeared. `scripts/gen-tray-icon.py` now emits a classic
+  32bpp DIB `.ico` (16/24/32/48) from the shared `oa_mark`, the shell assigns
+  `TaskbarIcon.Icon`, and tray construction is wrapped so it cannot cost the
+  shell its window.
+- Every brush fetched in code resolved against the **system** palette: WinUI 3
+  gives no safe way to change `Application.RequestedTheme` at runtime (it
+  fail-fasts, `0xc000027b` / `RPC_E_CALL_REJECTED`, even before the first
+  window), and the shell themes its root element instead. A light shell therefore
+  rendered a dark selected-nav pill. `UiBrushes` now walks the merged theme
+  dictionaries for the requesting element's `ActualTheme` — reading the literal
+  `{Name}Color` beside each brush, because a brush inside an inactive theme
+  dictionary re-resolves its `{StaticResource}` against the live palette.
+
+**Capture gotcha worth remembering**
+
+Screenshots went uniformly black mid-session and the app looked broken. It was
+not: the display had powered off at 19:36 (`Microsoft-Windows-Kernel-Power` id
+566), DWM stopped compositing, and `PrintWindow`, WGC and a desktop copy all
+handed back the last frame — including the IDE's own, which was visibly frozen.
+`scripts/capture-window.ps1` now wakes the display and holds it with
+`SetThreadExecutionState` before capturing, crops at the real client origin
+(the window still carries ~8px of invisible resize border), and fails a run whose
+frame is one flat colour — after writing the file, so a rejected capture is
+still inspectable.
+
+**Verified**
+
+- `dotnet build` clean; `dotnet test` 266/266 across the 8 test projects.
+- 01/02 起始页 and 03/05 对话态/审批态 captured at a 1440×900 client area in both
+  palettes: sidebar rows, search box, separator, version card, greeting leading
+  (60px), composer (y 820…875) and approval card geometry match the artboards.
+- The approval gate was driven end to end in the running app; 取消 denied the
+  launch and Notepad never started.
+
+**Known issues**
+
+- 04/06 (dark 对话态/审批态) and the dark halves of the secondary pages still need
+  their side-by-side pass.
+- The 思考强度 setting has no consumer until a provider takes a reasoning budget.
+- The tool result card shows raw JSON; the artboards show prose. That needs the
+  real model loop, not a formatting fix.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

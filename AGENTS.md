@@ -87,7 +87,7 @@ OpenAgent/
 └── scripts/
     ├── gen-tokens.py          # CSS → Themes/Tokens.xaml（不要手改 xaml）
     ├── oa_mark.py             # 图形 mark 的唯一来源（形状+配色）
-    ├── gen-tray-icon.py       # 托盘图标生成
+    ├── gen-tray-icon.py       # 托盘 .ico 生成（经典 32bpp DIB，PNG 走不通）
     ├── gen-installer-icon.py  # 多尺寸 app.ico（安装包用）
     ├── gen-android-icons.py   # 安卓 mipmap + 自适应图标（复用 oa_mark）
     └── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle
@@ -136,7 +136,8 @@ using global::Windows.System.VirtualKey;
 
 ### 5.3 UI 层（Phase 2-UI）
 - `MainWindow`：无边框（`ExtendsContentIntoTitleBar`），关闭即隐藏（托盘存活）
-- `CommandCenterWindow`：Alt+Space 唤起，真实链路 plan→execute→审批卡
+- `AgentPage`：起始页 / 对话态 / 审批态同一个面；Alt+Space 从托盘唤起并落到这里
+  （`CommandCenterWindow` 已删除，真实链路 plan→execute→审批卡都在 AgentPage 内）
 - `TasksPage` / `ToolsPage` / `DevicesPage`：读真实数据（非 sample data）
 - 托盘：右键菜单（开主窗口 / 开 Command Center / 退出）
 - 动效：`Motion.cs`（时长阶梯 + `UISettings.AnimationsEnabled` 开关）
@@ -302,6 +303,32 @@ Application Error 1000：故障模块 Microsoft.UI.Xaml.dll，异常码 0xc00002
 
 扩展要先 `dotnet wix extension add -g WixToolset.BootstrapperApplications.wixext`（注意 `-g`，
 `list` 不带 `-g` 是空的）；EULA：`dotnet wix eula accept wix7`。
+
+### 8.13 显示器断电后，所有截图都是同一张死帧
+显示器一断电 DWM 就停止合成：新开的窗口从来没画过（纯黑/纯白），已经开着的窗口
+则停在断电那一刻——**包括 IDE 自己的窗口**，所以"别的应用还能截到内容"不能证明合成是活的。
+`PrintWindow(PW_RENDERFULLCONTENT)`、WGC、桌面拷贝三条路全中，UIA 树却完全正常
+（元素齐全、矩形正确），因此看起来像"应用没渲染"。
+查 `Microsoft-Windows-Kernel-Power` 事件（id 566 是会话状态转换）能定位到断电时刻。
+修法：截图前 `SetThreadExecutionState(ES_DISPLAY_REQUIRED)` +
+`SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 1)` + 一次 VK_SHIFT 键抬起，
+`scripts/capture-window.ps1` 已经内置。
+
+### 8.14 WinUI 3 的 `Application.RequestedTheme` 改不得
+运行时改（甚至在创建第一个窗口之前改）都会 fail-fast：
+`0xc000027b` / WER 签名 `combase.dll` + `80040111 RPC_E_CALL_REJECTED`。
+只能主题化窗口根元素，于是**代码里 `Application.Current.Resources[key]` 取到的画刷
+仍然是系统配色的**——浅色外壳里选中的导航胶囊是深色，就是这么来的。
+`UiBrushes` 的解法：按请求方元素的 `ActualTheme` 走一遍合并字典，
+读 `{Name}Color` 字面量而不是 `{Name}Brush` 实例——非活动主题字典里的 Brush 会把它的
+`{StaticResource}` 重新解析到当前活动配色上，字面量 Color 不会。
+
+### 8.15 `TaskbarIcon.IconSource` 喂 PNG 必抛
+H.NotifyIcon 把 `ImageSource` 经 GDI 转成 `Icon`，PNG 转不了：
+`ArgumentException: Argument 'picture' must be a picture that can be used as a Icon`
+（`StreamExtensions.ToSmallIcon` → `new Icon(stream, size)`），结果是托盘里根本没有图标。
+给 `TaskbarIcon.Icon` 一个真 .ico（经典 32bpp DIB 条目，别用 PNG-in-ICO），
+并且把建托盘图标整段包在 try 里——托盘失败不该赔上主窗口。
 
 ---
 

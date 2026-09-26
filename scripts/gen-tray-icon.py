@@ -1,86 +1,72 @@
 #!/usr/bin/env python3
 """Render the tray icon used by the Windows shell.
 
-The shell shows it on both light and dark taskbars, so the mark is a solid
-accent tile with a light glyph: no single-tone icon survives both. Emitted as
-a plain RGBA PNG (no deps) into the app's Assets folder.
-
     python scripts/gen-tray-icon.py
+
+Shape and colour come from scripts/oa_mark.py, which the installer .ico and the
+Android launcher icons also use.
+
+The tray needs a real .ico, not the PNG this script used to emit: H.NotifyIcon
+converts an ``IconSource`` into a GDI icon and throws on a bare PNG ("Argument
+'picture' must be a picture that can be used as a Icon"), so the tray silently
+disappeared. Entries are packed as classic 32bpp DIBs rather than PNG-in-ICO
+(the installer icon does that for the shell) because the tray path goes through
+``new Icon(stream)``, which reads DIBs on every Windows version.
 """
 
 import struct
-import zlib
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import oa_mark  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT = ROOT / "src" / "apps" / "windows" / "OpenAgent.Windows" / "Assets" / "tray.png"
+OUTPUT = ROOT / "src" / "apps" / "windows" / "OpenAgent.Windows" / "Assets" / "tray.ico"
 
-SIZE = 64
-RADIUS = 16
-# Accent blue from design/tokens.css (light palette); readable on both taskbars.
-TILE = (0x2D, 0x67, 0xBB)
-MARK = (0xFF, 0xFF, 0xFF)
+SIZES = (16, 24, 32, 48)
 
 
-def inside_rounded_square(x: int, y: int, size: int, radius: int) -> bool:
-    """Point-in-shape test for a square with circular corners."""
-    max_x = size - 1 - radius
-    max_y = size - 1 - radius
-
-    if x < radius and y < radius:  # top-left
-        return (x - radius) ** 2 + (y - radius) ** 2 <= radius**2
-    if x > max_x and y < radius:  # top-right
-        return (x - max_x) ** 2 + (y - radius) ** 2 <= radius**2
-    if x < radius and y > max_y:  # bottom-left
-        return (x - radius) ** 2 + (y - max_y) ** 2 <= radius**2
-    if x > max_x and y > max_y:  # bottom-right
-        return (x - max_x) ** 2 + (y - max_y) ** 2 <= radius**2
-
-    return True
+def to_bgra(row: bytes) -> bytes:
+    out = bytearray(len(row))
+    for i in range(0, len(row), 4):
+        out[i] = row[i + 2]
+        out[i + 1] = row[i + 1]
+        out[i + 2] = row[i]
+        out[i + 3] = row[i + 3]
+    return bytes(out)
 
 
-def inside_mark(x: int, y: int, size: int) -> bool:
-    """A ring: reads as an agent 'eye' at 16px without turning into a blob."""
-    cx = cy = (size - 1) / 2
-    distance = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
-    return 8.0 <= distance <= 15.0
+def dib(size: int) -> bytes:
+    """A BITMAPINFOHEADER with bottom-up BGRA pixels and an empty AND mask."""
+    raw = oa_mark.render(size)
+    stride = size * 4 + 1  # PNG scanlines carry a filter byte
+    rows = [raw[y * stride + 1:(y + 1) * stride] for y in range(size)]
+    xor = b"".join(to_bgra(row) for row in reversed(rows))
 
+    mask_stride = ((size + 31) // 32) * 4
+    mask = b"\x00" * (mask_stride * size)  # all-transparent comes from alpha, not the mask
 
-def build_pixels() -> bytearray:
-    raw = bytearray()
-    for y in range(SIZE):
-        raw.append(0)  # filter type: None
-        for x in range(SIZE):
-            if not inside_rounded_square(x, y, SIZE, RADIUS):
-                raw.extend((0, 0, 0, 0))
-            elif inside_mark(x, y, SIZE):
-                raw.extend((*MARK, 0xFF))
-            else:
-                raw.extend((*TILE, 0xFF))
-    return raw
-
-
-def chunk(tag: bytes, data: bytes) -> bytes:
-    return (
-        struct.pack(">I", len(data))
-        + tag
-        + data
-        + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+    header = struct.pack(
+        "<IiiHHIIiiII",
+        40, size, size * 2, 1, 32, 0, len(xor) + len(mask), 0, 0, 0, 0,
     )
+    return header + xor + mask
 
 
 def main() -> int:
-    header = struct.pack(">IIBBBBB", SIZE, SIZE, 8, 6, 0, 0, 0)
-    png = (
-        b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", header)
-        + chunk(b"IDAT", zlib.compress(bytes(build_pixels()), 9))
-        + chunk(b"IEND", b"")
-    )
+    images = [(size, dib(size)) for size in SIZES]
 
+    entries = b""
+    offset = 6 + 16 * len(images)
+    for size, data in images:
+        entries += struct.pack("<BBBBHHII", size, size, 0, 0, 1, 32, len(data), offset)
+        offset += len(data)
+
+    ico = struct.pack("<HHH", 0, 1, len(images)) + entries + b"".join(d for _, d in images)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_bytes(png)
-    print(f"wrote {OUTPUT.relative_to(ROOT)} ({len(png)} bytes, {SIZE}x{SIZE})")
+    OUTPUT.write_bytes(ico)
+    print(f"wrote {OUTPUT.relative_to(ROOT)} ({len(ico)} bytes, sizes: {' '.join(map(str, SIZES))})")
     return 0
 
 

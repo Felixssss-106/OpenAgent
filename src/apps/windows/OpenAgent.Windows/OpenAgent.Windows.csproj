@@ -37,7 +37,7 @@
   <ItemGroup>
     <!-- Unpackaged apps resolve ms-appx:/// from the output directory, so the
          tray glyph has to travel with the binary. -->
-    <Content Include="Assets\tray.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\tray.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- The generated resource index lands in the build output only through the
