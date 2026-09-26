@@ -1,0 +1,17 @@
+# Make line endings deterministic instead of inheriting each contributor's
+# core.autocrlf: a CRLF gradlew does not run under Git Bash or on Linux/macOS.
+* text=auto
+
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.ico binary
+*.jar binary
+*.jks binary
+*.keystore binary
+*.apk binary
+*.aab binary
+*.pfx binary
