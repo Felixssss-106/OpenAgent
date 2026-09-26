@@ -1,10 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
+/// <summary>
+/// Reads real devices from the transport through <see cref="IAgentHost"/>. No
+/// sample data — the local machine registers itself via the loopback transport
+/// (spec sections 60-65); LAN/Android devices appear here once their adapters
+/// are wired (Phase 6-7).
+/// </summary>
 public sealed partial class DevicesPage : Page
 {
     public DevicesPage()
@@ -15,25 +24,40 @@ public sealed partial class DevicesPage : Page
 
     private void DevicesPage_Loaded(object sender, RoutedEventArgs e)
     {
-        var items = new List<DeviceItem>
-        {
-            new()
-            {
-                Name = Environment.MachineName,
-                Tag = "本机",
-                SystemInfo = $"Windows {Environment.OSVersion.Version.Major} · OpenAgent 0.4.2 · 直连",
-                Metrics = "CPU 23% · 内存 51% · 延迟 32 ms",
-            },
-            new()
-            {
-                Name = "Pixel 9",
-                Tag = "已信任",
-                SystemInfo = "Android 15 · OpenAgent 0.4.2",
-                Metrics = "电量 78%",
-            },
-        };
+        _ = RefreshAsync();
+    }
 
-        DeviceList.ItemsSource = items;
+    private async Task RefreshAsync()
+    {
+        IReadOnlyList<DeviceSummary> devices;
+        try
+        {
+            devices = await AgentHost.Current.DevicesAsync();
+        }
+        catch (Exception ex)
+        {
+            DeviceList.ItemsSource = new List<DeviceItem>
+            {
+                new()
+                {
+                    Name = "设备列表读取失败",
+                    Tag = "错误",
+                    SystemInfo = ex.Message,
+                    Metrics = string.Empty,
+                },
+            };
+            return;
+        }
+
+        DeviceList.ItemsSource = devices
+            .Select(device => new DeviceItem
+            {
+                Name = device.Name,
+                Tag = device.Tag,
+                SystemInfo = device.SystemInfo,
+                Metrics = device.Metrics,
+            })
+            .ToList();
     }
 }
 

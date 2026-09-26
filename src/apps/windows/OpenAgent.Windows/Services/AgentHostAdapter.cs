@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using OpenAgent.Agent;
 using OpenAgent.Core.Domain;
 using OpenAgent.Tools;
+using OpenAgent.Transport;
 using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.Services;
@@ -19,14 +20,17 @@ internal sealed class AgentHostAdapter : IAgentHost
 {
     private readonly AgentTaskService _tasks;
     private readonly ToolRegistry _registry;
+    private readonly ITransport _transport;
 
-    public AgentHostAdapter(AgentTaskService tasks, ToolRegistry registry)
+    public AgentHostAdapter(AgentTaskService tasks, ToolRegistry registry, ITransport transport)
     {
         ArgumentNullException.ThrowIfNull(tasks);
         ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(transport);
 
         _tasks = tasks;
         _registry = registry;
+        _transport = transport;
     }
 
     public Task<IReadOnlyList<AgentTask>> RecentTasksAsync(
@@ -51,4 +55,19 @@ internal sealed class AgentHostAdapter : IAgentHost
                     definition.Reversible,
                     definition.Permissions))
                 .ToArray());
+
+    public async Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var devices = await _transport.DiscoverAsync(cancellationToken);
+        return devices
+            .Select(device => new DeviceSummary(
+                Name: device.Name,
+                Tag: device.ConnectionType == "loopback"
+                    ? "本机"
+                    : device.IsOnline ? "在线" : "离线",
+                SystemInfo: $"{device.Platform} · {device.Version} · {device.ConnectionType}",
+                Metrics: device.Metrics ?? string.Empty))
+            .ToArray();
+    }
 }

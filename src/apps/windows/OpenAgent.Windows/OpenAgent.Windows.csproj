@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\core\OpenAgent.Agent\OpenAgent.Agent.csproj" />
     <ProjectReference Include="..\..\..\providers\OpenAgent.Providers\OpenAgent.Providers.csproj" />
+    <ProjectReference Include="..\..\..\core\OpenAgent.Transport\OpenAgent.Transport.csproj" />
     <ProjectReference Include="..\OpenAgent.Windows.UI\OpenAgent.Windows.UI.csproj" />
   </ItemGroup>
 

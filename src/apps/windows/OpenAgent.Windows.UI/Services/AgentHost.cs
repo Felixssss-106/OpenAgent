@@ -51,4 +51,8 @@ public sealed class NullAgentHost : IAgentHost
     public Task<IReadOnlyList<ToolSummary>> ToolsAsync(
         CancellationToken cancellationToken = default) =>
         Task.FromResult<IReadOnlyList<ToolSummary>>(Array.Empty<ToolSummary>());
+
+    public Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<DeviceSummary>>(Array.Empty<DeviceSummary>());
 }

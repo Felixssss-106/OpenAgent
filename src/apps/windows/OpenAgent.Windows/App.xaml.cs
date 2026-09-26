@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using OpenAgent.Agent;
 using OpenAgent.Providers;
 using OpenAgent.Security;
+using OpenAgent.Transport;
 using OpenAgent.Tools;
 using OpenAgent.Windows.Native;
 using OpenAgent.Windows.Services;
@@ -84,14 +85,16 @@ public partial class App : Application
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         services.AddOpenAgent(options => options.PermissionMode = PermissionMode.AskBeforeActions);
         services.AddOpenAgentProviders();
+        services.AddSingleton<ITransport, LocalLoopbackTransport>();
 
         Services = services.BuildServiceProvider();
 
         var tasks = Services.GetService<AgentTaskService>();
         var registry = Services.GetService<ToolRegistry>();
-        if (tasks is not null && registry is not null)
+        var transport = Services.GetService<ITransport>();
+        if (tasks is not null && registry is not null && transport is not null)
         {
-            AgentHost.Register(new AgentHostAdapter(tasks, registry));
+            AgentHost.Register(new AgentHostAdapter(tasks, registry, transport));
         }
     }
 

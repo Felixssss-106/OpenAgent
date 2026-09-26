@@ -25,4 +25,24 @@ public interface IAgentHost
     /// <summary>Everything currently registered in the tool catalogue.</summary>
     Task<IReadOnlyList<ToolSummary>> ToolsAsync(
         CancellationToken cancellationToken = default);
+
+    /// <summary>Devices currently visible to the transport.</summary>
+    Task<IReadOnlyList<DeviceSummary>> DevicesAsync(
+        CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// Device info the UI is allowed to see — mirrors <c>OpenAgent.Transport.DeviceRecord</c>
+/// without the UI library referencing Transport directly (spec section 165). The
+/// UI library depends only on Core and Shared; the device payload arrives through
+/// this record via <see cref="IAgentHost"/>.
+/// </summary>
+public sealed record DeviceSummary(
+    /// <summary>Display name (Environment.MachineName for the local host).</summary>
+    string Name,
+    /// <summary>"本机" / "在线" / "离线".</summary>
+    string Tag,
+    /// <summary>"Windows 10.0.xxx · loopback" style line.</summary>
+    string SystemInfo,
+    /// <summary>Optional live metrics; may be empty for devices that report none.</summary>
+    string Metrics);

@@ -79,7 +79,18 @@ public static class CommandPlanner
             }
 
             var rest = text[(index + keyword.Length)..].Trim();
-            rest = rest.Trim('。', '.', '，', ',', '；', ';', '！', '!', '？', '?', '"', '\'', '“', '”', '的');
+            // Iteratively strip punctuation and whitespace from both ends —
+            // removing one may expose the other (e.g. `"spotify" 的` →
+            // `spotify" ` after 的 is removed, then `"` and space are stripped).
+            while (true)
+            {
+                var prev = rest;
+                rest = rest.Trim('。', '.', '，', ',', '；', ';', '！', '!', '？', '?', '"', '\'', '“', '”', '的').Trim();
+                if (rest.Length == prev.Length)
+                {
+                    break;
+                }
+            }
             if (rest.Length > 0)
             {
                 return rest;
