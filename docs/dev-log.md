@@ -1047,6 +1047,31 @@ another sign the token file was written against the rendered frames, not the pro
 Left as is; noted so nobody "fixes" 600 → 500 on the manifest's word alone.
 
 
+## 2026-09-27 · Three more Android insets/borders that the design rules said and the code didn't
+
+**Found by** continuing the manifest audit (radius and spacing were checked last pass;
+the rest of the stated rules had not been).
+
+| Rule | Artboard measured | Ship code before | After |
+|---|---|---|---|
+| Android 水平外边距 20 | card fill edge x=21 (outer ≈ 20 + 1px border) | `Shape.gutter = 24` | **20** |
+| floating bar inset | tab bar and composer span 16.0…373.0 | `padding(horizontal = 14.dp)` ×2 | **16** via `Shape.barInset` |
+| cards carry `border-hair` | edge pixel (229,229,234) = `--border-subtle` | `OaCard(border = Transparent)` | **`ink.borderSubtle`** |
+
+The border was the tell that tied the first two together: the design's fill starts ~1px
+inside its outer edge because a hairline sits on the boundary, which is why the card
+measured 21 and not 20 — and Windows' `ListCard` already draws exactly that
+(`BorderBrush=BorderSubtle`, `BorderThickness=1`), so the phone was the only one missing
+it. `OaCard` now defaults to the border instead of taking it as an opt-in nobody used.
+
+**Verified on a fresh release APK** (built without a pipe so the exit code is real):
+the left edge ramp now reads white → **(229,229,234) at 19.1…19.9** → fill
+(247,247,250) from 20.2, against the artboard's fill edge at 21.0; tab bar and composer
+span 15.2…374.5 against the artboard's 16.0…373.0 (was 13.4…376.3). Visual check of
+settings in light and the tab bar confirms nothing else moved. APK `494cbec4…`,
+19,052,076 B. Verification AVD deleted.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

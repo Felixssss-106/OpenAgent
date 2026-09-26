@@ -41,7 +41,7 @@ val ink: Palette @Composable get() = LocalPalette.current
 fun OaCard(
     modifier: Modifier = Modifier,
     surface: Color = ink.bgSurface,
-    border: Color = Color.Transparent,
+    border: Color = ink.borderSubtle,
     radius: Dp = Shape.card,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -167,7 +167,7 @@ fun OaTabBar(selected: String, onSelect: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp)
+            .padding(horizontal = Shape.barInset)
             .height(Shape.tabHeight)
             .clip(RoundedCornerShape(percent = 50))
             .background(ink.bgSurface)

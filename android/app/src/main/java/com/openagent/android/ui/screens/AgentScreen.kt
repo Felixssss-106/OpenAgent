@@ -216,7 +216,7 @@ private fun Composer(draft: String, onDraft: (String) -> Unit, onSend: () -> Uni
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp)
+            .padding(horizontal = Shape.barInset)
             .height(Shape.composerHeight)
             .clip(RoundedCornerShape(percent = 50))
             .background(ink.bgSurface)

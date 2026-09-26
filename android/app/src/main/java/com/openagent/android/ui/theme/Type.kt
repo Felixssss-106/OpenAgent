@@ -51,9 +51,12 @@ object Type {
 object Shape {
     val card = 28.dp
     val inner = 12.dp
+    /** Content inset the design states for Android (manifest: 水平外边距 20). */
+    val gutter = 20.dp
+    /** The floating composer and tab bar sit a little wider than content. */
+    val barInset = 16.dp
     val tabHeight = 60.dp
     val composerHeight = 52.dp
     val navbarHeight = 44.dp
     val backButton = 36.dp
-    val gutter = 24.dp
 }
