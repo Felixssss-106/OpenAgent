@@ -36,6 +36,7 @@ public sealed partial class DevicesPage : Page
         }
         catch (Exception ex)
         {
+            StatsText.Text = $"设备列表读取失败：{ex.Message}";
             DeviceList.ItemsSource = new List<DeviceItem>
             {
                 new()
@@ -58,6 +59,10 @@ public sealed partial class DevicesPage : Page
                 Metrics = device.Metrics,
             })
             .ToList();
+
+        StatsText.Text = devices.Count == 0
+            ? "没有已发现的设备"
+            : $"{devices.Count} 台设备 · {devices.Count(device => device.Tag == "在线")} 台在线";
     }
 }
 

@@ -30,7 +30,7 @@
                 <TextBlock
                     Text="通用"
                     Style="{StaticResource SectionHeading}" />
-                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
                             Title="开机启动"
@@ -45,7 +45,7 @@
                 <TextBlock
                     Text="外观"
                     Style="{StaticResource SectionHeading}" />
-                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
                             x:Name="ThemeSetting"
@@ -62,7 +62,7 @@
                 <TextBlock
                     Text="Agent"
                     Style="{StaticResource SectionHeading}" />
-                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
                             Title="默认 Agent"
@@ -78,7 +78,7 @@
                 <TextBlock
                     Text="网络"
                     Style="{StaticResource SectionHeading}" />
-                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
                             Title="Relay"

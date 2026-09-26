@@ -64,24 +64,33 @@ def compare(label, design_bands, build_bands):
     return f"{label:8s} {len(design_bands)} bands, top max {tops}px, bottom max {bots}px"
 
 
-# The sidebar chrome in two windows: the search field and nav block at the head, the
-# divider, 设置 and the account row at the foot. Both are drawn by the shell, so there
-# is one right answer for every page, unlike the content column.
-CHROME = (("head", 44, 200), ("foot", None, 20))
+# The windows whose rows the shell places rather than the data: the sidebar's head
+# (search field, nav) and foot (divider, 设置, account), and the page header in the
+# content column (title, subtitle, hairline).
+#
+# Each entry is (label, x0, x1, refx0, refx1, y0, y1); an x1 of None means "window
+# width minus 120", because the content column's scrollbar sits further right and its
+# track is inked on every row — including it merges the whole header into one band and
+# the gate reports nothing. A y0 of None means "160 from the bottom".
+GATES = (
+    ("head", 12, 228, 6, 16, 44, 460),
+    ("foot", 12, 228, 6, 16, None, 20),
+    ("header", 360, -160, 300, 316, 44, 205),
+)
 
 # A band the artboard draws must have a build band starting within this many pixels.
-# The worst drift measured across all 14 pairs is 3px, and it is not layout: the same
-# row of the same label, drawn at the same height in a row spaced identically to the
-# artboard (design tops 319/348 apart, build 317/346 apart), simply inks 2px higher.
-# That is text metrics, which no margin constant can move. 4 leaves headroom over the
-# observed worst so the gate does not sit on its own edge, while still catching a real
-# change to the sidebar's spacing or an element's height.
-CHROME_TOLERANCE = 4
+# The worst drift measured across all 14 pairs is 4px and it is not layout: the devices
+# subtitle now reads "1 台设备 · 0 台在线" where the artboard draws "2 台已配对 · 1 台在线",
+# and different words ink their first row a couple of pixels apart. The smallest real
+# defect this method has caught is 14px (the heading-to-card gap on the tools and settings
+# pages), so 6 sits between the typeface noise and any margin that actually moved.
+CHROME_TOLERANCE = 6
 
 
-def sidebar_bands(a, h, y0, y1):
-    ref = np.median(a[100:h - 100, 6:16].reshape(-1, 3), axis=0)
-    return bands(a, 12, 228, y0, y1, ref)
+def window_bands(a, w, x0, x1, refx0, refx1, y0, y1):
+    right = w + x1 if isinstance(x1, int) and x1 < 0 else (w - 120 if x1 is None else x1)
+    ref = np.median(a[y0:y1, refx0:refx1].reshape(-1, 3), axis=0)
+    return bands(a, x0, right, y0, y1, ref)
 
 
 def chrome_gate(d, b, h, page, theme):
@@ -101,18 +110,19 @@ def chrome_gate(d, b, h, page, theme):
     gate worse than useless.
     """
     failures, notes, worst = [], [], [0, 0]
-    for label, start, stop in CHROME:
-        y0 = start if start is not None else h - 160
-        y1 = h - stop
-        design = sidebar_bands(d, h, y0, y1)
-        build = sidebar_bands(b, h, y0, y1)
-        for top, bot in design:
-            near = [x for x in build if abs(x[0] - top) <= CHROME_TOLERANCE]
+    w = d.shape[1]
+    for label, x0, x1, refx0, refx1, top, bottom in GATES:
+        y0 = (h - 160) if top is None else top
+        y1 = (h - bottom) if top is None else bottom
+        design = window_bands(d, w, x0, x1, refx0, refx1, y0, y1)
+        build = window_bands(b, w, x0, x1, refx0, refx1, y0, y1)
+        for t, bot in design:
+            near = [x for x in build if abs(x[0] - t) <= CHROME_TOLERANCE]
             if not near:
-                failures.append(f"{page}/{theme} {label}: artboard band y={top}..{bot} not drawn")
+                failures.append(f"{page}/{theme} {label}: artboard band y={t}..{bot} not drawn")
                 continue
-            best = min(near, key=lambda x: abs(x[0] - top))
-            worst[0] = max(worst[0], abs(best[0] - top))
+            best = min(near, key=lambda x: abs(x[0] - t))
+            worst[0] = max(worst[0], abs(best[0] - t))
             worst[1] = max(worst[1], abs(best[1] - bot))
         extra = [x for x in build if not any(abs(x[0] - t) <= CHROME_TOLERANCE for t, _ in design)]
         if extra:

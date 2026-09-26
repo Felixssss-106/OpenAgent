@@ -1523,6 +1523,48 @@ landed.
 byte-identical to the publish dir. The install-this-MSI step remains blocked on elevation.
 
 
+## 2026-09-27 · Widening the gate to the page header found two more real deviations
+
+The chrome gate asserted the sidebar only, so a page header could drift and still pass.
+Adding a content-header window to it found two things, in this order.
+
+**The devices page's subtitle was never filled in.** `StatsText` is declared in
+`DevicesPage.xaml` with the same `PageSubtitle` style the other three grouped pages use —
+and the code-behind never assigns it, so the row sat empty where artboard 14 draws
+`2 台已配对 · 1 台在线`. A sweep across the views (`x:Name` declared vs referenced in the
+matching `.xaml.cs`) showed exactly one page with that hole. Filled with the same shape the
+other pages use and only facts the page holds: `1 台设备 · 0 台在线`. "已配对" stays unimplemented
+because pairing does not exist yet, and the line would otherwise claim it does.
+
+**The heading-to-card gap was 14px short on two pages.** Artboards 15 and 18 leave 25px
+between a group heading's ink and the card under it; the build left 11px, in both themes.
+`ListCard` carried `Margin="0,8,0,0"` after a `SectionHeading`; five sites now carry 22,
+and the measured gap is 25px on tools and settings against the frames' 25px.
+
+**Three apparent failures were the instrument, not the app.** Each one is recorded here
+because each looked like a defect until it was measured:
+- the whole header read as one continuous band — the scrollbar's track is inked on every
+  row, so the scan has to stop left of it (`x1 = w - 160`);
+- the card's side borders merged a card's top edge with its first row — scanning inside
+  the border, not across it, fixed that;
+- two "not drawn" rows on the tools and plugins pages were comparing *different cards*:
+  artboard 17 draws an installed plugin (Obsidian 已启用) and the shipped build has none
+  installed, so it draws an empty-state card instead. The window now ends at y=205, past
+  the card's top edge and before its content.
+Also found while rewriting: the old `head` window computed its bottom as `h - 200` rather
+than `200`, so it had been sweeping y 44..700 — wider than intended, which is why it
+reported build-only bands from the nav list. The windows are now explicit tuples.
+
+Tolerance moved from 4 to 6: the worst drift left is 4px and it is the devices subtitle's
+own glyph metrics (different words ink their first row apart), while the smallest real
+defect this caught is 14px. Proven to fail by shifting a copy of the settings header down
+10px → `exit 1`, naming the title, hairline and group-label bands. Scratch capture deleted.
+
+**Re-proved end to end**: build 0 warnings, publish, 14 fresh captures (landmark ΔE 0.0,
+chrome 0 failures, worst top 4px), installers rebuilt (MSI 76,338,384 B `92c50cdc…`,
+EXE 77,063,685 B `319c2758…`), MSI payload 580 files byte-identical to the publish dir.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

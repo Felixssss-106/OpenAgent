@@ -428,7 +428,24 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 门禁有效性两向验过：把 `cur-agent-light.png` 侧栏头部整体下移 8px → exit 1 并点名 5 条带；
 拿外壳对齐前的旧图（`now-dashboard.png`、`dbg-settings.png`）当成品喂进去 → 15/17 条 FAIL。
 
-### 8.26 per-machine MSI 静默安装拿不到提权：1603 只是表象
+### 8.26 内容列的扫描窗口有三条"看不见的墙"
+把同一套逐行扫描从侧栏搬到内容列（页头：标题/副标题/分隔线/分组标题/卡片上沿）时，
+三连误报全出在仪器上，逐条量完才知道：
+1. **滚动条**：它的轨道每一行都有墨迹，窗口右边界不避开就把整个页头并成一条带
+   （`x1 = w - 160`）；
+2. **卡片左右描边**：跨着描边扫会把"卡片上沿"和"第一行文字"并成一条（改成在描边内侧扫）；
+3. **两边画的不是同一张卡**：效果图 17 有一张已安装插件卡，成品一个插件都没装、画的是空态卡——
+   于是"缺一条带"比的根本不是同一个东西。窗口停在 `y=205`：过卡片上沿，不过卡片内容。
+另外，旧代码把 head 窗口的下沿写成 `h - 200`（=700）而不是 `200`，一直多扫了整段导航区。
+窗口现在统一写成 `(label, x0, x1, refx0, refx1, y0, y1)`，`x1` 负数=距右边界偏移，别再靠减法。
+
+### 8.27 XAML 里声明了却没人赋值的 TextBlock = 永久空白行
+`DevicesPage.xaml` 有 `x:Name="StatsText"`（`PageSubtitle` 样式），code-behind 从头到尾没提过它，
+于是页头少一行、还占着位。查法：把 views 里的 `x:Name` 与同名 `.xaml.cs` 里的引用对一遍
+（`grep -c` 求和），0 引用的就是要找的。补文案时只用页面真的知道的事实——效果图那行写
+"2 台已配对"，配对还不存在，所以写 `N 台设备 · M 台在线`。
+
+### 8.28 per-machine MSI 静默安装拿不到提权：1603 只是表象
 `msiexec /i xxx.msi /qn` 在非管理员 shell 里返回 **1603**（"fatal error during installation"），
 什么信息都不给。加 `/L*v log.txt` 才看得到真正那条：
 `MSI_LUA: Installation UI level is silent, no credential elevation is possible` →
@@ -438,7 +455,7 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 用 `open(path, encoding="utf-16")` 读。回滚是干净的（安装目录与卸载注册表都不留残迹），
 但每次跑完都要自己确认一遍。
 
-### 8.27 应用还在跑就 `dotnet publish`，会被文件锁打死
+### 8.29 应用还在跑就 `dotnet publish`，会被文件锁打死
 截图/驱动 UI 的实例没关，publish 复制 `OpenAgent.dll` 时撞 `MSB3026` 重试，
 最终 `error MSB3027`（"文件被 OpenAgent (pid) 锁定"）。日志前 10 行都是 warning，
 `tail` 一眼看不到错误，容易误判成"编译过了只是没打出来"。

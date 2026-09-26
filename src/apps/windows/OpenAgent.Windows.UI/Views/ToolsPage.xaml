@@ -54,7 +54,7 @@
                                 <TextBlock
                                     Text="{x:Bind Title}"
                                     Style="{StaticResource SectionHeading}" />
-                                <Border Style="{StaticResource ListCard}" Margin="0,8,0,0">
+                                <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                                     <ListView
                                         ItemsSource="{x:Bind Items}"
                                         ItemTemplate="{StaticResource ToolRow}"

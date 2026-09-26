@@ -194,6 +194,9 @@
         <Setter Property="Margin" Value="0,20,0,0" />
     </Style>
 
+    <!-- Artboards 15 and 18 leave 25px between a group heading's ink and the card
+         under it, which is a Margin="0,22,0,0" on that card once the heading's own
+         line box is counted; the 8px this used to carry measured 11. -->
     <Style x:Key="SectionHeading" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
         <Setter Property="FontSize" Value="{StaticResource TypeMicroSize}" />
