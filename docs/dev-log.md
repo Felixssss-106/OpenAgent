@@ -1706,6 +1706,25 @@ absorb a 2px per side that is smaller than the typeface uncertainty, would trade
 measured-and-harmless difference for an unmeasured guess. Recorded instead of changed.
 
 
+## 2026-09-27 · The chat state's output panel is now placed by the gate too
+
+`ui-state-check.py` asserted geometry only for the approval card, so the conversation
+frame's tool-output panel could move and nothing would say so. It now measures that panel
+in both themes: the shipped build draws it at **x 336..1343**, exactly where artboards
+03/04 draw it — worst delta 0px, in light and in dark. Proven to fail by moving the panel's
+left edge 16px in a copy (`FAILED: panel left at 352, artboard draws 336`, exit 1), then
+restored.
+
+The panel's *height* is reported and not asserted: it holds the text the tool returned, and
+the build answers with real system information where the artboard shows a sample directory
+listing (184 rows vs 227).
+
+Two things measured on the way that turned out to be nothing, recorded so they are not
+chased again: the dark theme's sunken panel is `(0,0,0)` on a `(10,10,10)` page in both the
+artboard and the build — a first sample that read as "the build is pure black" had landed
+inside the panel because the build's panel starts at y=221, 71px higher than the artboard's.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

@@ -80,10 +80,48 @@ GEOMETRY_TOLERANCE = 3
 # the card is bottom-anchored and grows with its content, and the content's glyphs ink a
 # few rows taller for some strings ("启动 记事本" vs "移动 35 个文件"), which moves the top
 # edge by 8px without anything in the layout having changed.
-def compare_geometry(design, build, state):
-    if state != "approval":
-        return 0
+SUNKEN = {"light": (242, 242, 247), "dark": (0, 0, 0)}
+
+
+def sunken_block(a, theme):
+    """The tool-output panel's horizontal extents, or None when it is not drawn.
+
+    Its width is set by the content column, so it is layout and worth asserting; its
+    height and top follow the text the tool returned, which is data — the shipped build
+    answers with real system information, the artboard with a sample listing.
+    """
+    want = np.array(SUNKEN[theme])
+    hit = (np.abs(a - want).max(axis=2) <= 4)
+    hit[:, :330] = False
+    hit[:200, :] = False
+    hit[700:, :] = False
+    left = right = None
+    rows = 0
+    for y in range(200, 700):
+        run = np.where(hit[y])[0]
+        if len(run) > 400:
+            rows += 1
+            left = int(run.min()) if left is None else min(left, int(run.min()))
+            right = int(run.max()) if right is None else max(right, int(run.max()))
+    return None if left is None else (left, right, rows)
+
+
+def compare_geometry(design, build, state, theme):
+    """Fail on chrome the artboard places and the build places elsewhere."""
     worst = 0
+    if state == "chat":
+        ds, bs = sunken_block(design, theme), sunken_block(build, theme)
+        if ds is None or bs is None:
+            print(f"FAILED: tool output panel missing (artboard {ds}, build {bs})")
+            return 1
+        for name, d, b in (("panel left", ds[0], bs[0]), ("panel right", ds[1], bs[1])):
+            worst = max(worst, abs(d - b))
+            if abs(d - b) > GEOMETRY_TOLERANCE:
+                print(f"FAILED: {name} at {b}, artboard draws {d}")
+        print(f"  geometry: output panel x {bs[0]}..{bs[1]} "
+              f"(worst delta {worst}px; height {ds[2]} vs {bs[2]} rows is content)")
+        return 1 if worst > GEOMETRY_TOLERANCE else 0
+
     dg, bg = card_geometry(design), card_geometry(build)
     if dg is None or bg is None:
         print(f"FAILED: approval card border missing (design {dg}, build {bg})")
@@ -147,7 +185,7 @@ def check(state, theme):
         print(f"FAILED: artboard {number} is {art.shape[:2]}, capture is {a.shape[:2]}")
         return 1
     colour = compare_colours(art, a, state)
-    geometry = compare_geometry(art, a, state)
+    geometry = compare_geometry(art, a, state, theme)
     return 1 if (colour > TOLERANCE or geometry) else 0
 
 
