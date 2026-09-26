@@ -469,6 +469,19 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 所以 publish 前先 `Stop-Process -Name OpenAgent -Force`，publish 的退出码单独取
 （别接管道），再 `ls -la` 看产物 mtime 确认真的重出了。
 
+### 8.30 驱动真实窗口截图：抢前台与传中文都有坑
+`scripts/ui-state-verify.sh` 要在无人工点击下把成品驱动到对话态/审批态再截图，两条硬坑：
+1. **`SetForegroundWindow` 会被拒**。Windows 只允许"已经持有前台"的进程改前台，杀掉上一个
+   同名实例就足以失去这个资格——第一次循环成功、第二次就失败。解法：先 `keybd_event(VK_MENU,
+   KEYEVENTF_KEYUP)` 敲一下 ALT（官方认可的"我收到输入了"信号），再 `SetForegroundWindow`，
+   失败就退到 `Microsoft.VisualBasic.Interaction.AppActivate(pid)`，并**用
+   `GetForegroundWindow` 复核**；不复核就是把字打进了 IDE，而截图脚本照样产出一张新图。
+2. **中文别走命令行**。`.ps1` 无 BOM 时 PowerShell 5.1 按 ANSI 读，Git Bash 的 heredoc 也会
+   先把 CJK 打烂。提示词以**十进制码点**列表传进脚本，脚本里 `[char]` 还原。
+   （`-File` 调用时所有参数都是**单个字符串**：形参不能声明成 `[int[]]`，要在脚本内 `Split(',')`。）
+3. 驱动态的截图必须断言"真的进入那个态了"：与同主题的起始页比内容列像素差（本例 1.9–2.2%），
+   审批态再断言橙色卡框存在。否则驱动失败 = 拍到起始页，mtime 却是新的，门禁照样放行。
+
 ---
 
 ## 9. 数据与安全
@@ -512,8 +525,10 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 280
-bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核对地标色 + 断言侧栏外壳几何
-#                                （能失败才算门禁，见 §8.22；几何口径见 §8.25）
+bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核对地标色 + 断言侧栏/页头几何
+#                                + 驱动并核对对话态/审批态（效果图 03–06，见 §8.30）
+#                                （能失败才算门禁，见 §8.22；几何口径见 §8.25/§8.26）
+#   SKIP_STATES=1 跳过驱动态（要抢前台）；SKIP_SHOTS=1 只审计已有截图
 #    → Android 侧另跑：python scripts/ui-android-audit.py
 #      需要 artifacts/shots/raw-<page>-<theme>.png（adb exec-out screencap，**不要缩放**）；
 #      它查内容边距、卡片发丝描边、主色存在性，薄色只在原始分辨率上可判。

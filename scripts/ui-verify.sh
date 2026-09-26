@@ -2,13 +2,15 @@
 # Regenerate the Windows UI parity evidence against the shipped publish directory.
 #
 # Captures every page in both themes from artifacts/windows/win-x64 (the tree the MSI
-# is proven byte-identical to), then runs three audits over the new captures: landmark
-# colours, row-band positions (report only), and the sidebar chrome gate. Fails if any
-# page did not produce a fresh screenshot, if a landmark colour drifts, or if chrome the
-# artboards draw is missing or misplaced in the build.
+# is proven byte-identical to), then runs four audits over the new captures: landmark
+# colours, row-band positions (report only), the sidebar and page-header geometry gate,
+# and the two interactive states (artboards 03-06), which are driven, captured and
+# colour-checked here rather than eyeballed. Fails if any page did not produce a fresh
+# screenshot, if a landmark colour drifts, or if chrome the artboards draw is missing.
 #
-#   scripts/ui-verify.sh                # capture + audit
-#   SKIP_SHOTS=1 scripts/ui-verify.sh   # audit the existing captures only
+#   scripts/ui-verify.sh                    # capture + audit + drive the states
+#   SKIP_SHOTS=1 scripts/ui-verify.sh       # audit the existing captures only
+#   SKIP_STATES=1 scripts/ui-verify.sh      # skip the interactive states (needs foreground)
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -65,12 +67,24 @@ echo "--- sidebar chrome (asserted, all 14 captures) ---"
 python scripts/ui-band-sweep.py --gate
 chrome=$?
 
+states=0
+if [ "${SKIP_STATES:-0}" != "1" ]; then
+    echo
+    echo "--- interactive states (03-06: driven, captured, colour-checked) ---"
+    bash scripts/ui-state-verify.sh
+    states=$?
+fi
+
 if [ $colours -ne 0 ]; then
     echo "FAILED: a landmark colour drifted from the artboard"
     exit 1
 fi
 if [ $chrome -ne 0 ]; then
     echo "FAILED: sidebar chrome the artboards draw is missing or misplaced in the build"
+    exit 1
+fi
+if [ $states -ne 0 ]; then
+    echo "FAILED: an interactive state could not be driven, captured, or matched"
     exit 1
 fi
 if [ "${SKIP_SHOTS:-0}" = "1" ]; then

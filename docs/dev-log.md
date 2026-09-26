@@ -1600,6 +1600,43 @@ branches verified: the passing log clears, the verbatim failing log fires, and a
 mtime trips the rewrite check. `bash -n` clean.
 
 
+## 2026-09-27 · Artboards 03–06 are now driven, captured and checked by the pipeline, not by eye
+
+The four conversation frames were the only ones verified once, by hand, because reaching
+them needs a typed prompt. That is now a repeatable step inside `scripts/ui-verify.sh`:
+launch the publish build, type, Enter, shoot, and assert — for both themes, so artboards
+04 and 06 (dark chat, dark approval) are compared against the shipped build for the first
+time.
+
+**What the checks assert.** The frame must differ from the pristine start page in the
+content column (1.9–2.2% — proof the prompt actually landed), the approval card's orange
+border must exist, and four landmarks must match the artboard at the same coordinates:
+content background, sidebar background, card fill, and the median of every accent-blue
+pixel. All four states report a worst delta of **0**: light `(255,255,255)`/`(242,242,247)`/
+`(247,247,250)`/`(0,122,255)`, dark `(10,10,10)`/`(28,28,30)`/`(28,28,30)`/`(46,141,255)`,
+and the card border `(255,149,0)` light / `(255,159,10)` dark. Proven to fail by injecting
+a drift into a copy's card fill → `FAILED: card fill drifted 8`, exit 1, then restored.
+
+**Two bugs the new scripts had before they had teeth.**
+- `send-prompt.ps1` declared `[int[]]$CodePoints`, but `-File` passes every argument as one
+  string, so PowerShell tried to cast `"25171,24320,…"` to a single Int32 and died. The
+  first run therefore captured four start pages, and the script **reported success** —
+  because it piped the PowerShell call through `tail -1` and read tail's exit code. That is
+  AGENTS §8.20 committed again, in a script written to catch stale captures; the fix is to
+  redirect to a log, take `$?`, then print the log.
+- `SetForegroundWindow` succeeded on the first iteration and failed on the second: Windows
+  refuses the call to a process that does not own the foreground, and killing the previous
+  instance is enough to lose that. Now taps `VK_MENU` (the documented way to convince the
+  shell input is coming), retries, and falls back to `AppActivate`, then verifies with
+  `GetForegroundWindow` and fails loudly rather than typing into the IDE.
+
+**Still hand-verified, deliberately:** the approval card's *content* rows. The build draws
+`该操作不可撤销… · 低风险 · 剩余 09:53 · 超时自动拒绝` where artboard 05 draws
+`影响 35 个文件 · 1.2 GB · 预计 4 秒 · 中风险`; the impact facts would be invented (the planner
+computes no file count for `app.launch`), and the countdown is real behaviour the frames
+never drew. Both stay registered rather than silently matched.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
