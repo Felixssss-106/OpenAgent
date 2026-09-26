@@ -886,6 +886,29 @@ relabel the rows (contradicts the design source of truth) — are product calls,
 layout ones. Needs a decision from the user; recorded as a task.
 
 
+## 2026-09-27 · A numeric sweep over all fifteen Windows pairs, to catch what the eye forgave
+
+**Method**
+
+Every shipped-build screenshot was measured against its artboard by row bands: for the
+sidebar (x 8…232) and the content column, each row counts pixels differing from that
+area's own median colour, and runs become bands. Two earlier probes of this kind were
+worthless — the first used the *sidebar* background as the reference for the content
+column, so the whole column read as one band and reported "max 0px" for every page.
+
+**Result**
+
+No layout drift. The sidebar's 13-vs-15 band count is glyph noise, not structure: read
+band by band, the two lists agree within 2px everywhere (brand 70-87 vs 72-86, Agent
+row 198-215 vs 199-213, 设置 782-797 vs 782-798, version chip 835-846 vs 837-848), and
+the extra bands are single rows split by anti-aliasing at the threshold. The one pair
+that flagged — providers-dark, "top-offset max 36px" — is an index-alignment artifact:
+the design has one subtitle band the build splits, so pairing by position drifts by
+one after it; from the first provider row on, the two agree within 2px (214-228 vs
+216-230, 262 vs 262, 309 vs 308, 355 vs 354). All remaining count differences are
+content: real device/tool/provider/plugin data against the artboards' sample rows.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
