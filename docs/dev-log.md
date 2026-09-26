@@ -1072,6 +1072,39 @@ settings in light and the tab bar confirms nothing else moved. APK `494cbec4…`
 19,052,076 B. Verification AVD deleted.
 
 
+## 2026-09-27 · Colour and resource-graph audits, and why most of their "diffs" were content
+
+**Two new scripts**
+
+`scripts/ui-colour-audit.py` samples matched landmarks in an artboard and the shipped
+build; `scripts/ui-semantic-colour-audit.py` is coordinate-free — it takes every
+saturated colour each image contains, quantises, and reports which side has no
+counterpart. The first version of the semantic script guessed at boxes and found
+nothing in any of them; enumerating colours instead is what made it useful.
+
+**Landmarks (artboards 01/02 vs the shipped build, both themes)** — eight of eight
+exact: sidebar (242,242,247 / 28,28,30), canvas (255,255,255 / 10,10,10), nav row,
+status capsule band, composer, version chip, and the accent at **(0,122,255) light /
+(46,141,255) dark**, ΔE 0.0 everywhere.
+
+**Resource graph** — 352 `{ThemeResource}` references across the shell, 99 unique keys
+counting `{StaticResource}` too, **0 undefined**. Worth checking because WinUI fails a
+missing `ThemeResource` silently: the element just renders with no brush, so a typo is
+invisible in code review and looks like "the design is wrong" in a screenshot.
+
+**What the semantic diffs actually were.** Shared colours matched to the unit
+(accent (36,132,252) d=0; approval amber (252,156,0) d=0). The unmatched entries were
+content, not palette:
+
+- the approval screenshot carried 1,319px of red — two `OA-5003 没有匹配到可执行的本地
+  工具` lines from earlier probe commands, correctly drawn in `StatusErrorBrush`;
+- artboard 19's green (48,204,84) and red (192,48,48) are its sample tasks' 已完成 and
+  失败 states; the real task list happens to contain none of those right now;
+- the rest were anti-aliasing tints landing one quantisation bucket apart.
+
+Recorded so a future run does not chase these as defects.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
