@@ -734,6 +734,36 @@ both palettes on a headless API 36 emulator and put side by side with
   Relay / Provider / 插件) are left out rather than drawn dead.
 
 
+## 2026-09-26 · The card layouts the emulator could not reach
+
+任务 and 设备 on the phone had only ever been seen as empty states — the emulator
+has no paired host and no sent command — so `SecondaryScreensTest` renders
+`TasksScreenContent` / `DevicesScreenContent` with sample rows and asserts the
+artboard's parts are on screen, and `android-shot-test.sh` now takes the test
+selector so any of these can be held up and screencapped, in either palette.
+25/26/28/29 measured against the artboards: cards at x 24…365, 48dp rows, dot +
+title + status, hairline between rows.
+
+Two things that comparison caught:
+
+- 任务 rows carried a clock column the artboard does not draw. Removed.
+- The Windows approval card coloured its risk word while artboard 05 keeps every
+  fact in one grey, and the plan arguments still read
+  `{"target":"\u8BB0\u4E8B\u672C"}` — both fixed, and re-checked against a
+  rebuilt shell: `{"target":"记事本"}`, risk in grey, 取消 denied the launch with
+  Notepad never starting.
+
+**The trap worth remembering:** `dotnet test OpenAgent.sln` does not build the
+shell project, so the suite went green while `OpenAgent.dll` was two hours stale —
+the first "did my change land?" screenshot said no, and the honest answer was that
+nothing had been rebuilt. Recorded as AGENTS.md §8.16: kill the shell, run
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64`, then screenshot.
+
+**Verified:** `dotnet build` clean, `dotnet test` 266/266, Android
+`assembleDebug` / `assembleRelease` / `assembleDebugAndroidTest` all green.
+Verification AVD deleted afterwards; `AILifeTest` and `QpApi29` untouched.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

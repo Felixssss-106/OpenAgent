@@ -339,6 +339,13 @@ H.NotifyIcon 把 `ImageSource` 经 GDI 转成 `Icon`，PNG 转不了：
 给 `TaskbarIcon.Icon` 一个真 .ico（经典 32bpp DIB 条目，别用 PNG-in-ICO），
 并且把建托盘图标整段包在 try 里——托盘失败不该赔上主窗口。
 
+### 8.16 `dotnet test` 不编译外壳工程，绿了也可能跑着旧二进制
+`dotnet test OpenAgent.sln` 只构建测试工程及其依赖，**`OpenAgent.Windows`（exe 那个工程）不在其中**。
+改了 `AgentPage.xaml` 之类再跑测试，测试全绿、退出码 0，但 `bin\...\OpenAgent.dll`
+还是几小时前的——于是"我已经改了"的截图对比会得出完全相反的结论。
+改过外壳就必须：先 `Get-Process OpenAgent | Stop-Process -Force`（否则 MSB3027 复制失败），
+再 `dotnet build OpenAgent.sln -c Release -p:Platform=x64`，然后才截图。
+
 ---
 
 ## 9. 数据与安全

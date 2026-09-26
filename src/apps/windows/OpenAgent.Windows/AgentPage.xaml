@@ -343,7 +343,7 @@
                         <TextBlock
                             x:Name="ApprovalRiskText"
                             FontSize="{StaticResource TypeCaptionSize}"
-                            Foreground="{ThemeResource StatusPendingBrush}" />
+                            Foreground="{ThemeResource TextSecondaryBrush}" />
                         <TextBlock
                             x:Name="ApprovalCountdown"
                             FontSize="{StaticResource TypeCaptionSize}"

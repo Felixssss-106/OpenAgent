@@ -2,7 +2,7 @@
 # Hold the 对话态 test frame on the emulator and screencap it, so artboards 09/10
 # can be measured without a phone on the same Wi-Fi.
 #
-#   scripts/android-shot-test.sh [out.png]      # BUILD=0 skips gradle
+#   scripts/android-shot-test.sh [out.png] [class#method]   # BUILD=0 skips gradle
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -10,6 +10,7 @@ SDK="${LOCALAPPDATA:-$HOME/AppData/Local}/Android/Sdk"
 SDK="${SDK//\\//}"
 ADB="$SDK/platform-tools/adb.exe"
 OUT="${1:-$ROOT/artifacts/shots/android-chat-test.png}"
+TEST="${2:-com.openagent.android.AgentScreenTest#conversationStateDrawsEveryArtboardPart}"
 
 if [ "${BUILD:-1}" = "1" ]; then
     ( cd "$ROOT/android" && JAVA_HOME="D:/Develop/AndroidStudio/jbr" \
@@ -28,7 +29,7 @@ fi
     "$ROOT/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk" > /dev/null
 
 MSYS_NO_PATHCONV=1 "$ADB" -e shell am instrument -w \
-    -e class 'com.openagent.android.AgentScreenTest#conversationStateDrawsEveryArtboardPart' \
+    -e class "$TEST" \
     -e hold 12 \
     com.openagent.android.test/androidx.test.runner.AndroidJUnitRunner \
     > "$ROOT/artifacts/instrument.log" 2>&1 &

@@ -28,7 +28,16 @@ import com.openagent.android.viewmodel.MainViewModel
 @Composable
 fun DevicesScreen(onBack: () -> Unit, onPick: (Device) -> Unit, vm: MainViewModel = viewModel()) {
     val devices by vm.devices.collectAsStateWithLifecycle()
+    DevicesScreenContent(devices, onBack, onPick)
+}
 
+/** The same screen without the view model, so the device cards can be screenshotted. */
+@Composable
+internal fun DevicesScreenContent(
+    devices: List<Device>,
+    onBack: () -> Unit,
+    onPick: (Device) -> Unit,
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         OaNavBar("设备", onBack)
 

@@ -29,9 +29,6 @@ import com.openagent.android.ui.ink
 import com.openagent.android.ui.theme.Shape
 import com.openagent.android.ui.theme.Type
 import com.openagent.android.viewmodel.MainViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * Artboard 25 draws the host's task list; the phone has no task store, so this
@@ -41,8 +38,12 @@ import java.util.Locale
 @Composable
 fun TasksScreen(onBack: () -> Unit, vm: MainViewModel = viewModel()) {
     val messages by vm.messages.collectAsStateWithLifecycle()
-    val tasks = rememberCommands(messages)
+    TasksScreenContent(rememberCommands(messages), onBack)
+}
 
+/** The same screen without the view model, so the card layout can be screenshotted. */
+@Composable
+internal fun TasksScreenContent(tasks: List<CommandTask>, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         OaNavBar("任务", onBack)
 
@@ -94,8 +95,6 @@ fun TasksScreen(onBack: () -> Unit, vm: MainViewModel = viewModel()) {
                             style = Type.caption,
                             color = if (task.replied) ink.textTertiary else ink.statusPending,
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text(timeLabel(task.at), style = Type.caption, color = ink.textQuaternary)
                     }
                     if (index != tasks.lastIndex) RowDivider()
                 }
@@ -104,7 +103,12 @@ fun TasksScreen(onBack: () -> Unit, vm: MainViewModel = viewModel()) {
     }
 }
 
-private data class CommandTask(val text: String, val at: Long, val replied: Boolean, val replyLabel: String)
+internal data class CommandTask(
+    val text: String,
+    val at: Long,
+    val replied: Boolean,
+    val replyLabel: String = if (replied) "已回复" else "",
+)
 
 @Composable
 private fun rememberCommands(messages: List<ChatMessage>): List<CommandTask> {
@@ -114,16 +118,7 @@ private fun rememberCommands(messages: List<ChatMessage>): List<CommandTask> {
             if (message.direction != ChatMessage.Direction.OUT) return@mapNotNull null
             val index = sorted.indexOf(message)
             val replied = sorted.drop(index + 1).any { it.direction == ChatMessage.Direction.IN }
-            CommandTask(
-                text = message.text,
-                at = message.ts,
-                replied = replied,
-                replyLabel = if (replied) "已回复" else "",
-            )
+            CommandTask(text = message.text, at = message.ts, replied = replied)
         }.reversed()
     }
 }
-
-@Composable
-private fun timeLabel(millis: Long): String =
-    SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))

@@ -382,8 +382,8 @@ public sealed partial class AgentPage : Page
             ? "该操作可逆。"
             : "该操作不可撤销，请确认参数后再批准。";
         ApprovalRiskText.Text = ToolViewMapper.RiskLabel(risk);
-        ApprovalRiskText.Foreground = UiBrushes.Get(
-            ToolViewMapper.RiskBrushKey(risk), UiBrushes.Fallback.ChipForeground);
+        // Artboard 05 keeps every fact in the same grey; the risk is carried by
+        // its own word, and the long-press gate below is the actual warning.
 
         // M-17: high and critical risk require a 1200ms press, so a stray click
         // cannot authorise file.delete or process.terminate.
