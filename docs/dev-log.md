@@ -964,6 +964,22 @@ hears — it never answers one — so behind NAT the direction that matters does
 AGENTS §11's "needs a real device on the same Wi-Fi" is now checked rather than assumed.
 
 
+## 2026-09-27 · The last two artboard states, and a cheaper way to drive the shell
+
+Artboard 05 (light 审批态) was the final reachable state never shot from the shipped
+binary. Driven the same way and compared: amber card, `● 需要你的批准 · 不可撤销`,
+the rationale as the title (启动 记事本), the argument line, the risk/timeout row and
+the three buttons all sit where the design puts them. The pending approval was left to
+die with the process rather than approved, so Notepad never started.
+
+**Harness note**: `get_window_state` renumbers element indices by *enumeration*, so a
+snapshot truncated by `max_tree_depth` reports a different index for the same control —
+that is how one `set_value` landed on a `Text` and came back `element_not_editable`.
+A snapshot with `max_tree_depth: 12, max_tree_chars: 120` still enumerates the whole
+tree, still reports the focused element's real index, and costs almost no context.
+Use that to get a revision before `set_value`.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
