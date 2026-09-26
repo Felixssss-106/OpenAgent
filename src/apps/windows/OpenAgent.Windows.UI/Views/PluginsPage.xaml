@@ -1,0 +1,66 @@
+<Page
+    x:Class="OpenAgent.Windows.UI.Views.PluginsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="48,40,48,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Text="插件"
+            Style="{StaticResource TypeTitle}"
+            Margin="0,0,0,8" />
+
+        <TextBlock
+            Grid.Row="1"
+            Text="0 个已安装"
+            Style="{StaticResource TypeCaption}"
+            Foreground="{ThemeResource TextTertiaryBrush}"
+            Margin="0,0,0,24" />
+
+        <Border
+            Grid.Row="2"
+            BorderBrush="{ThemeResource BorderSubtleBrush}"
+            BorderThickness="0,0,0,1"
+            Margin="0,0,0,16" />
+
+        <!-- Empty state -->
+        <StackPanel
+            Grid.Row="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12">
+            <Border
+                Width="56"
+                Height="56"
+                CornerRadius="{StaticResource RadiusLg}"
+                Background="{ThemeResource BgSunkenBrush}"
+                HorizontalAlignment="Center">
+                <FontIcon
+                    Glyph="&#xE8A0;"
+                    FontSize="22"
+                    Foreground="{ThemeResource TextQuaternaryBrush}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Border>
+            <TextBlock
+                Text="还没有安装插件"
+                Style="{StaticResource TypeHeading}"
+                HorizontalAlignment="Center" />
+            <TextBlock
+                Text="插件以独立进程运行，崩溃不会带崩主程序。"
+                Style="{StaticResource TypeCaption}"
+                Foreground="{ThemeResource TextTertiaryBrush}"
+                HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Page>

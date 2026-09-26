@@ -1,0 +1,138 @@
+<Page
+    x:Class="OpenAgent.Windows.UI.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OpenAgent.Windows.UI.Views"
+    xmlns:controls="using:OpenAgent.Windows.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="48,40,48,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock
+            Grid.Row="0"
+            Text="设置"
+            Style="{StaticResource TypeTitle}"
+            Margin="0,0,0,24" />
+
+        <!-- Separator -->
+        <Border
+            Grid.Row="1"
+            BorderBrush="{ThemeResource BorderSubtleBrush}"
+            BorderThickness="0,0,0,1"
+            Margin="0,0,0,24" />
+
+        <!-- Settings groups -->
+        <ScrollViewer Grid.Row="2">
+            <StackPanel Spacing="24">
+
+                <!-- General -->
+                <StackPanel Spacing="4">
+                    <TextBlock
+                        Text="通用"
+                        Style="{StaticResource TypeCaption}"
+                        Foreground="{ThemeResource TextTertiaryBrush}"
+                        Margin="12,0,0,4" />
+                    <Border
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}">
+                        <StackPanel>
+                            <controls:SettingRow
+                                Title="开机启动"
+                                Value="已开启" />
+                            <Border BorderBrush="{ThemeResource BorderSubtleBrush}" BorderThickness="0,0,0,1" />
+                            <controls:SettingRow
+                                Title="语言"
+                                Value="简体中文" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Appearance -->
+                <StackPanel Spacing="4">
+                    <TextBlock
+                        Text="外观"
+                        Style="{StaticResource TypeCaption}"
+                        Foreground="{ThemeResource TextTertiaryBrush}"
+                        Margin="12,0,0,4" />
+                    <Border
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}">
+                        <StackPanel>
+                            <controls:SettingRow
+                                x:Name="ThemeSetting"
+                                Title="主题"
+                                Value="跟随系统"
+                                Click="ThemeSetting_Click" />
+                            <Border BorderBrush="{ThemeResource BorderSubtleBrush}" BorderThickness="0,0,0,1" />
+                            <controls:SettingRow
+                                Title="界面密度"
+                                Value="舒适" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Agent -->
+                <StackPanel Spacing="4">
+                    <TextBlock
+                        Text="Agent"
+                        Style="{StaticResource TypeCaption}"
+                        Foreground="{ThemeResource TextTertiaryBrush}"
+                        Margin="12,0,0,4" />
+                    <Border
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}">
+                        <StackPanel>
+                            <controls:SettingRow
+                                Title="默认 Agent"
+                                Value="OpenAgent Native" />
+                            <Border BorderBrush="{ThemeResource BorderSubtleBrush}" BorderThickness="0,0,0,1" />
+                            <controls:SettingRow
+                                Title="权限模式"
+                                Value="请求批准"
+                                ValueForeground="{ThemeResource AccentTextBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Network -->
+                <StackPanel Spacing="4">
+                    <TextBlock
+                        Text="网络"
+                        Style="{StaticResource TypeCaption}"
+                        Foreground="{ThemeResource TextTertiaryBrush}"
+                        Margin="12,0,0,4" />
+                    <Border
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}">
+                        <StackPanel>
+                            <controls:SettingRow
+                                Title="Relay"
+                                Value="官方 Relay" />
+                            <Border BorderBrush="{ThemeResource BorderSubtleBrush}" BorderThickness="0,0,0,1" />
+                            <controls:SettingRow
+                                Title="连接方式"
+                                Value="直连 · 局域网" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

@@ -1,0 +1,104 @@
+<Page
+    x:Class="OpenAgent.Windows.UI.Views.TasksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:OpenAgent.Windows.UI.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource BgCanvasBrush}" Padding="48,40,48,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock
+            Grid.Row="0"
+            Text="任务"
+            Style="{StaticResource TypeTitle}"
+            Margin="0,0,0,8" />
+
+        <!-- Stats -->
+        <TextBlock
+            Grid.Row="1"
+            x:Name="StatsText"
+            Style="{StaticResource TypeCaption}"
+            Foreground="{ThemeResource TextTertiaryBrush}"
+            Margin="0,0,0,24" />
+
+        <!-- Separator -->
+        <Border
+            Grid.Row="2"
+            BorderBrush="{ThemeResource BorderSubtleBrush}"
+            BorderThickness="0,0,0,1"
+            Margin="0,0,0,16" />
+
+        <!-- Task list -->
+        <ListView
+            Grid.Row="3"
+            x:Name="TaskList"
+            Background="Transparent"
+            BorderThickness="0"
+            SelectionMode="None"
+            IsItemClickEnabled="True"
+            ItemClick="TaskList_ItemClick">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:TaskItem">
+                    <Grid Padding="12,14" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Status dot -->
+                        <Ellipse
+                            Grid.Column="0"
+                            Width="8"
+                            Height="8"
+                            Fill="{x:Bind StatusBrush}"
+                            VerticalAlignment="Center" />
+
+                        <!-- Task name -->
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="{x:Bind Name}"
+                            Style="{StaticResource TypeBody}"
+                            VerticalAlignment="Center" />
+
+                        <!-- Status label -->
+                        <TextBlock
+                            Grid.Column="2"
+                            Text="{x:Bind StatusLabel}"
+                            Style="{StaticResource TypeCaption}"
+                            Foreground="{x:Bind StatusTextBrush}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0" />
+
+                        <!-- Duration -->
+                        <TextBlock
+                            Grid.Column="3"
+                            Text="{x:Bind DurationText}"
+                            Style="{StaticResource TypeCaption}"
+                            Foreground="{ThemeResource TextQuaternaryBrush}"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="{ThemeResource BgSurfaceBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource BorderSubtleBrush}" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+    </Grid>
+</Page>

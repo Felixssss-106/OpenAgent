@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <RootNamespace>OpenAgent.Windows.UI</RootNamespace>
+    <AssemblyName>OpenAgent.Windows.UI</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\core\OpenAgent.Core\OpenAgent.Core.csproj" />
+    <ProjectReference Include="..\..\..\shared\OpenAgent.Shared\OpenAgent.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

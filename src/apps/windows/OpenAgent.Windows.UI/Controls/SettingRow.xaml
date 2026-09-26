@@ -1,0 +1,43 @@
+<UserControl
+    x:Class="OpenAgent.Windows.UI.Controls.SettingRow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Button
+        x:Name="RootButton"
+        Background="Transparent"
+        BorderThickness="0"
+        Padding="16,14"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Click="RootButton_Click">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Grid.Column="0"
+                x:Name="TitleBlock"
+                Style="{StaticResource TypeBody}"
+                VerticalAlignment="Center" />
+
+            <TextBlock
+                Grid.Column="1"
+                x:Name="ValueBlock"
+                Style="{StaticResource TypeCaption}"
+                Foreground="{ThemeResource TextTertiaryBrush}"
+                VerticalAlignment="Center"
+                Margin="0,0,4,0" />
+
+            <FontIcon
+                Grid.Column="2"
+                Glyph="&#xE76C;"
+                FontSize="12"
+                Foreground="{ThemeResource TextQuaternaryBrush}"
+                VerticalAlignment="Center" />
+        </Grid>
+    </Button>
+</UserControl>
