@@ -25,6 +25,7 @@ public static class Win32Cap {
     [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h, IntPtr hdc, uint flags);
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int cmd);
     [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, IntPtr extra);
     [DllImport("user32.dll")] public static extern IntPtr SendMessageW(IntPtr h, uint msg, IntPtr w, IntPtr l);
     [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);
     [DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint flags);
@@ -104,6 +105,20 @@ if ($offsetX -lt 0 -or $offsetY -lt 0 -or $offsetX + $Width -gt $winW -or $offse
     Write-Error "client ($offsetX,$offsetY ${Width}x${Height}) does not fit the ${winW}x${winH} window"
     exit 1
 }
+
+# A window activated with nothing focused yet hands focus to the page's first focusable
+# element, and WinUI draws its adorner there: the shipped settings capture carried a 2px
+# near-black rectangle around 开机启动 (x 358..1321, y 196..241) that no artboard draws,
+# and it also skewed that card's measured corner. One click on empty canvas moves the
+# focus to the root and the transient state is gone. (700,100) is above the first card on
+# every page and clear of the composer on the agent page.
+$neutral = New-Object Win32Cap+POINT
+$neutral.X = $clientOrigin.X + 700
+$neutral.Y = $clientOrigin.Y + 100
+[void][Win32Cap]::SetCursorPos($neutral.X, $neutral.Y)
+Start-Sleep -Milliseconds 200
+[void][Win32Cap]::mouse_event(0x0002 -bor 0x0004, 0, 0, 0, [IntPtr]::Zero)  # left down | up
+Start-Sleep -Milliseconds 400
 
 # Park the pointer outside the window: otherwise a row under the cursor is
 # captured in its hover state and the screenshot stops matching the artboard.

@@ -67,6 +67,11 @@ echo "--- sidebar chrome (asserted, all 14 captures) ---"
 python scripts/ui-band-sweep.py --gate
 chrome=$?
 
+echo
+echo "--- focus adorner (no artboard draws one) ---"
+python scripts/ui-focus-ring-audit.py
+rings=$?
+
 states=0
 if [ "${SKIP_STATES:-0}" != "1" ]; then
     echo
@@ -81,6 +86,10 @@ if [ $colours -ne 0 ]; then
 fi
 if [ $chrome -ne 0 ]; then
     echo "FAILED: sidebar chrome the artboards draw is missing or misplaced in the build"
+    exit 1
+fi
+if [ $rings -ne 0 ]; then
+    echo "FAILED: a capture carries a focus adorner no artboard draws"
     exit 1
 fi
 if [ $states -ne 0 ]; then

@@ -493,6 +493,19 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
    （中间行常落在抗锯齿上，会报成 `(241,241,244)` 而真值是 `(229,229,234)`）。
 两条都用"故意做错"的图验过：抹掉左框 → `FAIL card hairline: None`、exit 1；还原 → exit 0。
 
+### 8.32 WinUI 的焦点框：`IsTabStop=false` 挡不住它，`FocusVisual` 又改不了
+`SettingRow` 是 `UserControl` 包一个 `Button`，所以**每一行都是可聚焦控件**——包括那五行根本没有 `Click`
+处理器的。窗口激活时若没有任何元素持有焦点，WinUI 把焦点给第一个可聚焦元素并**画上 2px 焦点框**
+（浅色 `(26,26,26)`、深色近白），效果图 18/24 那里什么都没有。三个坑：
+1. `RootButton.IsTabStop = false` 只挡 Tab 遍历，**不挡激活焦点**——框照样在。
+2. WinUI 3 的 `Control.FocusVisual` 不是可写属性（`CS1061: "Button"未包含"FocusVisual"的定义`），
+   没法从控件上把 adorner 摘掉。
+3. 所以截图口径改成：`capture-window.ps1` 在真正抓图前，先在 client `(700,100)`（每页第一张卡片上方、
+   起始页输入框之外）**点一下空白**，把这份瞬时焦点挪走，再把指针停到窗口外（原有的悬停规避）。
+新增 `scripts/ui-focus-ring-audit.py` 当门禁：任何一张截图带 adorner 就退 1。它自己也被"故意做错"验过
+——第一次验证明显失败（numpy 广播报错，图根本没改），**报 0 不等于能看见**，重画一个矩形才确认它能报
+`RING settings/light`。
+
 ---
 
 ## 9. 数据与安全

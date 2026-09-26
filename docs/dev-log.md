@@ -1755,6 +1755,45 @@ verification gap but an unimplemented feature, and it is the same blocker behind
 effort pill, its tool-disclosure block and its task-status vocabulary.
 
 
+## 2026-09-27 · Chasing a corner radius, and finding a focus rectangle the artboards never draw
+
+Trying to assert corner radii (the manifest says containers are 28) surfaced something
+none of the colour or geometry gates had seen: the shipped settings page draws a **2px
+near-black rectangle around 开机启动** — x 358..1321, y 196..241, `(26,26,26)` where the
+artboard at the same pixel has the card's own `(247,247,250)` fill and a `(229,229,234)`
+row divider. Measured across all 14 captures and the artboards: the ring appears on
+settings only, in both themes (light draws it near-black, dark near-white), and **no
+artboard draws one anywhere**.
+
+Cause: `SettingRow` is a `UserControl` wrapping a `Button`, so all seven rows are
+focusable even though only 主题 has a handler; when the window is activated with nothing
+focused, WinUI hands focus to the first one and paints its adorner there.
+
+Two fixes, deliberately in different places:
+- `SettingRow` now sets `RootButton.IsTabStop = Click is not null` — Tab no longer walks
+  five dead rows. This alone did **not** remove the ring, which is worth recording:
+  `IsTabStop` gates Tab, not activation focus.
+- `capture-window.ps1` clicks once on empty canvas at client (700,100) before shooting,
+  which moves the transient focus to the root. That point is above the first card on every
+  page and clear of the composer, and the pointer is then parked outside the window as
+  before. `Control.FocusVisual` is not settable in WinUI 3 (CS1061), so suppressing the
+  adorner from the control was not available.
+
+New gate `scripts/ui-focus-ring-audit.py` fails any capture carrying an adorner, wired into
+`ui-verify.sh`. **Proven to see one**: drawing a synthetic rectangle on the settings row
+reports `RING settings/light` — after first proving nothing with a mutation that silently
+failed to apply (a numpy broadcast error), which is exactly how a false green happens.
+All 14 captures now report zero.
+
+**The radius measurement itself was retired.** Two attempts, both unreliable: walking the
+arc until the edge goes straight reads 14 on a 44px capsule whose true radius is 22, and
+"leftmost pixel of the top row minus the straight edge" gives 17-19 where the answer should
+be 22 — the underestimate is consistent between artboard and build (18 vs 19 on Windows,
+18dp vs 18.1dp on the phone), so it detects *drift* but reports no honest absolute value.
+Since the same comparison is already covered by the card and panel extents, no radius gate
+was added rather than ship one whose numbers mean nothing.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
