@@ -49,7 +49,8 @@ Pinned centrally in `Directory.Packages.props`.
 ## Platform caveats
 
 - **No Visual Studio** → no MSIX tooling. The WinUI app ships unpackaged and
-  self-contained: unzip and run `OpenAgent.exe`.
+  self-contained, wrapped in an MSI (WiX 7, `-arch x64`) and a Burn `.exe` that
+  carries the same MSI.
 - **`dotnet publish` needs the `.pri` carried by hand.** The generated resource
   index lands in the build output via the Appx/Pri targets but is not part of the
   publish item set; without it the published app dies at XAML init with

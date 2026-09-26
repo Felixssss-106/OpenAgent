@@ -523,6 +523,57 @@ blocked until the Windows binary actually opened a window.
 
 ---
 
+## 2026-09-26 · Windows installers replace the portable zip
+
+**Change**
+
+- `installer/OpenAgent.wxs` — WiX 7 MSI. Harvests the self-contained publish tree
+  with `<Files Include="$(var.PublishDir)\**" />`, installs per-machine to
+  `ProgramFiles64Folder\OpenAgent`, adds a Start Menu shortcut, cleans up its
+  folders on uninstall, and carries a stable `UpgradeCode` so `MajorUpgrade`
+  replaces older copies instead of stacking them.
+- `installer/Bundle.wxs` — Burn `.exe` wrapping that same MSI behind a
+  licence/progress/finish UI, with its own distinct `UpgradeCode`.
+- `scripts/build-installer.ps1` — publish → MSI → ICE gate → bundle, and it
+  refuses to package when `OpenAgent.pri` is missing.
+- `scripts/gen-installer-icon.py` — renders `installer/app.ico` at
+  16/24/32/48/64/128/256 as PNG-in-ICO. The existing `tray.png` is a single 64px
+  bitmap, which the shell resamples badly for shortcuts and Add/Remove Programs.
+- `dotnet-tools.json` — WiX 7 as a local dotnet tool, so `dotnet tool restore`
+  gives every contributor and CI the same version.
+- README / CHANGELOG / AGENTS.md / compatibility notes updated for installers.
+
+**Reason**
+
+The user asked for real Windows installers (exe + msi) instead of a zip to unzip.
+
+**Test**
+
+- `dotnet wix msi validate` **caught a shipping bug** the build itself reported as
+  success: without `-arch x64` the package's Template Summary stayed 32-bit, so
+  every harvested component was 32-bit aimed at a 64-bit directory (ICE80), and
+  Windows Installer would have redirected the install into `Program Files (x86)`.
+  Adding `-arch x64` cleared it.
+- Administrative install (`msiexec /a`) extracts to a `PFiles64` tree — direct
+  confirmation the 64-bit path is used — with 581 files including `OpenAgent.exe`,
+  `OpenAgent.pri` and `Microsoft.ui.xaml.dll`.
+- `OpenAgent.exe` launched **from that administrative image**: window title
+  `OpenAgent`, `Responding=True`, ~155 MB.
+- `dotnet wix burn extract` on the `.exe` yields an embedded MSI whose SHA-256
+  matches the standalone `.msi` byte for byte.
+
+**Known issues**
+
+- ICE03 / ICE60 still report on `File.Language`: WiX's `<Files>` harvest never
+  populates that column, so it is NULL for files without a version resource and an
+  over-long multi-LCID list for .NET resource assemblies. The column only affects
+  localisation costing during patching, and the harvest exposes no attribute to set
+  it, so the build gate suppresses exactly those two ICEs (with the reason in a
+  comment) and prints them informationally. Every other ICE still fails the build.
+- The installers are **not Authenticode-signed** — no code-signing certificate is
+  available here — so SmartScreen will warn. Unverified: a real per-machine
+  install/uninstall through Windows Installer, which needs elevation.
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

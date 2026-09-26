@@ -119,15 +119,36 @@ cd android
 JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
 ```
 
-### Run
+### Install
+
+Get the installer from
+[Releases](https://github.com/Felixssss-106/OpenAgent/releases):
+
+| File | Use it when |
+|---|---|
+| `OpenAgent-1.0.0-x64.exe` | You want a normal installer with a licence and progress page. |
+| `OpenAgent-1.0.0-x64.msi` | You are deploying silently or via management software. |
+
+Both are per-machine and install to `%ProgramFiles%\OpenAgent`; the `.exe` is a
+wrapper around the same `.msi`. No .NET or Windows App SDK redistributable is
+required — the runtime ships inside the package.
+
+```powershell
+# silent install, e.g. for management tooling
+msiexec /i OpenAgent-1.0.0-x64.msi /qn
+```
+
+Neither file is Authenticode-signed yet, so SmartScreen will warn on first run and
+`msiexec` needs elevation.
+
+### Run from source
 
 ```powershell
 dotnet run --project src/apps/windows/OpenAgent.Windows -c Release -p:Platform=x64
 ```
 
-Or grab the self-contained build from
-[Releases](https://github.com/Felixssss-106/OpenAgent/releases) — unzip and run
-`OpenAgent.exe`; no .NET or Windows App SDK install required.
+Build the installers yourself with `dotnet tool restore` then
+`./scripts/build-installer.ps1` (needs WiX 7 and the Windows SDK build tools).
 
 ## Security
 
@@ -167,8 +188,9 @@ installs, upgrades, logs in, or copies third-party credentials.
 ## Status
 
 **v1.0.0 — the first published release.** Both clients build and run: the Windows
-app starts from the self-contained zip, and the Android APK builds and installs from
-the committed Gradle wrapper.
+app starts from the packaged output and the installers pass Windows Installer
+validation, and the Android APK builds from the committed Gradle wrapper and runs
+on an API 36 emulator.
 
 What is genuinely working is limited to what the code implements; anything not
 finished is a real `NotSupportedException("NOT IMPLEMENTED: …")` rather than a stub

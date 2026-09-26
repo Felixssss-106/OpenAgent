@@ -1,0 +1,80 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <!--
+    MSI for the unpackaged WinUI 3 build. Consumed directly and as the payload of
+    the Burn bundle (Bundle.wxs), so one payload serves both installers.
+
+    UpgradeCode is the product identity: every future release must keep it, or
+    MajorUpgrade cannot find the old install and the machine ends up with two
+    copies fighting over the same folder.
+  -->
+  <Package Name="OpenAgent"
+           Language="1033"
+           Manufacturer="OpenAgent"
+           Version="$(var.Version)"
+           UpgradeCode="5574aa69-ff48-4651-ba16-83d7919db404">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of OpenAgent is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="AppIco" SourceFile="$(var.Icon)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIco" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Felixssss-106/OpenAgent" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/Felixssss-106/OpenAgent/issues" />
+
+    <Feature Id="Complete" Title="OpenAgent" Level="1" AllowAbsent="no">
+      <ComponentGroupRef Id="ApplicationFiles" />
+      <ComponentGroupRef Id="ShellEntries" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="OpenAgent" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationMenuFolder" Name="OpenAgent" />
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- The whole self-contained publish tree: app, WinUI runtime, .NET runtime.
+       Bitness must be declared per component: a 32-bit component aimed at
+       ProgramFiles64Folder gets redirected to Program Files (x86) by Windows
+       Installer (ICE80). -->
+  <Fragment>
+    <ComponentGroup Id="ApplicationFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.PublishDir)\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ShellEntries">
+      <Component Directory="ApplicationMenuFolder" Bitness="always64">
+        <Shortcut Id="StartMenuShortcut"
+                  Name="OpenAgent"
+                  Target="[INSTALLFOLDER]OpenAgent.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIco" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\OpenAgent\Installer"
+                       Name="StartMenuShortcut"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+        <RemoveFolder Id="RemoveApplicationMenuFolder" On="uninstall" />
+      </Component>
+
+      <!-- Uninstall leaves no empty install directory behind. -->
+      <Component Directory="INSTALLFOLDER" Bitness="always64">
+        <RegistryValue Root="HKCU"
+                       Key="Software\OpenAgent\Installer"
+                       Name="InstallFolder"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+        <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

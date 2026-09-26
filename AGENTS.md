@@ -9,7 +9,7 @@
 **OpenAgent** — Windows × Android 开源 AI 跨设备控制中心。
 - **Windows 端**：.NET 10 / C# / WinUI 3（unpackaged），12 个产品工程 + 8 个测试工程
 - **Android 端**：Kotlin / Jetpack Compose / Material 3，`android/` Gradle 项目（Gradle wrapper 已提交，APK 已可命令行构建）
-- **当前版本**：v1.0.0（首个公开发布版，Windows zip + Android APK 挂在 GitHub Release 上）
+- **当前版本**：v1.0.0（首个公开发布版，Windows MSI + EXE 安装包、Android APK 挂在 GitHub Release 上）
 - **规格真源**：根目录 `OpenAgent 完整项目总提示词.md`（9581 行，366 节）
 
 核心使命：让 Android 手机在同一局域网内发现 Windows 主机，并发送 AI 命令（如"打开记事本"）让 Windows 执行。
@@ -42,11 +42,16 @@ dotnet build OpenAgent.sln -c Release -p:Platform=x64
 # 测试（当前 266 个，全绿）
 dotnet test OpenAgent.sln -c Release -p:Platform=x64
 
-# 可分发产物（self-contained，解压即运行）
+# 可分发产物（self-contained，供安装包打包）
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
   -c Release -p:Platform=x64 -r win-x64 --self-contained true -o artifacts/windows/win-x64
+
+# 安装包（MSI + 包裹它的 EXE bundle）
+dotnet tool restore          # 拉取 WiX 7（清单在根目录 dotnet-tools.json）
+./scripts/build-installer.ps1
 ```
 > `OpenAgent.pri`（XAML 资源索引）必须出现在 publish 输出里，否则应用启动即崩（见 §8.9）。
+> `build-installer.ps1` 会在打包前检查该文件是否存在，缺失即失败退出。
 
 ### Android（Kotlin）
 ```bash
@@ -71,6 +76,7 @@ OpenAgent/
 │   └── shared/                # OpenAgent.Shared
 ├── tests/                     # 8 个测试工程（Core / Agent / Storage / Security / Providers / Transport / Tools / UI）
 ├── android/                   # Kotlin + Jetpack Compose 客户端
+├── installer/                 # WiX 7 源码（OpenAgent.wxs=MSI, Bundle.wxs=EXE, app.ico）
 ├── docs/
 │   ├── protocol.md            # 跨设备线格式真源（beacon + JSON envelope）
 │   ├── dev-log.md             # 开发日志（按提交记录）
@@ -80,7 +86,9 @@ OpenAgent/
 │   └── motion.md              # 动效真源
 └── scripts/
     ├── gen-tokens.py          # CSS → Themes/Tokens.xaml（不要手改 xaml）
-    └── gen-tray-icon.py       # 托盘图标生成
+    ├── gen-tray-icon.py       # 托盘图标生成
+    ├── gen-installer-icon.py  # 多尺寸 app.ico（安装包用）
+    └── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle
 ```
 
 ---
@@ -274,6 +282,25 @@ Application Error 1000：故障模块 Microsoft.UI.Xaml.dll，异常码 0xc00002
 `padding` 定义在 `androidx.compose.foundation.layout`，不是 `Modifier` 的成员。全限定接收者
 `androidx.compose.ui.Modifier.padding(...)` 仍会 `Unresolved reference 'padding'`——必须 import 扩展本身。
 
+### 8.12 WiX v7 与 v4/v5 教程不兼容（写安装包必看）
+网上绝大多数 WiX 示例是 v3/v4 的，v7 下会报 `unexpected child element` / `unexpected attribute`：
+
+| v3/v4/v5 写法 | v7 写法 |
+|---|---|
+| `<Directory Id="TARGETDIR">` + `ProgramFiles64Folder` 手工嵌套 | `<StandardDirectory Id="ProgramFiles64Folder">`（手写 TARGETDIR 会撞 `WIX7009` 虚拟符号冲突） |
+| heat.exe 收集目录 | `<Files Include="$(var.Dir)\**" />` 直接 harvest |
+| `<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense"/>` | `<BootstrapperApplication><bal:WixStandardBootstrapperApplication xmlns:bal=".../wxs/bal" Theme="hyperlinkLicense" LicenseUrl="..."/></BootstrapperApplication>` |
+| `<Bundle>` 下 `<MajorUpgrade/>` | **已移除**；产品级升级交给 MSI 的 `MajorUpgrade`，Bundle 侧无对应元素 |
+| `<Chain DisableModify>` / `<MsiPackage DisplayInternalUI>` | v7 不接受这两个属性 |
+
+两个实用逃生口：
+- `dotnet wix convert <v3文件>` 会把 v3 源码翻译成当前写法，是拿权威语法最快的办法。
+- WiX 的 XSD 不落地，但元素词表编在 `~/.wix/extensions/**.dll` 与
+  `~/.nuget/packages/wix/*/tools/net8.0/any/WixToolset.Core.Burn.dll` 里，可以用扫字符串的方式查。
+
+扩展要先 `dotnet wix extension add -g WixToolset.BootstrapperApplications.wixext`（注意 `-g`，
+`list` 不带 `-g` 是空的）；EULA：`dotnet wix eula accept wix7`。
+
 ---
 
 ## 9. 数据与安全
@@ -318,21 +345,24 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 266
 
-# 2. Windows 产物
+# 2. Windows 安装包
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
   -c Release -p:Platform=x64 -r win-x64 --self-contained true -o artifacts/windows/win-x64
 #    → 校验 artifacts/windows/win-x64/OpenAgent.pri 存在，且 exe 能起窗口
+dotnet tool restore && ./scripts/build-installer.ps1 -SkipPublish
+#    → artifacts/installer/OpenAgent-<ver>-x64.{msi,exe}
+#    → 装一遍再卸一遍：msiexec /i ... /qn，起窗口，msiexec /x ... /qn
 
 # 3. Android 产物
 cd android && JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
 #    → apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
 
 # 4. 发布
-gh release create v1.0.0 <win-zip> <release-apk> --title ... --notes ...
+gh release create v1.0.0 <win-msi> <win-exe> <release-apk> --title ... --notes ...
 ```
 
-**发布前必须做的两件事**：冒烟测试跑 publish 目录（不是 `bin`）；`git grep` 扫一遍
-token / 私钥 / 本机绝对路径。
+**发布前必须做的三件事**：冒烟测试跑 publish 目录（不是 `bin`）；安装包**真的装一次再卸一次**；
+`git grep` 扫一遍 token / 私钥 / 本机绝对路径。
 
 ---
 

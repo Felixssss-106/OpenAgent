@@ -1,0 +1,33 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <!--
+    The .exe installer: a Burn bootstrapper whose only payload is the MSI.
+    It exists because MSI alone cannot present a licence/progress/finish flow without
+    Windows Installer's dated dialog set.
+
+    UpgradeCode differs from the MSI's on purpose — the bundle and the package are
+    separate products, and sharing an identity confuses upgrade detection between
+    them. Version replacement is done by the MSI's own MajorUpgrade; WiX v7 dropped
+    the Bundle-level MajorUpgrade element this authoring originally used.
+  -->
+  <Bundle Name="OpenAgent"
+          Version="$(var.Version)"
+          Manufacturer="OpenAgent"
+          UpgradeCode="e336aa3b-4c39-4a68-a9e5-5ed836f4ee83"
+          IconSourceFile="$(var.Icon)"
+          AboutUrl="https://github.com/Felixssss-106/OpenAgent"
+          UpdateUrl="https://github.com/Felixssss-106/OpenAgent/releases/latest">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+          xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+          Theme="hyperlinkLicense"
+          LicenseUrl="https://www.apache.org/licenses/LICENSE-2.0" />
+    </BootstrapperApplication>
+
+    <Chain>
+      <MsiPackage SourceFile="$(var.MsiPath)" Compressed="yes" />
+    </Chain>
+  </Bundle>
+
+</Wix>
