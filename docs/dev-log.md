@@ -1220,6 +1220,28 @@ fresh comparison here.
 Verification AVD deleted.
 
 
+## 2026-09-27 · The tasks frame, retaken properly — and the one artboard text the phone must not copy
+
+**Capture timing fixed** — instead of the script's blind `sleep 8`, the instrumented run
+was polled: screencap in a loop until the frame's standard deviation rose above a
+threshold. It went 10.5 (the empty Compose host, which is what the earlier "blank"
+capture really was) to 38.5 once content composed, and that frame is now the evidence.
+
+**Geometry confirmed on the tasks card**: fill (247,247,250), card left edge at x=19
+against the artboard's 20 (a 1px down-scale bias, the same direction as every other
+phone measurement), rounded 28 corners and the hairline border — so all three card
+surfaces now agree with the design.
+
+**The deliberate text difference, recorded rather than "fixed"**: artboard 25 labels rows
+`运行中 / 等待批准 / 已完成 / 失败`, while the phone shows `等待回复 / 已回复`. That is not
+drift — the phone's model is a boolean "did the host answer", and the four artboard
+states belong to the host's task machine, which the LAN envelope never transmits. Labelling
+a row 已完成 on the phone would assert knowledge it does not have, the same reason the
+approval card (11/12) is deferred. It is a visible deviation from the frames, so it needs
+an explicit call: either accept the honest vocabulary, or carry task state over the
+protocol — which is task #14's work.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
