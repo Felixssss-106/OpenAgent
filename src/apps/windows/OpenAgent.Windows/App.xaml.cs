@@ -262,38 +262,21 @@ public partial class App : Application
 
     public static ElementTheme ReadThemeSetting()
     {
-        try
+        return UiSettings.Get(ThemeSettingKey) switch
         {
-            var values = global::Windows.Storage.ApplicationData.Current.LocalSettings.Values;
-            if (values.TryGetValue(ThemeSettingKey, out var raw) && raw is string name)
-            {
-                return name switch
-                {
-                    "Light" => ElementTheme.Light,
-                    "Dark" => ElementTheme.Dark,
-                    _ => ElementTheme.Default,
-                };
-            }
-        }
-        catch
-        {
-            // Unpackaged apps sometimes have no local settings container.
-        }
-
-        return ElementTheme.Default;
+            "Light" => ElementTheme.Light,
+            "Dark" => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
     }
 
+    /// <summary>
+    /// Themes the tree only. Persisting is the settings page's job: this also runs
+    /// for the <c>--theme=</c> screenshot switch, and a screenshot must not rewrite
+    /// what the user chose.
+    /// </summary>
     public static void ApplyTheme(ElementTheme theme)
     {
-        try
-        {
-            global::Windows.Storage.ApplicationData.Current.LocalSettings.Values[ThemeSettingKey] = theme.ToString();
-        }
-        catch
-        {
-            // Non-fatal: the theme still applies for this session.
-        }
-
         // Only the root element is themed. Setting Application.RequestedTheme at
         // runtime — or even before the first window — fails the XAML engine over on
         // this Windows App SDK (fail-fast 0xc000027b, combase RPC_E_CALL_REJECTED),

@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
@@ -70,36 +71,16 @@ public sealed partial class SettingsPage : Page
 
     private static ElementTheme ReadTheme()
     {
-        try
+        return UiSettings.Get(ThemeSettingKey) switch
         {
-            var values = global::Windows.Storage.ApplicationData.Current.LocalSettings.Values;
-            if (values.TryGetValue(ThemeSettingKey, out var raw) && raw is string name)
-            {
-                return name switch
-                {
-                    "Light" => ElementTheme.Light,
-                    "Dark" => ElementTheme.Dark,
-                    _ => ElementTheme.Default,
-                };
-            }
-        }
-        catch
-        {
-            // No local settings container when unpackaged; default is fine.
-        }
-
-        return ElementTheme.Default;
+            "Light" => ElementTheme.Light,
+            "Dark" => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
     }
 
     private static void SaveTheme(ElementTheme theme)
     {
-        try
-        {
-            global::Windows.Storage.ApplicationData.Current.LocalSettings.Values[ThemeSettingKey] = theme.ToString();
-        }
-        catch
-        {
-            // Non-fatal: the theme still applies for this session.
-        }
+        UiSettings.Set(ThemeSettingKey, theme.ToString());
     }
 }

@@ -124,32 +124,17 @@ public sealed partial class AgentPage : Page
 
     private static void SaveEffort(int level)
     {
-        try
-        {
-            global::Windows.Storage.ApplicationData.Current.LocalSettings.Values[EffortSettingKey] = level;
-        }
-        catch
-        {
-            // Unpackaged apps sometimes have no local settings container.
-        }
+        UiSettings.Set(EffortSettingKey, level.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     private static int ReadEffort()
     {
-        try
+        if (UiSettings.Get(EffortSettingKey) is { } stored &&
+            int.TryParse(stored, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var level) &&
+            level >= 0 &&
+            level < EffortNames.Length)
         {
-            var values = global::Windows.Storage.ApplicationData.Current.LocalSettings.Values;
-            if (values.TryGetValue(EffortSettingKey, out var raw) &&
-                raw is int stored &&
-                stored >= 0 &&
-                stored < EffortNames.Length)
-            {
-                return stored;
-            }
-        }
-        catch
-        {
-            // Same: the default level still applies.
+            return level;
         }
 
         return 2;

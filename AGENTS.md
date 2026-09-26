@@ -359,6 +359,16 @@ CSS 的 `line-height` 比字形矮时是溢出绘制，WinUI 是裁剪，所以�
 效果图里所有示例文案都不带下伸部（`Good afternoon`），所以这个 bug 只在 22:00–05:00 出现，
 截图验收必须覆盖到夜间分支。
 
+### 8.18 unpackaged 应用没有 `ApplicationData`，`LocalSettings` 会静默吞掉设置
+`Windows.Storage.ApplicationData.Current` 需要包身份；本工程是 `WindowsPackageType=None`，
+所以每次访问都抛异常。如果像最初那样把它包在 `try { … } catch { }` 里，症状是：
+设置页改主题 → 当场生效 → **重启后回到默认**，日志里一个字都没有。
+（`HKCU\Software\Classes\Local Settings\Software` 下没有键、`%LOCALAPPDATA%\Packages` 下
+没有本应用目录，就是这条的证据。）
+现在走 `UiSettings`（`%LOCALAPPDATA%\OpenAgent\ui-settings.json`，与数据库同一目录）。
+另外 `App.ApplyTheme` 只负责上色、不写设置——`--theme=` 截图开关也走它，
+否则截一轮图就把用户的主题改掉了。
+
 ---
 
 ## 9. 数据与安全

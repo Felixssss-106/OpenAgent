@@ -831,6 +831,36 @@ with only the known `ICE03 File.Language` reports the gate already documents.
 Verification AVD deleted afterwards; `AILifeTest` and `QpApi29` untouched.
 
 
+## 2026-09-27 · The theme picker was saving into a catch block
+
+**Found by** driving the shipped binary through UI Automation instead of the
+`--theme=` startup switch: pick 浅色 on 设置, the window repaints light at once,
+restart, and it is dark again. The row's own value resets to 跟随系统 too, so the
+setting looked applied and simply was not kept.
+
+**Cause**: every one of the shell's three preference stores — theme read, theme write,
+reasoning effort — went through `Windows.Storage.ApplicationData.Current.LocalSettings`,
+and an unpackaged app has no package identity, so that call throws every time. Each
+site wrapped it in `try { … } catch { }` with a comment predicting exactly this
+("No local settings container when unpackaged"), which turned a hard failure into
+silence. Confirmed on disk: no `ui.theme` anywhere under
+`HKCU\Software\Classes\Local Settings\Software`, no `%LOCALAPPDATA%\Packages\*OpenAgent*`.
+
+**Change**: `UiSettings` — one JSON dictionary at
+`%LOCALAPPDATA%\OpenAgent\ui-settings.json`, the directory the app already owns —
+behind `Get`/`Set`, and all three call sites moved to it. `App.ApplyTheme` no longer
+writes at all; it only themes the tree, because the `--theme=` screenshot switch runs
+through it and a screenshot must not rewrite the user's choice.
+
+**Verified on the shipped build**: picked 浅色 through UIA, file now reads
+`{"ui.theme":"Light"}`, restarted with no arguments at all and the window came back
+light (sidebar 243 / canvas 255), matching artboard 01 — which also closes the
+"artboard 01 from the shipped binary without a startup override" gap. Setting then
+restored to `Default`. `dotnet build` clean, `dotnet test` 266/266, installers rebuilt
+(MSI 76,330,192 B / EXE 77,055,731 B) with only the known `ICE03 File.Language` reports.
+Recorded as AGENTS.md §8.18.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
