@@ -80,6 +80,46 @@ keeps the process alive for 5s (no XAML load crash).
 
 ---
 
+## 2026-09-26 · Phase 3 — Windows tool set
+
+**Change**
+
+- `OpenAgent.Tools`: `file.list` / `file.read` / `file.write` / `file.move` /
+  `file.copy` / `file.delete`, `process.terminate`, `app.close` and
+  `screen.capture`, next to the existing `system.get_info`, `process.list` and
+  `app.launch`.
+- Every path argument goes through `ToolPath` → `PathPolicy`; relative paths are
+  combined with the call's working directory but **not** normalised first, so a
+  `..` request is refused instead of silently resolved.
+- `BuiltInTools.Create()` is the single list the composition root and the tests
+  register from.
+- `screen.capture` captures with GDI (`BitBlt` + `GetDIBits` over `DllImport`)
+  and encodes PNG in managed code. No WinRT, no extra package: the project
+  targets `net10.0`, not `net10.0-windows`.
+
+**Reason**
+
+Spec §38 lists the Windows tool set and §18 fixes the risk levels
+(`file.delete` / `process.terminate` = high, `file.move` = medium,
+`screen.capture` = low). Tools stay in the tool layer and return a `ToolResult`
+only — approvals and UI belong to the Agent and the shell (§132).
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 141 passing, including path rejection,
+argument validation and a real PNG screenshot.
+
+**Known issues**
+
+- `screen.capture` needs a Windows desktop session; under session 0 or a locked
+  screen the capture fails with `OA-5008` instead of returning pixels. A
+  `net10.0-windows10.0.26100` project would allow Direct3D/WinRT capture later.
+- No undo support yet: mutating tools are declared `Reversible = false` because
+  OpenAgent does not back up what they overwrite.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
@@ -91,5 +131,4 @@ code, not a silent stub.
 | `OpenAgent.Providers` | Codex / Claude Code / OpenCode / Pi adapters | Phase 4 |
 | `OpenAgent.Plugins` | plugin loader, manifest validation, isolation | Phase 12 |
 | `OpenAgent.Mcp` | MCP client and server bridge | Phase 11 |
-| `OpenAgent.Tools` | Windows tool implementations (file, process, app, screen) | Phase 3 |
 | `OpenAgent.Agent` | Native agent loop backed by a real model | Phase 3 |

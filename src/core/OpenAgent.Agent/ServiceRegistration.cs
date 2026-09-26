@@ -7,7 +7,6 @@ using OpenAgent.Security;
 using OpenAgent.Storage;
 using OpenAgent.Storage.Repositories;
 using OpenAgent.Tools;
-using OpenAgent.Tools.System;
 
 namespace OpenAgent.Agent;
 
@@ -65,9 +64,12 @@ public static class ServiceRegistration
         services.AddSingleton<DeviceRepository>();
         services.AddSingleton<SettingsRepository>();
 
-        services.AddSingleton<ITool, SystemGetInfoTool>();
-        services.AddSingleton<ITool, ProcessListTool>();
-        services.AddSingleton<ITool, AppLaunchTool>();
+        // One source of truth for the built-in tool set: the registry below and
+        // the tests read the same list (spec section 126).
+        foreach (var tool in BuiltInTools.Create())
+        {
+            services.AddSingleton(tool);
+        }
 
         services.AddSingleton(provider => new ToolRegistry(provider.GetServices<ITool>()));
 

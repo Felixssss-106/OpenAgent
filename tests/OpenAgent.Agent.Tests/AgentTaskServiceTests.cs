@@ -40,7 +40,9 @@ public sealed class AgentTaskServiceTests : IDisposable
         Assert.NotNull(_provider.GetRequiredService<AgentTaskService>());
         Assert.NotNull(_provider.GetRequiredService<ToolExecutor>());
         Assert.NotNull(_provider.GetRequiredService<ApprovalService>());
-        Assert.Equal(3, _provider.GetRequiredService<OpenAgent.Tools.ToolRegistry>().All().Count);
+        Assert.Equal(
+            OpenAgent.Tools.BuiltInTools.Create().Count,
+            _provider.GetRequiredService<OpenAgent.Tools.ToolRegistry>().All().Count);
     }
 
     [Fact]
