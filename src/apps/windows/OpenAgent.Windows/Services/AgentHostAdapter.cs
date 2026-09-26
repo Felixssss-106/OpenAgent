@@ -63,9 +63,12 @@ internal sealed class AgentHostAdapter : IAgentHost
         return devices
             .Select(device => new DeviceSummary(
                 Name: device.Name,
-                Tag: device.ConnectionType == "loopback"
-                    ? "本机"
-                    : device.IsOnline ? "在线" : "离线",
+                Tag: device.ConnectionType switch
+                {
+                    "loopback" => "本机",
+                    "lan" => "局域网",
+                    _ => device.IsOnline ? "在线" : "离线",
+                },
                 SystemInfo: $"{device.Platform} · {device.Version} · {device.ConnectionType}",
                 Metrics: device.Metrics ?? string.Empty))
             .ToArray();

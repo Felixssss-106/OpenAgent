@@ -343,6 +343,55 @@ CLI flags and keeps the adapter process-spawning isolated behind `IProcessRunner
 
 ---
 
+## 2026-09-26 · Phase 6 (LAN increment) — real UDP device discovery
+
+**Change**
+
+- `LanBeaconFrame`: dependency-free wire codec — a single UTF-8 line
+  `OPENAGENT-BEACON v1|id|name|platform|version|port|ticks`. Pure `Encode` /
+  `Decode`, fully unit-testable; `Decode` returns null on any malformed input so
+  the listener safely ignores port noise.
+- `LanDiscoveryOptions`: port (default 47819), beacon interval (3s), and the
+  local id/name/platform/version; every value overridable for tests.
+- `UdpLanTransport : ITransport, IDisposable`: composes `LocalLoopbackTransport`
+  (the local host is always present) and adds UDP broadcast beacon + listener on
+  the well-known port. Discovered peers surface as `ConnectionType = "lan"`
+  devices. Best-effort throughout — if the socket cannot bind (port taken, no
+  permission, headless) it **degrades silently to loopback-only**; `SendAsync`
+  for a known peer unicasts to its last-seen endpoint, otherwise best-effort
+  broadcast, and never throws.
+- `AgentHostAdapter.DevicesAsync` now tags `lan` peers as "局域网" (loopback →
+  "本机"); `App.BuildCompositionRoot` registers `UdpLanTransport` (with default
+  options) composed over `LocalLoopbackTransport`.
+- `tests/OpenAgent.Transport.Tests`: `LanBeaconFrameTests` (7) covers round-trip,
+  prefix/field-count/number validation, trailing newline, garbage → null.
+  `UdpLanTransportTests` (5) covers loopback-always-present, silent degradation
+  when the port is taken, local `SendAsync` no-op, **real peer discovery over
+  UDP** (a second `UdpClient` beacon is seen as a `lan` device), and **real
+  payload delivery** to a known peer endpoint.
+
+**Reason**
+
+The product is a cross-device control center; Phase 6 was only a loopback floor.
+A UDP beacon gives two OpenAgent instances on the same LAN real, zero-dependency
+discovery — the first step toward actually controlling another machine. Keeping
+it best-effort means the shell never breaks on a locked-down or headless host.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 259 passing (247 + 12 Transport).
+
+**Known issues**
+
+- Beacon/message bus is plaintext and unpaired — any OpenAgent on the LAN sees
+  and can message any other. Pairing, trust and encryption are Phase 6–7.
+- `SendAsync` broadcast fallback has no target envelope yet, so a broadcast
+  payload reaches every peer; per-device routing arrives with pairing.
+- mDNS / Cloudflare Relay are not implemented; this is the broadcast seed.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
@@ -350,7 +399,7 @@ code, not a silent stub.
 
 | Area | What | Planned phase |
 |---|---|---|
-| `OpenAgent.Transport` | LAN / mDNS / Relay discovery + pairing | Phase 6–7 |
+| `OpenAgent.Transport` | mDNS discovery, Cloudflare Relay, LAN pairing/trust/encryption | Phase 6–7 |
 | `OpenAgent.Providers` | CLI adapters: streaming / multi-turn session with the underlying CLI | Phase 4+ |
 | `OpenAgent.Plugins` | plugin loader, manifest validation, isolation | Phase 12 |
 | `OpenAgent.Mcp` | MCP client and server bridge | Phase 11 |

@@ -85,7 +85,8 @@ public partial class App : Application
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         services.AddOpenAgent(options => options.PermissionMode = PermissionMode.AskBeforeActions);
         services.AddOpenAgentProviders();
-        services.AddSingleton<ITransport, LocalLoopbackTransport>();
+        services.AddSingleton<ITransport>(_ =>
+            new UdpLanTransport(LanDiscoveryOptions.Default(), new LocalLoopbackTransport()));
 
         Services = services.BuildServiceProvider();
 
