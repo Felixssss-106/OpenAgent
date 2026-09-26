@@ -207,6 +207,10 @@ python scripts/gen-tokens.py --palette graphite
 - 只动 `transform` 和 `opacity`
 - `DoubleAnimation.EasingFunction` 的参数类型是 `EasingFunctionBase`（不是 `IEasingFunction`）
 
+**与效果图的有意偏差**：Pixso 的稿子是静帧，从不画焦点态。真机启动时 WinUI 会把焦点
+放在第一个可聚焦元素上，于是设置页首行会有焦点框——这是 WCAG「焦点可见」要求的，
+不为了对稿而关掉。截图对比时看到这一处差异属正常。
+
 ---
 
 ## 8. 已知坑（按出现频率排序）

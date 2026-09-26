@@ -25,16 +25,6 @@ public partial class MainWindow : Window
         VersionText.Text = $"OpenAgent {ProductVersion()}";
 
         Root.Loaded += (_, _) => RefreshCounts();
-        // A page's first control otherwise takes focus on navigation and paints a
-        // focus ring the artboards never show; taking focus on the page itself
-        // keeps the keyboard walk intact because Tab still moves into the content.
-        ContentFrame.Navigated += (_, _) =>
-        {
-            if (ContentFrame.Content is Control control)
-            {
-                _ = control.Focus(FocusState.Programmatic);
-            }
-        };
         SearchBox.KeyDown += SearchBox_KeyDown;
         Select("agent");
         ContentFrame.Navigate(typeof(AgentPage));
