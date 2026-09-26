@@ -68,3 +68,7 @@ desktop.ini
 
 # WorkBuddy local state
 .workbuddy-ai/
+
+# Python
+__pycache__/
+*.pyc
