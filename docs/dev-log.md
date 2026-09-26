@@ -1105,6 +1105,29 @@ content, not palette:
 Recorded so a future run does not chase these as defects.
 
 
+## 2026-09-27 · Re-shooting the phone matrix on the current APK, and a green task that runs nothing
+
+**Why** — the radius / gutter / bar-inset / card-border fixes landed after the earlier
+Android captures, so the parity claim for artboards 07, 08 and 25–30 was resting on
+screens of a build that no longer exists. All eight screens (four tabs × light/dark) were
+re-shot from the freshly installed release APK.
+
+**A proxy signal worth naming**: `./gradlew testReleaseUnitTest` reports `BUILD
+SUCCESSFUL` in 3s and verifies nothing — the project has no `src/test` at all, only
+`main` and `androidTest`. Android's real automated coverage is the two instrumented
+classes, and those need a device. Ran them on the current code: **OK (3 tests)**, so the
+geometry changes did not break the assertions about what the artboards require on screen.
+
+**Android colour audit** (same coordinate-free sweep used for Windows, which it had
+previously only been run against): the dominant accent matches to the unit in both
+themes — light `(0,120,252)` d=0, dark `(36,132,252)` d=0 — and artboard 08 vs the
+current build came back with **zero** unmatched saturated colours. The few remaining
+"design-only" rows on the other pairs sit at d=12…27 and are anti-aliasing ramps of the
+same accent over a surface, landing one 12-unit quantisation bucket apart because the
+build's text runs are different lengths. The light-side accent reading differs slightly
+from the Windows reading only because the phone capture was down-scaled 1080→390 first.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

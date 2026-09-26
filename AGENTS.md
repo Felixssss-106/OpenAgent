@@ -384,6 +384,13 @@ UIA 树里同样找不到 `Slider` 节点。
 构建/测试要么不接管道直接取退出码，要么 `echo "exit=${PIPESTATUS[0]}"`；
 判断产物是否真的更新，看 mtime 与 sha256，不看构建器的措辞。
 
+### 8.21 Android 没有 JVM 单测，`testReleaseUnitTest` 是空跑
+`android/app/src` 下只有 `main` 与 `androidTest`，**没有 `src/test`**。
+`./gradlew testReleaseUnitTest` 3 秒 `BUILD SUCCESSFUL` 是零用例的绿，别当门禁。
+Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScreenTest / SecondaryScreensTest），
+必须连设备/模拟器跑：
+`adb install -r app-debug.apk && adb install -r -g app-debug-androidTest.apk && adb shell am instrument -w com.openagent.android.test/androidx.test.runner.AndroidJUnitRunner`。
+
 ---
 
 ## 9. 数据与安全
