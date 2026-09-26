@@ -457,6 +457,9 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 266
 bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色并核对地标色（能失败才算门禁，见 §8.22）
+#    → Android 侧另跑：python scripts/ui-android-audit.py
+#      需要 artifacts/shots/raw-<page>-<theme>.png（adb exec-out screencap，**不要缩放**）；
+#      它查内容边距、卡片发丝描边、主色存在性，薄色只在原始分辨率上可判。
 
 # 2. Windows 安装包
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \

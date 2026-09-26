@@ -1298,6 +1298,35 @@ The Windows evidence is therefore regenerated from the shipped publish directory
 single command that can actually fail, rather than being a recollection of a run.
 
 
+## 2026-09-27 · An Android gate that actually catches the bugs it was written for
+
+**Added** `scripts/ui-android-audit.py` — the phone had one-off prints while Windows had a
+gate that could fail. It checks three properties per page: content gutter (dp), the card
+hairline, and the presence of the accent, and it states its resolution rules out loud:
+geometry at the artboard's 390dp scale, thin colours **only on raw device captures**.
+
+**Why the resolution rule exists.** The first version ran on captures that had been
+resized in place from 1080 to 390 and reported the hairline as present — on a pixel of
+(242,242,245), which is a 1px border smeared by down-scaling, not the border. A "pass"
+earned that way is a false green wearing a lab coat. Re-captured everything as raw
+`adb exec-out screencap` files (`raw-<page>-<theme>.png`) and the check now finds the
+border at exactly **(229,229,234)** light and **(44,44,46)** dark.
+
+**Current release APK: exit 0, ten checks pass** across settings (both themes), devices
+and the start screen; gutter 19dp against the artboard's 20 on every card page, accent
+counts within ~10%.
+
+**Proven to catch the real regressions**, by pointing one case at the capture taken
+*before* the gutter and border fixes: it reports `FAIL gutter: design 20dp build 23dp`
+and `FAIL card hairline at native scale: None`, exit **1**. The gate detects the exact
+two defects it was written for, on the artefacts that had them.
+
+**Also fixed while writing it**: a guard keyed off the design's card instead of the
+build's, so pages that legitimately draw no card in the build (empty devices list, the
+start screen) failed the hairline check for a card that isn't there. Added to the AGENTS
+release flow next to `ui-verify.sh`. Verification AVD deleted.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
