@@ -3,21 +3,36 @@ package com.openagent.android
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.openagent.android.ui.screens.AgentChatScreen
+import com.openagent.android.ui.OaTabBar
+import com.openagent.android.ui.screens.AgentScreen
 import com.openagent.android.ui.screens.DevicesScreen
 import com.openagent.android.ui.screens.SettingsScreen
+import com.openagent.android.ui.screens.TasksScreen
 import com.openagent.android.ui.theme.OpenAgentTheme
+import com.openagent.android.ui.theme.ThemePrefs
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ThemePrefs.load(applicationContext)
+        enableEdgeToEdge()
         setContent {
             OpenAgentTheme {
                 OpenAgentApp()
@@ -26,21 +41,50 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Four tabs under a floating capsule bar, Agent first — where every Android
+ * artboard starts. The bar stays put across tabs because 07-12 and 25-30 all
+ * draw it.
+ */
 @Composable
 fun OpenAgentApp() {
     val navController = rememberNavController()
-    Scaffold { innerPadding ->
+    val backStack by navController.currentBackStackEntryAsState()
+    val route = backStack?.destination?.route ?: "agent"
+
+    Scaffold(
+        contentWindowInsets = WindowInsets.statusBars,
+        bottomBar = {
+            Box(modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)) {
+                OaTabBar(selected = route.substringBefore('/')) { target ->
+                    if (target != route) {
+                        navController.navigate(target) {
+                            popUpTo("agent") { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+            }
+        },
+    ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "devices",
-            modifier = Modifier.padding(innerPadding)
+            startDestination = "agent",
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(bottom = 8.dp),
         ) {
-            composable("devices") { DevicesScreen(navController) }
-            composable("chat/{deviceId}") { backStackEntry ->
-                val deviceId = backStackEntry.arguments?.getString("deviceId") ?: ""
-                AgentChatScreen(deviceId = deviceId)
+            composable("agent") { AgentScreen() }
+            composable("tasks") { TasksScreen(onBack = { navController.navigate("agent") }) }
+            composable("devices") {
+                DevicesScreen(
+                    onBack = { navController.navigate("agent") },
+                    onPick = { navController.navigate("agent") },
+                )
             }
-            composable("settings") { SettingsScreen() }
+            composable("settings") { SettingsScreen(onBack = { navController.navigate("agent") }) }
         }
     }
 }

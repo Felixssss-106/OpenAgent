@@ -1,0 +1,58 @@
+package com.openagent.android.ui.theme
+
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+/**
+ * The type scale from design/tokens.css section 3, spelled the way the artboards
+ * use it. Named by role rather than mapped onto Material's headline/body titles,
+ * because Material's roles do not line up with the design's (its "bodyLarge" is
+ * 16sp where the design's body is 15px).
+ */
+object Type {
+    val hero = TextStyle(
+        fontSize = 44.sp,
+        lineHeight = 48.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = (-0.022).em,
+    )
+
+    val title = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
+
+    val heading = TextStyle(
+        fontSize = 17.sp,
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = (-0.01).em,
+    )
+
+    /** Chat and answer copy: the design's 17px heading size at body weight. */
+    val prose = TextStyle(fontSize = 17.sp, lineHeight = 26.sp, fontWeight = FontWeight.Normal)
+
+    val body = TextStyle(fontSize = 15.sp, lineHeight = 22.sp)
+
+    val callout = TextStyle(fontSize = 14.sp, lineHeight = 20.sp)
+
+    val caption = TextStyle(fontSize = 13.sp, lineHeight = 18.sp)
+
+    val micro = TextStyle(
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 0.062.em,
+    )
+}
+
+/** Corner radii from the design: cards 20, the tab bar and composer are capsules. */
+object Shape {
+    val card = 20.dp
+    val inner = 12.dp
+    val tabHeight = 60.dp
+    val composerHeight = 52.dp
+    val navbarHeight = 44.dp
+    val backButton = 36.dp
+    val gutter = 24.dp
+}

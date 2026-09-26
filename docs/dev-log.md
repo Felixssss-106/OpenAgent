@@ -676,11 +676,56 @@ still inspectable.
 
 **Known issues**
 
-- 04/06 (dark 对话态/审批态) and the dark halves of the secondary pages still need
-  their side-by-side pass.
 - The 思考强度 setting has no consumer until a provider takes a reasoning budget.
 - The tool result card shows raw JSON; the artboards show prose. That needs the
   real model loop, not a formatting fix.
+
+
+## 2026-09-26 · Android redrawn against artboards 07–12 and 25–30
+
+The phone shipped as a Material 3 seed: wallpaper-derived dynamic colours, a top
+app bar, chat bubbles, and Devices as the start destination. None of that is in
+the design. It is now the same product as the desktop.
+
+**What changed**
+
+- `ui/theme/Color.kt` mirrors `design/tokens.css` (graphite, light and dark) and
+  dynamic colour is gone — with Material You on, the phone took its palette from
+  the wallpaper and matched nothing.
+- `Type.kt` carries the design's scale (hero 44/48, heading 17/24, body 15/22,
+  caption 13/18, micro 11 with 0.062em tracking) instead of Material's roles.
+- A floating capsule tab bar (`OaTabBar`) with Agent / 任务 / 设备 / 设置, Agent
+  first, persists across routes; secondary routes get the 44px navbar with its
+  36px circular back button and the 20dp grouped cards.
+- `AgentScreen` replaces `AgentChatScreen`: greeting, one status capsule and the
+  52dp input capsule until the first command, then the artboard's 你 / AGENT
+  turn layout. `TasksScreen` is new.
+- Icons are hand-drawn on a 24-unit grid (`ui/Glyphs.kt`). `material-icons-extended`
+  was rejected deliberately: the release build has no minification, so it would
+  ship the entire icon set for four glyphs.
+
+**Verified**
+
+`scripts/ui-shot-android.sh` builds, installs, taps the tab a user would tap
+(coords read out of a `uiautomator` dump, so a route that screenshots also proves
+its tab works), and crops to the artboard's 390×844. All four routes captured in
+both palettes on a headless API 36 emulator and put side by side with
+07/08/25/26/27/28/29/30. The verification AVD was deleted afterwards;
+`AILifeTest` and `QpApi29` untouched.
+
+**Known issues**
+
+- 09–12 (对话态/审批态 on the phone) are not screenshot-verified: the emulator is
+  NAT'd at 10.0.2.x and never hears the host's beacon, so no reply arrives. The
+  chat layout is in code; it needs a phone on the same Wi-Fi.
+- Artboard 11's approval card and the 思考强度 pill are **not** drawn on Android:
+  the envelope carries only `command`/`result`/`hello` text, and the permission
+  gate lives on the host. A control that answers to nothing is worse than a
+  missing one.
+- 任务 lists the commands this phone sent and whether the host answered, not the
+  host's task table — the phone has no task store to read.
+- The settings rows the phone cannot honour (开机启动 / 默认 Agent / 权限模式 /
+  Relay / Provider / 插件) are left out rather than drawn dead.
 
 
 ## NOT IMPLEMENTED registry

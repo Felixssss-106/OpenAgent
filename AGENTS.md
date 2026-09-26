@@ -90,6 +90,10 @@ OpenAgent/
     ├── gen-tray-icon.py       # 托盘 .ico 生成（经典 32bpp DIB，PNG 走不通）
     ├── gen-installer-icon.py  # 多尺寸 app.ico（安装包用）
     ├── gen-android-icons.py   # 安卓 mipmap + 自适应图标（复用 oa_mark）
+    ├── ui-shot.ps1            # Windows：build → 运行 → 按效果图尺寸截客户区
+    ├── capture-window.ps1     # Windows：唤醒显示器 + PrintWindow + 裁剪 + 空帧门禁
+    ├── ui-shot-android.sh     # Android：gradle → 装 → 点 tab → screencap → 390x844
+    ├── android-tab.py         # Android：从 uiautomator dump 里取某个 tab 的中心点
     └── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle
 ```
 
@@ -148,12 +152,17 @@ using global::Windows.System.VirtualKey;
 - `screen.capture` 用 GDI（`BitBlt` + `GetDIBits`），零新依赖
 - 路径走 `ToolPath` → `PathPolicy`，拒绝 `..`（不 normalize）
 
-### 5.5 Android 客户端（Phase 8 seed，提交 `133e9ff`）
-- `LanClient`：UDP beacon + 监听 + `MessageEnvelope` 命令收发
-- `DevicesScreen`：发现列表 → 点进聊天
-- `AgentChatScreen`：命令/结果气泡
-- `SettingsScreen`：设备标识 / 端口 / 系统信息
-- Wire format 与 .NET **字节级兼容**
+### 5.5 Android 客户端（Kotlin + Compose，已对齐效果图 07–12、25–30）
+- `LanClient`：UDP beacon + 监听 + `MessageEnvelope` 命令收发，Wire format 与 .NET **字节级兼容**
+- 四个 tab 一个悬浮胶囊底栏（`OaTabBar`）：Agent / 任务 / 设备 / 设置，Agent 是启动页
+- `AgentScreen`：起始页（问候语 + 状态胶囊 + 输入胶囊）与对话态同一个面
+- `TasksScreen` / `DevicesScreen` / `SettingsScreen`：44px 导航条 + 20dp 圆角分组卡
+- 配色/字号/圆角全部来自 `design/tokens.css`（`ui/theme/Color.kt`、`Type.kt`），
+  **必须关掉 Material You 动态取色**，否则手机按壁纸取色，与效果图无关
+- 图标是 `ui/Glyphs.kt` 里手绘的 24 单位网格：不引 `material-icons-extended`
+  （release 没开混淆，会把整套图标全打进包）
+- 效果图里的 审批态 / 思考强度 在手机上**没有数据源**：envelope 只有 `command`/`result`/`hello`
+  三种文本消息，权限门在 Windows 侧，所以这两块没有画成假控件
 
 ---
 
