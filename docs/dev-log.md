@@ -1172,6 +1172,29 @@ directory that installs.
 Added to the AGENTS release flow as a gate. Scratch extract removed after the run.
 
 
+## 2026-09-27 · DPI awareness of the published exe, and re-running the gate instead of recalling it
+
+**Checked** — every pixel comparison so far was made on a display at 100%, so the
+measurements only prove "device px == design px" here if the shipped binary is actually
+per-monitor aware. It is, and this is the part that proves it: `GetWindowDpiAwarenessContext`
+on the running `artifacts/windows/win-x64/OpenAgent.exe` compares equal to
+`DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2` (`isPerMonitorV2=True`, system and window
+DPI both 96). The source `app.manifest` explains why — it carries only
+`<dpiAwareness>PerMonitorV2</dpiAwareness>`, with no `dpiHosting` element of the kind that
+once made the exe unlaunchable (AGENTS §8.8). The manifest file itself is not present in
+the publish directory, since it is linked into the binary: the runtime query, not the
+source read, is the evidence about the built artifact.
+
+**Limitation stated rather than papered over**: this machine sits at 96 DPI, so the
+behaviour at 125–150% has not been *measured*, only shown to be handled by the right
+mechanism. Changing the user's display scaling to test it is a session-wide side effect
+and was not done.
+
+**Gate re-run at current HEAD** rather than quoted from memory: `dotnet build` exit 0
+with 0 warnings / 0 errors; `dotnet test --no-build` exit 0 with **266/266** across the
+eight projects (36 + 9 + 25 + 24 + 56 + 61 + 15 + 40).
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
