@@ -377,6 +377,13 @@ UIA 树里同样找不到 `Slider` 节点。
 任何一次 `MoveWindow`/`ShowWindow`（`capture-window.ps1` 每次都做）都会触发 light dismiss
 把它关掉——先用 `-e`/UIA Invoke 试的时候，很可能它开过又被截前的挪窗关了。
 
+### 8.20 `cmd | tail` 会把失败读成成功
+`./gradlew assembleRelease -q 2>&1 | tail -8` 的退出码来自 `tail`，不是 gradle。
+一次编译失败（重复 import）因此被报成 exit 0，紧接着 `adb install -r` 装的是**上一版 APK**，
+后面所有测量都在量旧产物——而旧产物看起来完全正常，所以没人起疑。
+构建/测试要么不接管道直接取退出码，要么 `echo "exit=${PIPESTATUS[0]}"`；
+判断产物是否真的更新，看 mtime 与 sha256，不看构建器的措辞。
+
 ---
 
 ## 9. 数据与安全

@@ -46,9 +46,10 @@ object Type {
     )
 }
 
-/** Corner radii from the design: cards 20, the tab bar and composer are capsules. */
+/** Corner radii from the design: content containers 28, nested surfaces inside them
+ *  tighter (内圆角 ≤ 外圆角), and the tab bar and composer are capsules, not radii. */
 object Shape {
-    val card = 20.dp
+    val card = 28.dp
     val inner = 12.dp
     val tabHeight = 60.dp
     val composerHeight = 52.dp

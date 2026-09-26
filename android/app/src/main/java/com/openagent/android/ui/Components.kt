@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openagent.android.ui.theme.LocalPalette
@@ -41,15 +42,15 @@ fun OaCard(
     modifier: Modifier = Modifier,
     surface: Color = ink.bgSurface,
     border: Color = Color.Transparent,
-    radius: Int = 20,
+    radius: Dp = Shape.card,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(radius.dp))
+            .clip(RoundedCornerShape(radius))
             .background(surface)
-            .then(if (border == Color.Transparent) Modifier else Modifier.border(1.dp, border))
+            .then(if (border == Color.Transparent) Modifier else Modifier.border(1.dp, border, RoundedCornerShape(radius)))
             .padding(horizontal = 20.dp, vertical = 4.dp),
         content = content,
     )

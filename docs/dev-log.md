@@ -980,6 +980,35 @@ tree, still reports the focused element's real index, and costs almost no contex
 Use that to get a revision before `set_value`.
 
 
+## 2026-09-27 · The phone's cards were 8dp too square, and a pipe hid that for a whole build
+
+**Found by** auditing the code against `design/pixso-final/manifest.json`, which states
+the design system in words rather than pixels: 内容容器 radius **28**, capsules 999,
+"嵌套铁律：内圆角 ≤ 外圆角", Windows 水平外边距 96 / 内容左边缘 336, Android 20/20.
+Windows obeyed — `ListCard` is `RadiusLg` (28) and the greeting's ink starts at x=337,
+i.e. 240 + 96 + 1. Android did not: `Shape.card` was **20dp**, with a comment claiming
+"cards 20" from the design.
+
+**Measured, not assumed.** Fitting the corner curve (one parameter, radius) over the
+first 40 rows of the card gave: artboard 27 → 23.5dp, build → 18.0dp. The estimator
+under-reads by ~2dp (it calls the known 20dp build 18.0), so the artboard is ~25-28 and
+the build was clearly the wrong side of the gap. `Shape.card` is now 28dp and `OaCard`
+defaults to it instead of a literal, so the token has one source. Re-measured on a fresh
+release APK: **25.5dp** against the artboard's 23.5, from 18.0.
+
+**The trap that nearly made this invisible.** The first rebuild ran
+`./gradlew assembleRelease -q 2>&1 | tail -8`; the pipe returned `tail`'s exit code, so a
+real compile failure (a duplicated `Shape` import) reported success, `adb install -r`
+silently reinstalled the **previous** APK, and the "after" measurement came back at
+exactly 18.0dp again. That identical number is what caught it. Now recorded as AGENTS
+§8.20: take the exit code without a pipe, and confirm a product changed by mtime and
+sha256, not by a builder's wording. New APK: `51b5c6e0cd94af75…`, 19,052,076 B.
+
+**Checked after the change**: settings in light and dark — corners read like the
+artboard, the 设备标识 value still ellipsises on one line, nothing clipped. Verification
+AVD deleted.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
