@@ -225,6 +225,124 @@ Providers).
 
 ---
 
+## 2026-09-26 · Phase 6 (minimal seed) — Transport + Devices page
+
+**Change**
+
+- `OpenAgent.Transport` now has real (if minimal) code instead of an empty
+  project: `ITransport`, `DeviceRecord`, and `LocalLoopbackTransport` (spec
+  60–65). The loopback transport registers the local Windows host as the only
+  device (`Id = "local:" + MachineName`, `ConnectionType = "loopback"`,
+  `IsOnline = true`); `SendAsync` is a no-op for the local id and throws
+  `NotSupportedException("NOT IMPLEMENTED: non-local device transport")` for any
+  other target.
+- `IAgentHost.DevicesAsync` + `DeviceSummary` record. The UI library depends only
+  on Core/Shared and sees device data through `DeviceSummary`, so it never
+  references `OpenAgent.Transport` directly (spec §165 dependency direction);
+  `NullAgentHost` returns empty.
+- `AgentHostAdapter.DevicesAsync` maps `DeviceRecord` → `DeviceSummary`
+  (`Tag` = 本机 / 在线 / 离线). `App.BuildCompositionRoot` registers
+  `ITransport` and passes it into the adapter.
+- `DevicesPage` now loads real devices via `AgentHost.Current.DevicesAsync()`; the
+  fake "Pixel 9" sample row is gone.
+- `tests/OpenAgent.Transport.Tests` (net10.0): 5 tests — discovery returns one
+  local device, name == MachineName, platform == Windows, local send is a no-op,
+  non-local send throws NOT IMPLEMENTED.
+
+**Reason**
+
+The Devices page had hardcoded sample data. The spec wants real device discovery;
+the loopback transport is the Phase 6 floor so the page is never fake data, and
+LAN/mDNS/Android pairing layers in on top later (Phase 6–7).
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 181 passing (176 + 5 Transport).
+
+---
+
+## 2026-09-26 · UI service tests + LongPressCounter (M-17 timing)
+
+**Change**
+
+- `LongPressCounter`: pure M-17 timing arithmetic (`ProgressMs` / `IsComplete`
+  / `ProgressRatio`), extracted from `CommandCenterWindow` so it is unit-testable
+  without a `DispatcherQueue`. `CommandCenterWindow` now drives the live progress
+  fill and the 1200ms confirm threshold through it.
+- `tests/OpenAgent.Windows.UI.Tests` (net10.0-windows, XAML-free, **no
+  `UseWinUI`**): a WinUI test-host `Microsoft.TestPlatform.CoreUtilities` loader
+  conflict appears when `UseWinUI` is set, so the test project stays
+  windows-targeted but without the WinUI build targets; the UI library arrives
+  transitively.
+- 61 tests: `CommandPlanner.Plan` + `ExtractTarget` (incl. `"spotify" 的`),
+  `TaskViewMapper` (StatusLabel / StatusBrushKey / DurationText / SummaryLine),
+  `ToolViewMapper` (RiskLabel / RiskBrushKey / RiskBackgroundKey / Glyph),
+  `LongPressCounter` (0 / 23 / 24 / 30-tick boundary arithmetic).
+
+**Reason**
+
+The motion logic (M-17 long-press, M-02/M-14/M-24) had no test coverage; the UI
+service layer (CommandPlanner / *ViewMapper) was untested. Extracting pure
+functions and covering them closes that gap without a UI runtime.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 242 passing (181 + 61 UI).
+
+---
+
+## 2026-09-26 · Phase 4+ — real CLI Provider adapters (discovery drives execution)
+
+**Change**
+
+- `IProcessRunner` abstracts process spawning so the CLI adapter is unit-testable:
+  `ProcessRunResult(ExitCode, StdOut, StdErr)` + `RealProcessRunner` (concurrent
+  stdout/stderr reads via `Process`, then `WaitForExitAsync`).
+- `CliInvocationProfile`: per-CLI invocation data — `Executables[]`,
+  `Capabilities`, and `PrefixArgs` (codex=`exec`, claude=`-p`, opencode=`run`,
+  pi/gemini=none; every profile carries `Approval`). `BuildArguments(prompt)` emits
+  the prefix then the prompt as a final quoted argument (spaces → `"…"`).
+- `CliInvocationProfiles.For(cliId)`: the data table mapping `CliDiscovery` ids to
+  profiles (spec §27: discover-and-register, never hardcode CLI flags).
+- `CliAgentProvider`: an `IAgentProvider` that drives one CLI per invocation.
+  `SendPromptAsync` emits `Thought → ToolCall → ToolResult` steps; a non-zero exit
+  code with non-empty stderr becomes an `Error` step; any thrown exception becomes
+  an `Error` step. The prompt is always the final quoted argument.
+- `AddOpenAgentProviders` now, on Windows, walks `CliDiscovery.Scan()` and for each
+  found CLI resolves its profile and registers a `CliAgentProvider` as
+  `IAgentProvider`; `IProcessRunner` is registered once. So installing Codex /
+  Claude Code / OpenCode makes it selectable with **no shell change** — and if
+  none are installed, only the Native provider is present.
+- `tests/OpenAgent.Providers.Tests/CliAgentProviderTests.cs` (net10.0): 5 tests via
+  a `FakeRunner` — 3-step construction, `-p "打开 notepad"` argument format,
+  stderr→Error on non-zero exit, exception→Error, and Capabilities sourced from the
+  profile.
+
+**Reason**
+
+Phase 4 left CLI discovery as "find-only"; the spec (§24–27) intends discovery to
+make external agents real, selectable providers. Wiring `CliDiscovery.Scan()` to
+`CliAgentProvider` via data-driven profiles closes that loop without hardcoding any
+CLI flags and keeps the adapter process-spawning isolated behind `IProcessRunner`.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 247 passing (242 + 5 CLI adapter).
+
+**Known issues**
+
+- The adapter captures stdout/stderr as a single `ToolResult` step — there is no
+  streaming or multi-turn session with the underlying CLI yet (spec wants a real
+  agent loop in Phase 3/Phase 4+). Native provider still owns the deterministic
+  keyword router for in-process intents.
+- Profiles are hard-coded per known CLI; an unknown-but-discovered executable gets
+  no profile and is skipped (safe default).
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
@@ -232,8 +350,8 @@ code, not a silent stub.
 
 | Area | What | Planned phase |
 |---|---|---|
-| `OpenAgent.Transport` | LAN / Relay connection implementations | Phase 6–7 |
-| `OpenAgent.Providers` | CLI adapters that drive Codex / Claude Code / OpenCode / Pi | Phase 4+ |
+| `OpenAgent.Transport` | LAN / mDNS / Relay discovery + pairing | Phase 6–7 |
+| `OpenAgent.Providers` | CLI adapters: streaming / multi-turn session with the underlying CLI | Phase 4+ |
 | `OpenAgent.Plugins` | plugin loader, manifest validation, isolation | Phase 12 |
 | `OpenAgent.Mcp` | MCP client and server bridge | Phase 11 |
 | `OpenAgent.Agent` | Native agent loop backed by a real model | Phase 3 |
