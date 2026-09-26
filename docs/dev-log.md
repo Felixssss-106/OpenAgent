@@ -1195,6 +1195,31 @@ with 0 warnings / 0 errors; `dotnet test --no-build` exit 0 with **266/266** acr
 eight projects (36 + 9 + 25 + 24 + 56 + 61 + 15 + 40).
 
 
+## 2026-09-27 · Re-rendering the phone's sample-data cards, because the live pages are empty
+
+**Why this was still a hole** — the radius / gutter / border fixes were verified on the
+settings screen, but artboards 25 and 26 show *task* and *device* cards, and the emulator
+has no paired host and no sent commands, so the live 任务 and 设备 pages render empty
+states. Those cards had only ever been seen before the fixes.
+
+**Devices (artboard 26)** — re-rendered through `SecondaryScreensTest#deviceCardsMatchArtboard26`
+with the hold-and-screencap route, and the card now measures what the design says: fill
+(247,247,250) with its left edge at x=19 (the 20dp gutter, less resize bias) and a border
+pixel at x=20. Read at native scale on the settings screen that border is exactly
+(229,229,234) = `--border-subtle`; here it samples lighter (236,236,240) because the frame
+was down-scaled 1080→390 and a 1px line blends with its neighbours.
+
+**Tasks (artboard 25)** — **not** verified this pass, and said so rather than glossed: the
+held frame came back as a uniform (48,48,48) — the Compose test host before its content
+composes — so the capture caught the wrong moment even though the test itself reported
+`OK (1 test)`. A blank screenshot is not evidence about the design. The tasks rows use the
+same `OaCard` as the two screens that were measured, so their card styling follows from
+that, but the row layout itself is only covered by the test's own assertions, not by a
+fresh comparison here.
+
+Verification AVD deleted.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
