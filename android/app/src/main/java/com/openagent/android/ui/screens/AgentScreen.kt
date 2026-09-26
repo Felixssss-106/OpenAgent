@@ -67,29 +67,44 @@ fun AgentScreen(vm: MainViewModel = viewModel()) {
     val host = devices.firstOrNull { it.platform.equals("windows", ignoreCase = true) }
         ?: devices.firstOrNull()
 
+    AgentScreenContent(
+        messages = messages,
+        hostName = host?.name,
+        canSend = host != null,
+        draft = draft,
+        onDraft = { draft = it },
+        onSend = {
+            val text = draft.trim()
+            if (text.isNotEmpty() && host != null) {
+                vm.sendCommand(host.id, text)
+                draft = ""
+            }
+        },
+    )
+}
+
+/** The same surface without the view model, so the layout can be rendered to a screenshot. */
+@Composable
+internal fun AgentScreenContent(
+    messages: List<ChatMessage>,
+    hostName: String?,
+    canSend: Boolean,
+    draft: String,
+    onDraft: (String) -> Unit,
+    onSend: () -> Unit,
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (messages.isEmpty()) {
-            StartState(hostName = host?.name, modifier = Modifier.weight(1f))
+            StartState(hostName = hostName, modifier = Modifier.weight(1f))
         } else {
             ChatState(messages = messages, modifier = Modifier.weight(1f))
         }
 
         if (messages.isNotEmpty()) {
-            MetaRow(hostName = host?.name)
+            MetaRow(hostName = hostName)
         }
 
-        Composer(
-            draft = draft,
-            onDraft = { draft = it },
-            onSend = {
-                val text = draft.trim()
-                if (text.isNotEmpty() && host != null) {
-                    vm.sendCommand(host.id, text)
-                    draft = ""
-                }
-            },
-            enabled = host != null,
-        )
+        Composer(draft = draft, onDraft = onDraft, onSend = onSend, enabled = canSend)
         Spacer(Modifier.height(10.dp))
     }
 }

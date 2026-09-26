@@ -715,13 +715,19 @@ both palettes on a headless API 36 emulator and put side by side with
 
 **Known issues**
 
-- 09–12 (对话态/审批态 on the phone) are not screenshot-verified: the emulator is
-  NAT'd at 10.0.2.x and never hears the host's beacon, so no reply arrives. The
-  chat layout is in code; it needs a phone on the same Wi-Fi.
-- Artboard 11's approval card and the 思考强度 pill are **not** drawn on Android:
-  the envelope carries only `command`/`result`/`hello` text, and the permission
-  gate lives on the host. A control that answers to nothing is worse than a
-  missing one.
+- 09/10 (对话态) are verified through `AgentScreenTest`, which renders the same
+  composable with sample turns and asserts every part of the artboard is on
+  screen; `scripts/android-shot-test.sh` holds the frame and screencaps it in both
+  palettes. That checks the drawing, not the inbound path — the emulator is NAT'd
+  and never hears the host's beacon, and adb cannot forward UDP, so a real
+  command→result round trip still needs a phone on the same Wi-Fi.
+- 11/12 (审批态) are not drawn on Android at all: the envelope carries only
+  command/result/hello text and the permission gate lives on the host. Giving the
+  phone an approve button means adding a host→phone approval channel, which is
+  deferred until LAN pairing/encryption (Phase 6–7) so the channel is not
+  plaintext-and-trusts-anyone.
+- The tool disclosure and result card from artboard 09 are absent: the phone
+  receives one text blob, so it cannot know which tool ran or how long it took.
 - 任务 lists the commands this phone sent and whether the host answered, not the
   host's task table — the phone has no task store to read.
 - The settings rows the phone cannot honour (开机启动 / 默认 Agent / 权限模式 /
