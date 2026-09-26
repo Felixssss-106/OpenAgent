@@ -820,6 +820,11 @@ was not: the design's `0.4s` and the build's `0.0s` are the same ink (peak 111 o
 dark canvas), the same 9-row height, and end at the same x=1342. Faint is what the
 artboard drew.
 
+Because the greeting moved into a `Canvas`, which measures its children at infinite
+width, the start page was re-shot at 1440×900, 1100×720 and 960×640: the greeting's
+ink begins at x=337 and spans 185 rows in all three, so the column neither drifted nor
+rescaled and the descender survived every size.
+
 **Verified:** `dotnet build` clean, `dotnet test` 266/266 across 8 projects,
 `assembleRelease` green, installers rebuilt (MSI 76,334,288 B / EXE 77,061,565 B)
 with only the known `ICE03 File.Language` reports the gate already documents.
