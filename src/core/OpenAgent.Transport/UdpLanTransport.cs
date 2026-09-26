@@ -44,6 +44,13 @@ public sealed class UdpLanTransport : ITransport, IDisposable
     private bool _disposed;
 
     /// <summary>
+    /// Raised when a non-beacon JSON envelope arrives from a LAN peer (a command
+    /// or result). The handler runs on a thread-pool thread from the listener
+    /// loop, so subscribers must marshal to the UI if they touch it.
+    /// </summary>
+    public event EventHandler<LanInboundMessageEventArgs>? InboundMessage;
+
+    /// <summary>
     /// A peer is dropped if not heard from within this multiple of the beacon
     /// interval — covers a peer going offline without a goodbye.
     /// </summary>
@@ -206,17 +213,24 @@ public sealed class UdpLanTransport : ITransport, IDisposable
                 }
 
                 var frame = LanBeaconFrame.Decode(result.Buffer);
-                if (frame is null)
+                if (frame is not null)
                 {
+                    if (frame.DeviceId != _localId)
+                    {
+                        _peers[frame.DeviceId] = (frame, DateTime.UtcNow, result.RemoteEndPoint);
+                    }
+
                     continue;
                 }
 
-                if (frame.DeviceId == _localId)
+                // Not a beacon — try a message envelope (command / result / hello).
+                var envelope = LanMessageEnvelope.Decode(result.Buffer);
+                if (envelope is null)
                 {
-                    continue; // ignore our own beacon
+                    continue; // port noise we don't understand
                 }
 
-                _peers[frame.DeviceId] = (frame, DateTime.UtcNow, result.RemoteEndPoint);
+                InboundMessage?.Invoke(this, new LanInboundMessageEventArgs(envelope));
             }
         }
         catch (OperationCanceledException)

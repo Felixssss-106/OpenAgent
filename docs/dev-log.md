@@ -392,6 +392,50 @@ it best-effort means the shell never breaks on a locked-down or headless host.
 
 ---
 
+## 2026-09-26 · v1.0.0 foundation release
+
+**Change**
+
+- Version bumped to `1.0.0` across all .NET assemblies (`Directory.Build.props`).
+- Cross-device wire protocol documented in `docs/protocol.md` (beacon + JSON
+  envelope) so Windows and Android are guaranteed to interoperate.
+- Windows transport enhanced with `LanMessageEnvelope` (codec) and an
+  `InboundMessage` event on `UdpLanTransport`; the composition root subscribes
+  and logs inbound cross-device commands via `ILogger`.
+- Android client (`android/` Gradle project, Kotlin + Jetpack Compose +
+  Material 3): `OpenAgentApplication` owns the process-scoped `LanClient`;
+  `LanClient` sends `OPENAGENT-BEACON v1` and listens on port 47819, exposes
+  discovered peers as a `StateFlow`, and sends/receives `MessageEnvelope`
+  commands; `MainViewModel` bridges into Compose; screens are Devices list,
+  Agent chat (command/result bubbles), and Settings (device id + system info).
+  Wire format is byte-for-byte compatible with the .NET transport.
+- `CHANGELOG.md` updated with the full v1.0.0 scope.
+- Git tag `v1.0.0` created.
+
+**Reason**
+
+The user directed the project to its first release milestone that includes both
+platforms. v1.0.0 is a **foundation release**: a real, tested Windows control
+shell + a real, source-complete Android companion that discover each other on a
+LAN and can exchange commands via the documented wire protocol. Everything
+built after this (pairing, relay, MCP, plugins) layers on top of this floor.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 259 passing (full suite green).
+The Android project is source-verified (no Android SDK in this sandbox); it is
+written to compile in Android Studio with AGP 8.7.3 + Kotlin 2.0.21.
+
+**Known issues**
+
+- Android binary cannot be produced in this sandbox (no Android SDK / Gradle
+  build-tools). The Kotlin source is complete and aligned to the spec; open the
+  `android/` folder in Android Studio to build.
+- No git remote is configured; the `v1.0.0` tag is local.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

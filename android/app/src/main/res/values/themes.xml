@@ -1,0 +1,4 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Compose draws its own surface; this style only sets a NoActionBar window. -->
+    <style name="Theme.OpenAgent" parent="android:Theme.Material.NoActionBar" />
+</resources>

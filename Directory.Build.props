@@ -16,7 +16,7 @@
     <Product>OpenAgent</Product>
     <Company>OpenAgent</Company>
     <Copyright>Copyright (c) OpenAgent contributors</Copyright>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
     <Authors>OpenAgent contributors</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>

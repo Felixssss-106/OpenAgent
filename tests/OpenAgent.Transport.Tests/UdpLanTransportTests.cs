@@ -119,6 +119,37 @@ public sealed class UdpLanTransportTests : IDisposable
         Assert.Equal(payload, received);
     }
 
+    [Fact]
+    public async Task Raises_InboundMessage_when_a_peer_command_envelope_arrives()
+    {
+        var port = GetFreeUdpPort();
+        var transport = new UdpLanTransport(
+            LanDiscoveryOptions.Default() with { Port = port, BeaconIntervalMs = 200 },
+            new LocalLoopbackTransport());
+        _transport = transport;
+
+        var tcs = new TaskCompletionSource<LanMessageEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
+        transport.InboundMessage += (_, e) => tcs.TrySetResult(e.Message);
+
+        var payloadBytes = new LanMessageEnvelope(
+            LanMessageType.Command,
+            Guid.NewGuid().ToString(),
+            "android:PeerPhone",
+            "lan:host",
+            "open notepad",
+            DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()).Encode();
+
+        using var sender = new UdpClient();
+        sender.Send(payloadBytes, payloadBytes.Length, new IPEndPoint(IPAddress.Loopback, port));
+
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+        Assert.Same(tcs.Task, completed);
+        var message = await tcs.Task;
+        Assert.Equal(LanMessageType.Command, message.Type);
+        Assert.Equal("android:PeerPhone", message.From);
+        Assert.Equal("open notepad", message.Text);
+    }
+
     private static async Task<DeviceRecord?> WaitForPeerAsync(
         UdpLanTransport transport, string peerId, TimeSpan timeout)
     {

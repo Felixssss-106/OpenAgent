@@ -43,6 +43,8 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+.idea/
+*.iml
 
 # Node / relay tooling
 node_modules/

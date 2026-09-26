@@ -85,15 +85,23 @@ public partial class App : Application
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         services.AddOpenAgent(options => options.PermissionMode = PermissionMode.AskBeforeActions);
         services.AddOpenAgentProviders();
-        services.AddSingleton<ITransport>(_ =>
-            new UdpLanTransport(LanDiscoveryOptions.Default(), new LocalLoopbackTransport()));
+        var transport = new UdpLanTransport(LanDiscoveryOptions.Default(), new LocalLoopbackTransport());
+        services.AddSingleton<ITransport>(transport);
 
         Services = services.BuildServiceProvider();
 
         var tasks = Services.GetService<AgentTaskService>();
         var registry = Services.GetService<ToolRegistry>();
-        var transport = Services.GetService<ITransport>();
-        if (tasks is not null && registry is not null && transport is not null)
+        var logger = Services.GetService<ILogger<App>>();
+        transport.InboundMessage += (_, e) =>
+        {
+            // Best-effort visibility for cross-device commands (seed; Phase 6-7
+            // will route these into the agent task pipeline with pairing/trust).
+            logger?.LogInformation(
+                "LAN inbound {Type} from {From} to {To}: {Text}",
+                e.Message.Type, e.Message.From, e.Message.To, e.Message.Text);
+        };
+        if (tasks is not null && registry is not null)
         {
             AgentHost.Register(new AgentHostAdapter(tasks, registry, transport));
         }
