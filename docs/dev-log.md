@@ -41,6 +41,45 @@ solution stays navigable.
 
 ---
 
+## 2026-09-26 · Phase 2 — WinUI 3 shell visible
+
+**Change**
+
+- `OpenAgent.Windows` (exe) + `OpenAgent.Windows.UI` (library): main window with
+  a grouped sidebar, and pages for Dashboard, Tasks, Devices, Tools, Provider,
+  Plugins and Settings.
+- `CommandCenterWindow`: a 720×480 always-on-top overlay opened with Alt+Space,
+  scale+fade entrance, closes on Esc or focus loss.
+- Global hotkey via `RegisterHotKey` + window subclassing, single-instance
+  `Mutex`, tray icon (double-click opens the command center), and a light/dark
+  theme persisted in `ApplicationData.LocalSettings`.
+- `scripts/gen-tokens.py` converts `design/tokens.css` (OKLCH) into
+  `Themes/Tokens.xaml` (sRGB); `scripts/gen-tray-icon.py` renders the tray glyph.
+
+**Reason**
+
+Spec Phase 2 requires a visible Windows UI over the Phase 1 core. Pages follow
+the design boards in `design/pixso-final/` and the token source of truth, so the
+shell matches the intended visual system instead of WinUI defaults.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 98 passing; launching `OpenAgent.exe`
+keeps the process alive for 5s (no XAML load crash).
+
+**Known issues**
+
+- Alt+Space is the window system menu on most machines; registration falls back
+  to Ctrl+Alt+Space. There is no IPC yet, so a second launch simply exits.
+- Window chrome is stock WinUI (system title bar); the frameless look from the
+  design boards is not applied.
+- Page data is in-memory sample data — the pages are not yet wired to
+  `ToolRegistry` / `AgentTaskService` through DI.
+- The tray icon supports double-click only; no context menu (open / quit) yet.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
