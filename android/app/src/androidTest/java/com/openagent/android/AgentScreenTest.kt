@@ -1,8 +1,12 @@
 package com.openagent.android
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -45,23 +49,31 @@ class AgentScreenTest {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        // targetSdk 35 forces edge-to-edge; this host is not MainActivity,
+                        // so consume the system bars here or the tab bar lands under the
+                        // navigation bar.
+                        .windowInsetsPadding(WindowInsets.systemBars)
                         .background(LocalPalette.current.bgCanvas),
                 ) {
-                    AgentScreenContent(
-                        messages = listOf(
-                            ChatMessage("u1", ChatMessage.Direction.OUT, "整理一下今天下载的文件。"),
-                            ChatMessage(
-                                "a1",
-                                ChatMessage.Direction.IN,
-                                "我发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件，需要移动 35 个文件。",
+                    // Weighted so the tab bar is not pushed off the bottom: the screen
+                    // fills its space, and an unweighted sibling lands below the fold.
+                    Box(modifier = Modifier.weight(1f)) {
+                        AgentScreenContent(
+                            messages = listOf(
+                                ChatMessage("u1", ChatMessage.Direction.OUT, "整理一下今天下载的文件。"),
+                                ChatMessage(
+                                    "a1",
+                                    ChatMessage.Direction.IN,
+                                    "我发现 23 张图片、4 个 PDF、2 个 ZIP、6 个其他文件，需要移动 35 个文件。",
+                                ),
                             ),
-                        ),
-                        hostName = "DESKTOP-XXXX",
-                        canSend = true,
-                        draft = "",
-                        onDraft = {},
-                        onSend = {},
-                    )
+                            hostName = "DESKTOP-XXXX",
+                            canSend = true,
+                            draft = "",
+                            onDraft = {},
+                            onSend = {},
+                        )
+                    }
                     OaTabBar(selected = "agent") {}
                 }
             }

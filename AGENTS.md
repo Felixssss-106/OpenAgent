@@ -482,6 +482,17 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 3. 驱动态的截图必须断言"真的进入那个态了"：与同主题的起始页比内容列像素差（本例 1.9–2.2%），
    审批态再断言橙色卡框存在。否则驱动失败 = 拍到起始页，mtime 却是新的，门禁照样放行。
 
+### 8.31 卡片检测两条铁律：带宽 < 页宽、描边要成"线"
+`ui-android-audit.py` 靠"离卡片填充色 ≤6 的像素带"找卡片，两个坑都会让门禁**静默跳过**（跳过还打印 ok，最坏的那种绿）：
+1. **整页宽的同色带会被当成卡片**。浅色主题里系统栏正好落在 `(247,247,250)±6`，于是"最左填充像素"
+   =0，`min(lefts) >= 8` 的守卫判定"这页没卡片"，边距和描边两项检查一起跳过。规则：**卡片是比页窄的带**
+   （`run.max()-run.min() < 0.95 * width`）。
+2. **一个描边像素不是一条边**。旧实现只要"某行填充最左点 ±4px 内有一个发丝色像素"就返回 true——
+   把卡片左边框整条擦干净仍然通过，因为每行都还能命中它自己的**上边框**。规则：在某一列上数行数，
+   要求 ≥40 行同色（真边框是一条竖线）；报告的颜色取该列匹配像素的**众数**，不是中间那行的像素
+   （中间行常落在抗锯齿上，会报成 `(241,241,244)` 而真值是 `(229,229,234)`）。
+两条都用"故意做错"的图验过：抹掉左框 → `FAIL card hairline: None`、exit 1；还原 → exit 0。
+
 ---
 
 ## 9. 数据与安全
@@ -529,9 +540,14 @@ bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核
 #                                + 驱动并核对对话态/审批态（效果图 03–06，见 §8.30）
 #                                （能失败才算门禁，见 §8.22；几何口径见 §8.25/§8.26）
 #   SKIP_STATES=1 跳过驱动态（要抢前台）；SKIP_SHOTS=1 只审计已有截图
-#    → Android 侧另跑：python scripts/ui-android-audit.py
-#      需要 artifacts/shots/raw-<page>-<theme>.png（adb exec-out screencap，**不要缩放**）；
-#      它查内容边距、卡片发丝描边、主色存在性，薄色只在原始分辨率上可判。
+#    → Android 侧另跑：bash scripts/ui-verify-android.sh
+#      装的是 **release APK**（发布产物，签名 `fdb10835…`，`isMinifyEnabled=false`），
+#      主题用模拟器的 `cmd uimode night yes|no` 切（release 不可调试，写不了 SharedPreferences）。
+#      每个路由写两张图：`raw-<route>-<theme>.png`（原始 1080x2400，审计读它）和
+#      `android-<route>-<theme>.png`（390x844，人眼看）。**不要就地缩放**——1px 描边会被抹掉，
+#      审计会"通过"在一条糊掉的红线上（见 §8.31）。
+#      模拟器到不了的状态（无主机 → 无设备卡/任务行/对话）由 Compose 测试 hold 住拍帧，
+#      `scripts/android-shot-test.sh <out> <class#method>`，raw 与缩放两张同样都留。
 
 # 2. Windows 安装包
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \

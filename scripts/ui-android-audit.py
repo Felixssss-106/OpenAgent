@@ -33,17 +33,27 @@ RAW_MIN_WIDTH = 1000
 PAGE_GUTTER_MIN = 8
 
 # artboard, capture, theme
+#
+# Two sources. `raw-<route>-<theme>` is the installed release build on a route a person
+# can reach; `raw-phone-<state>-<theme>` is a Compose test held on screen, used for the
+# states the emulator cannot reach (no host on the LAN means no device cards, no task
+# rows, no conversation). Both are unscaled 1080x2400.
 CASES = [
     ("27", "artifacts/shots/raw-settings-light.png", "light"),
     ("30", "artifacts/shots/raw-settings-dark.png", "dark"),
-    ("26", "artifacts/shots/raw-devices-light.png", "light"),
-    ("29", "artifacts/shots/raw-devices-dark.png", "dark"),
+    ("26", "artifacts/shots/raw-phone-devices-light.png", "light"),
+    ("29", "artifacts/shots/raw-phone-devices-dark.png", "dark"),
+    ("25", "artifacts/shots/raw-phone-tasks-light.png", "light"),
+    ("28", "artifacts/shots/raw-phone-tasks-dark.png", "dark"),
     ("07", "artifacts/shots/raw-agent-light.png", "light"),
     ("08", "artifacts/shots/raw-agent-dark.png", "dark"),
-    # The 对话态 is not reachable on an emulator (no host), and the instrumented frame
-    # that renders it came back scrolled, with the composer half under the navigation
-    # scrim -- an unusable input, so it is not listed as a case. Artboards 09/10 rest on
-    # the held-frame comparison in docs/dev-log.md instead.
+    ("09", "artifacts/shots/raw-phone-chat-light.png", "light"),
+    ("10", "artifacts/shots/raw-phone-chat-dark.png", "dark"),
+    # The live devices and tasks routes are kept out of the cases on purpose: without a
+    # host they render their empty states, which have no card to measure. They are
+    # captured anyway (raw-devices-*, raw-tasks-*) so the tab navigation is proven.
+    # Artboards 11/12 (the phone's approval card) are not here because the LAN envelope
+    # carries no approval state to render - see the deferred task in AGENTS.md.
 ]
 
 
@@ -55,27 +65,71 @@ def to_dp(path):
 
 
 def card_edge(a):
+    """Left edge of the card band, or None when the page draws no card.
+
+    A card is a band *narrower than the page*: without that test the light theme's
+    full-width system bar, which happens to sit within 6 of the card fill, was the
+    leftmost match on some row, the guard concluded "no card here", and both the gutter
+    and hairline checks skipped — a green run that measured nothing.
+    """
+    width = a.shape[1]
     for theme in FILL:
         hit = (np.abs(a - np.array(FILL[theme])).max(axis=2) <= 6)
-        lefts = [int(np.where(hit[y])[0].min()) for y in range(120, min(600, a.shape[0]))
-                 if len(np.where(hit[y])[0]) > 150]
+        lefts = []
+        for y in range(120, min(600, a.shape[0])):
+            run = np.where(hit[y])[0]
+            if len(run) > 150 and (run.max() - run.min()) < 0.95 * width:
+                lefts.append(int(run.min()))
         if lefts and min(lefts) >= PAGE_GUTTER_MIN:
             return min(lefts), theme
     return None, None
 
 
+MIN_BORDER_ROWS = 40
+
+
 def native_hairline(path, theme):
+    """Is there a real card border, i.e. a vertical run of hairline pixels?
+
+    The first version returned on the first row whose fill run happened to have a
+    hairline-coloured pixel within 4px of it. That is not a border: wiping the entire
+    left edge of every card still passed, because each card's surviving *top* edge sat
+    next to its first row. A border is a line, so this counts rows in one column and
+    requires a run.
+    """
     a = np.array(Image.open(path).convert("RGB")).astype(int)
     step = a.shape[1] / 390
     want = np.array(HAIR[theme])
     hit = (np.abs(a - np.array(FILL[theme])).max(axis=2) <= 6)
+
+    edges = []
     for y in range(int(150 * step), int(620 * step)):
         run = np.where(hit[y])[0]
-        if len(run) > 150 * step:
-            x = int(run.min())
-            for i in range(max(x - 4, 0), x + 5):
-                if int(np.abs(a[y, i] - want).max()) <= 14:
-                    return True, tuple(int(v) for v in a[y, i])
+        if len(run) > 150 * step and (run.max() - run.min()) < 0.95 * a.shape[1]:
+            edges.append(int(run.min()))
+    if not edges:
+        return False, None
+
+    left = min(edges)
+    candidates = []
+    for x in range(max(left - 4, 0), left + 2):
+        hits = [a[y, x] for y in range(int(150 * step), int(620 * step))
+                if int(np.abs(a[y, x] - want).max()) <= 14]
+        if len(hits) >= MIN_BORDER_ROWS:
+            # The most common matching pixel in the column, not the middle row's: the
+            # middle can land on an anti-aliased sample and print a colour that is not
+            # the border, which reads as a drift that is not there.
+            values, counts = np.unique(np.asarray(hits), axis=0, return_counts=True)
+            colour = tuple(int(v) for v in values[counts.argmax()])
+            candidates.append((max(abs(c - w) for c, w in zip(colour, want)), colour))
+
+    # Several columns sit on the border and each has a long enough run; the one whose
+    # colour is nearest the design's is the border itself, the others are its
+    # anti-aliased neighbours. Reporting the loosest match made two pages read as
+    # (241,241,244) and (31,31,33) when the crisp (229,229,234) / (44,44,46) was there.
+    if candidates:
+        candidates.sort()
+        return True, candidates[0][1]
     return False, None
 
 

@@ -1,8 +1,12 @@
 package com.openagent.android
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -40,15 +44,25 @@ class SecondaryScreensTest {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        // targetSdk 35 forces edge-to-edge, and this host activity is not
+                        // MainActivity, so nothing else consumes the system bars: without
+                        // this the tab bar renders underneath the navigation bar and the
+                        // audit reads an accent deficit that is really an occlusion.
+                        .windowInsetsPadding(WindowInsets.systemBars)
                         .background(LocalPalette.current.bgCanvas),
                 ) {
-                    TasksScreenContent(
-                        tasks = listOf(
-                            CommandTask("删除重复文件", sent, replied = false),
-                            CommandTask("查看系统信息", sent, replied = true),
-                        ),
-                        onBack = {},
-                    )
+                    // The screens fill their space, so without a weighted box here the
+                    // tab bar is pushed off the bottom and the frame is missing chrome
+                    // the artboard draws.
+                    Box(modifier = Modifier.weight(1f)) {
+                        TasksScreenContent(
+                            tasks = listOf(
+                                CommandTask("删除重复文件", sent, replied = false),
+                                CommandTask("查看系统信息", sent, replied = true),
+                            ),
+                            onBack = {},
+                        )
+                    }
                     OaTabBar(selected = "tasks") {}
                 }
             }
@@ -69,16 +83,19 @@ class SecondaryScreensTest {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.systemBars)
                         .background(LocalPalette.current.bgCanvas),
                 ) {
-                    DevicesScreenContent(
-                        devices = listOf(
-                            Device("host-1", "DESKTOP-XXXX", "Windows", "11", 0L),
-                            Device("phone-2", "Pixel 9", "Android", "15", 0L),
-                        ),
-                        onBack = {},
-                        onPick = {},
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        DevicesScreenContent(
+                            devices = listOf(
+                                Device("host-1", "DESKTOP-XXXX", "Windows", "11", 0L),
+                                Device("phone-2", "Pixel 9", "Android", "15", 0L),
+                            ),
+                            onBack = {},
+                            onPick = {},
+                        )
+                    }
                     OaTabBar(selected = "devices") {}
                 }
             }

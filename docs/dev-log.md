@@ -1637,6 +1637,50 @@ computes no file count for `app.launch`), and the countdown is real behaviour th
 never drew. Both stay registered rather than silently matched.
 
 
+## 2026-09-27 · Re-shooting the phone from the release APK, which exposed an audit that skipped half its checks
+
+The Android evidence had been produced from `app-debug.apk`. The objective is about the
+software as published, so `scripts/ui-shot-android.sh` now installs **`app-release.apk`**
+(certificate `fdb108358831445c…`, `isMinifyEnabled = false`) and
+`scripts/ui-verify-android.sh` drives four routes × two themes and audits them. Theme is
+switched with `cmd uimode night` because the release build is not debuggable — its
+SharedPreferences cannot be written from adb.
+
+**The audit's own checks were partly vacuous.** With real captures flowing again, two
+problems surfaced that had nothing to do with the app:
+
+- `card_edge` treated the light theme's full-width system bar as a card (it sits within 6
+  of the card fill), so the leftmost fill pixel was `x=0`, the `>= 8dp` guard concluded
+  "this page has no card", and **both** the gutter and hairline checks skipped — printing
+  `ok` while measuring nothing. A card is a band narrower than the page; that test is now
+  in the detector.
+- `native_hairline` returned true if *one* row had a hairline-coloured pixel within 4px of
+  its fill run. Wiping every card's left border out of a capture still passed, because
+  each row's own top edge satisfied it. A border is a line: the check now requires ≥40
+  rows of the design colour in one column, and reports the modal colour of that column
+  rather than its middle pixel (the middle lands on anti-aliasing and made two pages read
+  `(241,241,244)` where the border is `(229,229,234)`).
+
+Both are proven to fail: after the fix the wipe produces
+`FAIL card hairline at native scale: None`, exit 1; restoring gives exit 0.
+
+**Held frames were missing chrome the artboard draws.** The Compose tests render
+`Column { ScreenContent(...); OaTabBar(...) }`, and two things pushed the tab bar out of
+the shot: the screen fills its space (so the tab bar needs a `weight(1f)` box), and
+`targetSdk 35` forces edge-to-edge, so on the test's plain host activity the tab bar
+landed *under* the navigation bar. Both fixed in the tests only — the app's own
+`MainActivity` already handles insets, and its live capture shows the tab bar correctly.
+That is what made artboards 09/10 auditable for the first time; 25/28 (tasks) were never
+in `CASES` at all and are now.
+
+**Result**: 10 cases, 22 assertions, 0 failures. Card borders read exactly
+`(229,229,234)` light / `(44,44,46)` dark on all six card-bearing pages; gutters 19dp
+against the design's 20dp; accents within band on every page. The remaining four skips are
+the start and chat pages, which genuinely draw no card.
+
+Verification AVD `OaReleaseShot` deleted afterwards; `AILifeTest` and `QpApi29` untouched.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
