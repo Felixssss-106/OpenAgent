@@ -1490,6 +1490,39 @@ byte-identical to the publish dir. New digests recorded on the release-assets ta
 elevation-blocked "install this MSI once" step is still open.
 
 
+## 2026-09-27 · The 纯文本 block was holding JSON, and the frames say it should hold lines
+
+Continuing through artboard 03 after the argument fix: everything above the result block
+now matches — `你`, the prompt, `AGENT · OPENAGENT NATIVE · HH:MM`, the disclosure row
+`已使用 system.get_info 运行了命令  0.1s`, and `system.get_info  无参数`. What did not match
+was the block the design labels **纯文本**: the frames draw six short lines, and the
+shipped build drew one long line of the tool's JSON payload, cut at 240 characters —
+which means the last thing a user sees is a fact truncated mid-value.
+
+`PlanViewMapper.DescribeResult` now renders the payload as one line per fact: scalars as
+`key：value`, arrays as `key：N 项` plus three sampled elements and a `…共 N 项` tail, nested
+objects inline, capped at 12 lines with an `…` marker, and raw text only when the payload
+isn't parseable. `Summarize`'s 240-character constant went with it — the line budget
+replaces the character budget. Five tests, UI suite 70 → 75, whole suite 280.
+
+**The design's own content stayed out.** Artboard 03's block reads `Found 35 items in
+D:\Downloads` and `23 images  .jpg .png .webp`; `file.list` returns no such breakdown, so
+reproducing those sentences would be inventing data — the mockup-copy rule again, this time
+inside an output block rather than a label.
+
+**The computer-use connector dropped mid-verification** (`ECONNRESET`, then the tool
+disappeared from the registry). Rather than lose the check, drove the same flow with
+`SetForegroundWindow` + `SendKeys`, building the Chinese prompt from code points so the
+`.ps1` stays ASCII — a UTF-8-without-BOM script file is read as ANSI by PowerShell 5.1,
+which is exactly how CJK input silently turns into mojibake. The capture below confirms it
+landed.
+
+**Full chain re-proved**: build 0 warnings, 280/280, publish, 14 fresh captures
+(ΔE 0.0, chrome 0 failures), installers rebuilt (MSI 76,326,096 B
+`cacaef61ce8f88ac…`, EXE 77,053,757 B `f1b33a8b053fa65a…`), MSI payload 580 files
+byte-identical to the publish dir. The install-this-MSI step remains blocked on elevation.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

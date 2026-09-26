@@ -73,4 +73,100 @@ public static class PlanViewMapper
             _ => element.GetRawText(),
         };
     }
+
+    /// <summary>
+    /// The result block as artboards 03/04 draw it: a short plain-text line per fact,
+    /// which is also what the block's own 纯文本 label promises. The payload a tool
+    /// returns is JSON, and one long line of it neither reads nor wraps — it truncates
+    /// mid-value, so the last fact shown is a partial one.
+    /// </summary>
+    public static string DescribeResult(string? dataJson, int maxLines = 12)
+    {
+        if (string.IsNullOrWhiteSpace(dataJson))
+        {
+            return "完成";
+        }
+
+        JsonElement root;
+        try
+        {
+            using var document = JsonDocument.Parse(dataJson);
+            root = document.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            return dataJson;
+        }
+        catch (ArgumentException)
+        {
+            return dataJson;
+        }
+
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            return Inline(root);
+        }
+
+        var lines = new List<string>();
+        foreach (var property in root.EnumerateObject())
+        {
+            if (lines.Count >= maxLines)
+            {
+                lines.Add("…");
+                break;
+            }
+
+            switch (property.Value.ValueKind)
+            {
+                case JsonValueKind.Array:
+                    var items = property.Value.EnumerateArray().ToList();
+                    lines.Add($"{property.Name}：{items.Count} 项");
+                    foreach (var item in items.Take(3))
+                    {
+                        if (lines.Count >= maxLines)
+                        {
+                            break;
+                        }
+
+                        lines.Add($"  · {Inline(item)}");
+                    }
+
+                    if (items.Count > 3 && lines.Count < maxLines)
+                    {
+                        lines.Add($"  …共 {items.Count} 项");
+                    }
+
+                    break;
+
+                case JsonValueKind.Object:
+                    lines.Add($"{property.Name}：{Inline(property.Value)}");
+                    break;
+
+                default:
+                    lines.Add($"{property.Name}：{Scalar(property.Value)}");
+                    break;
+            }
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>One line for a value that is not itself a flat fact.</summary>
+    private static string Inline(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.Object => string.Join(
+            " · ",
+            element.EnumerateObject().Select(p => $"{p.Name}：{Scalar(p.Value)}")),
+        JsonValueKind.Array => $"{element.GetArrayLength()} 项",
+        _ => Scalar(element),
+    };
+
+    private static string Scalar(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.String => element.GetString() ?? string.Empty,
+        JsonValueKind.True => "是",
+        JsonValueKind.False => "否",
+        JsonValueKind.Null => "—",
+        _ => element.GetRawText(),
+    };
 }

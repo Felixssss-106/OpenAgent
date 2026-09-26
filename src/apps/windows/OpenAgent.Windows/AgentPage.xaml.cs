@@ -35,7 +35,6 @@ namespace OpenAgent.Windows;
 /// </summary>
 public sealed partial class AgentPage : Page
 {
-    private const int ResultPreviewLength = 240;
     private const string ProviderId = NativeAgentProvider.ProviderId;
     private static readonly TimeSpan ApprovalLifetime = TimeSpan.FromMinutes(10);
 
@@ -567,18 +566,8 @@ public sealed partial class AgentPage : Page
         _longPressTimer = null;
     }
 
-    private static string Summarize(ToolResult result)
-    {
-        if (result.Data is null)
-        {
-            return "完成";
-        }
-
-        var text = result.Data.Value.ToString();
-        return text.Length <= ResultPreviewLength
-            ? text
-            : string.Concat(text.AsSpan(0, ResultPreviewLength), "…");
-    }
+    private static string Summarize(ToolResult result) =>
+        PlanViewMapper.DescribeResult(result.Data?.GetRawText());
 
     // ---- rendering, in the artboards' vocabulary --------------------------
 

@@ -39,7 +39,7 @@ UI → Agent Service → Tool Registry → Permission Manager → Tool Executor
 # 全量构建（必须带 -p:Platform=x64）
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 
-# 测试（当前 275 个，全绿）
+# 测试（当前 280 个，全绿）
 dotnet test OpenAgent.sln -c Release -p:Platform=x64
 
 # 可分发产物（self-contained，供安装包打包）
@@ -175,11 +175,11 @@ using global::Windows.System.VirtualKey;
 | `OpenAgent.Providers.Tests` | 40 | Native 路由、CLI 发现、CLI 适配器 |
 | `OpenAgent.Transport.Tests` | 24 | Beacon codec、Envelope codec、UDP 发现、载荷投递、inbound 事件 |
 | `OpenAgent.Tools.Tests` | 56 | 11 个工具 + 路径策略 |
-| `OpenAgent.Windows.UI.Tests` | 70 | CommandPlanner、ViewMapper、LongPressCounter、PlanViewMapper |
+| `OpenAgent.Windows.UI.Tests` | 75 | CommandPlanner、ViewMapper、LongPressCounter、PlanViewMapper |
 | `OpenAgent.Agent.Tests` | 15 | 代理编排 |
 | `OpenAgent.Storage.Tests` | 9 | SQLite 存储 |
 | `OpenAgent.Security.Tests` | 25 | 安全策略 |
-| **总计** | **275** | |
+| **总计** | **280** | |
 
 ### WinUI 测试陷阱
 **测试项目不能带 `UseWinUI` 或 `Microsoft.WindowsAppSDK` 包引用**。否则 testhost 因 `Microsoft.TestPlatform.CoreUtilities` 加载冲突崩溃。
@@ -487,7 +487,7 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 ```bash
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
-dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 275
+dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 280
 bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核对地标色 + 断言侧栏外壳几何
 #                                （能失败才算门禁，见 §8.22；几何口径见 §8.25）
 #    → Android 侧另跑：python scripts/ui-android-audit.py
@@ -535,4 +535,4 @@ gh release create v1.0.0 <win-msi> <win-exe> <release-apk> --title ... --notes .
 
 ---
 
-*本文档最后更新：2026-09-27，对应 v1.0.0 首个发布版。文中所有数字（275 测试、8 测试工程、12 产品工程）与工具链结论均为本机实测，不是转抄。*
+*本文档最后更新：2026-09-27，对应 v1.0.0 首个发布版。文中所有数字（280 测试、8 测试工程、12 产品工程）与工具链结论均为本机实测，不是转抄。*

@@ -58,4 +58,60 @@ public sealed class PlanViewMapperTests
         // These are the parameters the user is being asked to confirm; showing them
         // unformatted beats showing nothing.
         Assert.Equal(arguments, PlanViewMapper.DescribeArguments(arguments));
+
+    [Fact]
+    public void Result_is_one_plain_text_line_per_fact() =>
+        // Artboards 03/04 label the block 纯文本 and draw short lines, not one long
+        // JSON value that truncates mid-fact.
+        Assert.Equal(
+            "os：Windows\nprocessorCount：12\ninteractive：是",
+            PlanViewMapper.DescribeResult(
+                @"{""os"":""Windows"",""processorCount"":12,""interactive"":true}"));
+
+    [Fact]
+    public void Empty_result_says_so()
+    {
+        Assert.Equal("完成", PlanViewMapper.DescribeResult(null));
+        Assert.Equal("完成", PlanViewMapper.DescribeResult(string.Empty));
+    }
+
+    [Fact]
+    public void Arrays_are_counted_and_sampled_rather_than_dumped()
+    {
+        var described = PlanViewMapper.DescribeResult(
+            @"{""path"":""D:\\Downloads"",""items"":["
+            + @"{""name"":""a.txt"",""size"":1},"
+            + @"{""name"":""b.txt"",""size"":2},"
+            + @"{""name"":""c.txt"",""size"":3},"
+            + @"{""name"":""d.txt"",""size"":4}]}");
+
+        Assert.Equal(
+            "path：D:\\Downloads\n"
+            + "items：4 项\n"
+            + "  · name：a.txt · size：1\n"
+            + "  · name：b.txt · size：2\n"
+            + "  · name：c.txt · size：3\n"
+            + "  …共 4 项",
+            described);
+    }
+
+    [Fact]
+    public void Nested_object_stays_on_its_own_line() =>
+        Assert.Equal(
+            "memory：used：1 · total：8",
+            PlanViewMapper.DescribeResult(@"{""memory"":{""used"":1,""total"":8}}"));
+
+    [Fact]
+    public void Long_results_stop_at_the_line_budget()
+    {
+        var payload = "{\"a\":1,\"b\":2,\"c\":3,\"d\":4,\"e\":5,\"f\":6,\"g\":7,\"h\":8,"
+            + "\"i\":9,\"j\":10,\"k\":11,\"l\":12,\"m\":13}";
+        var lines = PlanViewMapper.DescribeResult(payload).Split('\n');
+
+        // The cap counts emitted lines, and the ellipsis line is the cap's own marker.
+        Assert.Equal(13, lines.Length);
+        Assert.Equal("…", lines[^1]);
+        Assert.Equal("a：1", lines[0]);
+        Assert.Equal("l：12", lines[^2]);
+    }
 }
