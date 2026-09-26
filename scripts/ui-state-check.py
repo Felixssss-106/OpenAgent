@@ -52,6 +52,61 @@ def compare_colours(design, build, state):
     return worst
 
 
+def card_geometry(a):
+    """(left, right, top, bottom) of the approval card's orange border, or None."""
+    orange = (a[:, :, 0] > 200) & (a[:, :, 1] > 100) & (a[:, :, 1] < 190) & (a[:, :, 2] < 90)
+    orange = orange[:, 300:1400]
+    ys, xs = np.nonzero(orange)
+    if not len(ys):
+        return None
+    return int(xs.min()) + 300, int(xs.max()) + 300, int(ys.min()), int(ys.max())
+
+
+def approve_button(a):
+    """(left, top, width, height) of the filled accent button."""
+    blue = (a[:, :, 2] > 170) & (a[:, :, 0] < 130) & (a[:, :, 1] > 50) & (a[:, :, 1] < 200)
+    blue[0:600] = False
+    ys, xs = np.nonzero(blue)
+    if not len(ys):
+        return None
+    return int(xs.min()), int(ys.min()), int(xs.max()) - int(xs.min()) + 1, int(ys.max()) - int(ys.min()) + 1
+
+
+GEOMETRY_TOLERANCE = 3
+
+# What is asserted and what is only reported, and why. The card's horizontal extents, its
+# bottom edge and the button's row are placed by the shell, so the artboard and the build
+# agree to the pixel and any drift is a real change. The card's *top* is not asserted:
+# the card is bottom-anchored and grows with its content, and the content's glyphs ink a
+# few rows taller for some strings ("启动 记事本" vs "移动 35 个文件"), which moves the top
+# edge by 8px without anything in the layout having changed.
+def compare_geometry(design, build, state):
+    if state != "approval":
+        return 0
+    worst = 0
+    dg, bg = card_geometry(design), card_geometry(build)
+    if dg is None or bg is None:
+        print(f"FAILED: approval card border missing (design {dg}, build {bg})")
+        return 1
+    for name, d, b in (("card left", dg[0], bg[0]), ("card right", dg[1], bg[1]),
+                       ("card bottom", dg[3], bg[3])):
+        worst = max(worst, abs(d - b))
+        if abs(d - b) > GEOMETRY_TOLERANCE:
+            print(f"FAILED: {name} at {b}, artboard draws {d}")
+    db, bb = approve_button(design), approve_button(build)
+    if db is None or bb is None:
+        print(f"FAILED: accent button missing (design {db}, build {bb})")
+        return max(worst, 1)
+    for name, d, b in (("button left", db[0], bb[0]), ("button top", db[1], bb[1]),
+                       ("button height", db[3], bb[3])):
+        worst = max(worst, abs(d - b))
+        if abs(d - b) > GEOMETRY_TOLERANCE:
+            print(f"FAILED: {name} at {b}, artboard draws {d}")
+    print(f"  geometry: card {bg[0]}..{bg[1]} bottom {bg[3]}, button {bb[0]},{bb[1]} h{bb[3]} "
+          f"(worst delta {worst}px; card top {dg[2]} vs {bg[2]} reported only)")
+    return 1 if worst > GEOMETRY_TOLERANCE else 0
+
+
 def check(state, theme):
     shot = f"artifacts/shots/state-{state}-{theme}.png"
     base = f"artifacts/shots/cur-agent-{theme}.png"
@@ -91,7 +146,9 @@ def check(state, theme):
     if art.shape != a.shape:
         print(f"FAILED: artboard {number} is {art.shape[:2]}, capture is {a.shape[:2]}")
         return 1
-    return 1 if compare_colours(art, a, state) > TOLERANCE else 0
+    colour = compare_colours(art, a, state)
+    geometry = compare_geometry(art, a, state)
+    return 1 if (colour > TOLERANCE or geometry) else 0
 
 
 if __name__ == "__main__":

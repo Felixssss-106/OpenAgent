@@ -1681,6 +1681,31 @@ the start and chat pages, which genuinely draw no card.
 Verification AVD `OaReleaseShot` deleted afterwards; `AILifeTest` and `QpApi29` untouched.
 
 
+## 2026-09-27 · Gating the approval card's geometry, and the one delta measured and deliberately left
+
+The interactive states were colour-checked but not geometry-checked, so the card could
+move and the pipeline would still say OK. `ui-state-check.py` now asserts the approval
+card's left/right/bottom edges and the accent button's left, top and height against
+artboards 05/06 with a 3px tolerance. Both themes come back with a **worst delta of 1px**:
+card `336..1095`, bottom `875`, button at `361,807` height `44` — the same numbers the
+artboards draw. Proven to fail by moving something 12px in a copy:
+`FAILED: button left at 349, artboard draws 360`, exit 1; restored, exit 0.
+
+The card's *top* is reported and not asserted, and the reason is measured rather than
+assumed: the card is bottom-anchored and grows with its content, and the two strings ink
+different heights (启动 记事本 23px vs 移动 35 个文件 17px), so the top sits at 634 where the
+artboard draws 642 while every interior gap matches to 1px.
+
+**A real 11px difference found and left alone.** The 批准 pill is 68px wide in the frames
+and 79px in the build. Decomposed: the glyph is 23px vs 26px (the typeface, already on
+record) and the horizontal padding is ~22px vs the XAML's 24. There is no padding token in
+`design/tokens.css` and the manifest says only that buttons are capsules, so nothing in the
+design system says 20 — the only evidence is a rendered frame whose own font is ~3px wider
+on the same characters. Changing a padding constant that five other pill buttons share, to
+absorb a 2px per side that is smaller than the typeface uncertainty, would trade a
+measured-and-harmless difference for an unmeasured guess. Recorded instead of changed.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
