@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using OpenAgent.Core.Domain;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
+/// <summary>
+/// Reads the real task log through <see cref="IAgentHost"/>. The page never
+/// touches a repository: UI → agent service → storage (spec sections 35, 165).
+/// </summary>
 public sealed partial class TasksPage : Page
 {
     public TasksPage()
@@ -17,73 +24,84 @@ public sealed partial class TasksPage : Page
 
     private void TasksPage_Loaded(object sender, RoutedEventArgs e)
     {
-        var items = new List<TaskItem>
+        _ = RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        IReadOnlyList<AgentTask> tasks;
+        try
         {
-            new()
+            tasks = await AgentHost.Current.RecentTasksAsync(50);
+        }
+        catch (Exception ex)
+        {
+            StatsText.Text = $"任务列表读取失败：{ex.Message}";
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var items = tasks
+            .Select(task => new TaskItem
             {
-                Name = "整理下载文件",
-                StatusLabel = "运行中",
-                DurationText = "00:04",
-                StatusBrush = (SolidColorBrush)Application.Current.Resources["StatusOnlineBrush"],
-                StatusTextBrush = (SolidColorBrush)Application.Current.Resources["StatusOnlineBrush"],
-            },
-            new()
+                TaskId = task.Id,
+                Name = string.IsNullOrWhiteSpace(task.Prompt) ? "(空指令)" : task.Prompt,
+                StatusLabel = string.IsNullOrWhiteSpace(task.Error)
+                    ? TaskViewMapper.StatusLabel(task.Status)
+                    : $"{TaskViewMapper.StatusLabel(task.Status)} · {task.Error}",
+                DurationText = TaskViewMapper.DurationText(task, now),
+                StatusBrush = UiBrushes.Get(TaskViewMapper.StatusBrushKey(task.Status), "#FF8A8F98"),
+                StatusTextBrush = UiBrushes.Get(TaskViewMapper.StatusTextBrushKey(task.Status), "#FF7D8185"),
+            })
+            .ToList();
+
+        TaskList.ItemsSource = items;
+        StatsText.Text = TaskViewMapper.SummaryLine(tasks);
+    }
+
+    private async void TaskList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is not TaskItem item)
+        {
+            return;
+        }
+
+        var events = await AgentHost.Current.TaskEventsAsync(item.TaskId);
+        var body = events.Count == 0
+            ? "（该任务还没有事件记录）"
+            : string.Join(
+                Environment.NewLine,
+                events.Select(record =>
+                    $"[{record.TimestampUtc.ToLocalTime():HH:mm:ss}] {record.Kind} · {record.Text}"));
+
+        var dialog = new ContentDialog
+        {
+            Title = item.Name,
+            CloseButtonText = "关闭",
+            XamlRoot = XamlRoot,
+            Content = new ScrollViewer
             {
-                Name = "删除重复文件",
-                StatusLabel = "等待批准",
-                DurationText = "—",
-                StatusBrush = (SolidColorBrush)Application.Current.Resources["RiskMediumBrush"],
-                StatusTextBrush = (SolidColorBrush)Application.Current.Resources["RiskMediumBrush"],
-            },
-            new()
-            {
-                Name = "分析 OpenAgent 项目",
-                StatusLabel = "已完成",
-                DurationText = "2m 14s",
-                StatusBrush = (SolidColorBrush)Application.Current.Resources["TextQuaternaryBrush"],
-                StatusTextBrush = (SolidColorBrush)Application.Current.Resources["TextTertiaryBrush"],
-            },
-            new()
-            {
-                Name = "查看系统占用",
-                StatusLabel = "已完成",
-                DurationText = "3s",
-                StatusBrush = (SolidColorBrush)Application.Current.Resources["TextQuaternaryBrush"],
-                StatusTextBrush = (SolidColorBrush)Application.Current.Resources["TextTertiaryBrush"],
-            },
-            new()
-            {
-                Name = "修复单元测试",
-                StatusLabel = "失败 · 权限不足",
-                DurationText = "18s",
-                StatusBrush = (SolidColorBrush)Application.Current.Resources["StatusErrorBrush"],
-                StatusTextBrush = (SolidColorBrush)Application.Current.Resources["StatusErrorBrush"],
+                MaxHeight = 320,
+                Content = new TextBlock
+                {
+                    Text = body,
+                    Style = (Style)Application.Current.Resources["TypeCode"],
+                    TextWrapping = TextWrapping.Wrap,
+                    IsTextSelectionEnabled = true,
+                },
             },
         };
 
-        TaskList.ItemsSource = items;
-
-        int running = 0, pending = 0, completed = 0;
-        foreach (var item in items)
-        {
-            if (item.StatusLabel == "运行中") running++;
-            else if (item.StatusLabel == "等待批准") pending++;
-            else if (item.StatusLabel == "已完成") completed++;
-        }
-        StatsText.Text = $"{running} 运行中 · {pending} 等待批准 · {completed} 已完成";
-    }
-
-    private void TaskList_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        // TODO: Navigate to task detail
+        await dialog.ShowAsync();
     }
 }
 
 public class TaskItem
 {
-    public string Name { get; set; } = "";
-    public string StatusLabel { get; set; } = "";
-    public string DurationText { get; set; } = "";
+    public string TaskId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string StatusLabel { get; set; } = string.Empty;
+    public string DurationText { get; set; } = string.Empty;
     public Brush StatusBrush { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
     public Brush StatusTextBrush { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
 }

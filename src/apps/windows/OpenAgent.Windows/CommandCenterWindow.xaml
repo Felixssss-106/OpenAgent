@@ -20,7 +20,7 @@
             CornerRadius="{StaticResource RadiusXl}"
             RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
-                <ScaleTransform x:Name="PanelScale" ScaleX="0.96" ScaleY="0.96" />
+                <ScaleTransform x:Name="PanelScale" ScaleX="0.97" ScaleY="0.97" />
             </Border.RenderTransform>
 
             <!-- Open animation is built in code: a Storyboard declared inside
@@ -30,6 +30,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -83,9 +84,106 @@
                     </StackPanel>
                 </ScrollViewer>
 
+                <!-- Approval card: one row of its own, shown only when the
+                     permission engine asks for confirmation. -->
+                <Border
+                    x:Name="ApprovalCard"
+                    Grid.Row="3"
+                    Visibility="Collapsed"
+                    Margin="24,0,24,12"
+                    Padding="16"
+                    Background="{ThemeResource BgSunkenBrush}"
+                    BorderBrush="{ThemeResource BorderDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform x:Name="ApprovalCardScale" ScaleX="1" ScaleY="1" />
+                    </Border.RenderTransform>
+                    <Grid RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                x:Name="ApprovalTitle"
+                                Grid.Column="0"
+                                Text="需要批准"
+                                Style="{StaticResource TypeBody}"
+                                FontWeight="SemiBold"
+                                TextWrapping="Wrap"
+                                VerticalAlignment="Center" />
+                            <Border
+                                x:Name="ApprovalRiskChip"
+                                Grid.Column="1"
+                                Padding="10,4"
+                                CornerRadius="{StaticResource RadiusPill}"
+                                Background="{ThemeResource BgInsetBrush}"
+                                VerticalAlignment="Center">
+                                <TextBlock
+                                    x:Name="ApprovalRiskText"
+                                    Text="中风险"
+                                    Style="{StaticResource TypeMicro}"
+                                    Foreground="{ThemeResource TextSecondaryBrush}" />
+                            </Border>
+                        </Grid>
+
+                        <TextBlock
+                            x:Name="ApprovalArgsText"
+                            Grid.Row="1"
+                            Style="{StaticResource TypeCode}"
+                            TextWrapping="Wrap"
+                            IsTextSelectionEnabled="True" />
+
+                        <TextBlock
+                            x:Name="ApprovalNoteText"
+                            Grid.Row="2"
+                            Style="{StaticResource TypeCaption}"
+                            Foreground="{ThemeResource TextTertiaryBrush}"
+                            TextWrapping="Wrap" />
+
+                        <TextBlock
+                            x:Name="ApprovalCountdown"
+                            Grid.Row="3"
+                            Style="{StaticResource TypeCaption}"
+                            Foreground="{ThemeResource TextTertiaryBrush}" />
+
+                        <StackPanel
+                            Grid.Row="4"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            HorizontalAlignment="Right">
+                            <Button
+                                x:Name="RejectButton"
+                                Content="拒绝"
+                                CornerRadius="{StaticResource RadiusPill}"
+                                Padding="16,6"
+                                Click="RejectButton_Click" />
+                            <Button
+                                x:Name="ApproveButton"
+                                Content="批准"
+                                Background="{ThemeResource AccentBrush}"
+                                Foreground="{ThemeResource OnAccentBrush}"
+                                BorderThickness="0"
+                                CornerRadius="{StaticResource RadiusPill}"
+                                Padding="16,6"
+                                Click="ApproveButton_Click" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
                 <!-- Footer -->
                 <Border
-                    Grid.Row="3"
+                    Grid.Row="4"
                     BorderBrush="{ThemeResource BorderSubtleBrush}"
                     BorderThickness="0,1,0,0"
                     Padding="24,12">

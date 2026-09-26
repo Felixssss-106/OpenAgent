@@ -18,8 +18,18 @@
             SelectionChanged="NavView_SelectionChanged">
 
             <NavigationView.PaneHeader>
-                <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,12,16,8">
+                <!-- Doubles as the window drag region (MainWindow.SetTitleBar). -->
+                <Grid
+                    x:Name="AppTitleBar"
+                    Height="48"
+                    Margin="16,8,16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
                     <Border
+                        Grid.Column="0"
                         Width="28"
                         Height="28"
                         CornerRadius="8"
@@ -32,11 +42,13 @@
                             VerticalAlignment="Center" />
                     </Border>
                     <TextBlock
+                        Grid.Column="1"
                         Text="OpenAgent"
                         Style="{StaticResource TypeBody}"
                         FontWeight="SemiBold"
-                        VerticalAlignment="Center" />
-                </StackPanel>
+                        VerticalAlignment="Center"
+                        Margin="10,0,0,0" />
+                </Grid>
             </NavigationView.PaneHeader>
 
             <NavigationView.MenuItems>

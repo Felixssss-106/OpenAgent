@@ -26,6 +26,20 @@
             <Color x:Key="OnAccentColor">#FFFDFDFF</Color>
             <Color x:Key="FocusRingColorColor">#733C79D1</Color>
             <Color x:Key="ScrimColor">#521B2025</Color>
+            <Color x:Key="RiskSafeColor">#FF46607C</Color>
+            <Color x:Key="RiskSafeBgColor">#FFE8EDF3</Color>
+            <Color x:Key="RiskLowColor">#FF00694A</Color>
+            <Color x:Key="RiskLowBgColor">#FFDFF2E9</Color>
+            <Color x:Key="RiskMediumColor">#FF965900</Color>
+            <Color x:Key="RiskMediumBgColor">#FFFDEED7</Color>
+            <Color x:Key="RiskHighColor">#FFAF2D18</Color>
+            <Color x:Key="RiskHighBgColor">#FFFFEAE5</Color>
+            <Color x:Key="RiskCriticalColor">#FFAA001F</Color>
+            <Color x:Key="RiskCriticalBgColor">#FFFFE4E1</Color>
+            <Color x:Key="StatusOnlineColor">#FF067D4D</Color>
+            <Color x:Key="StatusPendingColor">#FFAA6A00</Color>
+            <Color x:Key="StatusOfflineColor">#FF8F9397</Color>
+            <Color x:Key="StatusErrorColor">#FFBA2B2E</Color>
             <SolidColorBrush x:Key="BgCanvasBrush" Color="{StaticResource BgCanvasColor}" />
             <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurfaceColor}" />
             <SolidColorBrush x:Key="BgRaisedBrush" Color="{StaticResource BgRaisedColor}" />
@@ -46,6 +60,20 @@
             <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
+            <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
+            <SolidColorBrush x:Key="RiskSafeBgBrush" Color="{StaticResource RiskSafeBgColor}" />
+            <SolidColorBrush x:Key="RiskLowBrush" Color="{StaticResource RiskLowColor}" />
+            <SolidColorBrush x:Key="RiskLowBgBrush" Color="{StaticResource RiskLowBgColor}" />
+            <SolidColorBrush x:Key="RiskMediumBrush" Color="{StaticResource RiskMediumColor}" />
+            <SolidColorBrush x:Key="RiskMediumBgBrush" Color="{StaticResource RiskMediumBgColor}" />
+            <SolidColorBrush x:Key="RiskHighBrush" Color="{StaticResource RiskHighColor}" />
+            <SolidColorBrush x:Key="RiskHighBgBrush" Color="{StaticResource RiskHighBgColor}" />
+            <SolidColorBrush x:Key="RiskCriticalBrush" Color="{StaticResource RiskCriticalColor}" />
+            <SolidColorBrush x:Key="RiskCriticalBgBrush" Color="{StaticResource RiskCriticalBgColor}" />
+            <SolidColorBrush x:Key="StatusOnlineBrush" Color="{StaticResource StatusOnlineColor}" />
+            <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
+            <SolidColorBrush x:Key="StatusOfflineBrush" Color="{StaticResource StatusOfflineColor}" />
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="BgCanvasColor">#FF090D10</Color>
@@ -68,6 +96,20 @@
             <Color x:Key="OnAccentColor">#FF06090E</Color>
             <Color x:Key="FocusRingColorColor">#8070A6F5</Color>
             <Color x:Key="ScrimColor">#8F010204</Color>
+            <Color x:Key="RiskSafeColor">#FF90A7C0</Color>
+            <Color x:Key="RiskSafeBgColor">#FF20252A</Color>
+            <Color x:Key="RiskLowColor">#FF5AC299</Color>
+            <Color x:Key="RiskLowBgColor">#FF172B22</Color>
+            <Color x:Key="RiskMediumColor">#FFEBB353</Color>
+            <Color x:Key="RiskMediumBgColor">#FF352812</Color>
+            <Color x:Key="RiskHighColor">#FFF57E59</Color>
+            <Color x:Key="RiskHighBgColor">#FF3B2119</Color>
+            <Color x:Key="RiskCriticalColor">#FFFA6863</Color>
+            <Color x:Key="RiskCriticalBgColor">#FF3E1D1A</Color>
+            <Color x:Key="StatusOnlineColor">#FF5CC38C</Color>
+            <Color x:Key="StatusPendingColor">#FFEBB353</Color>
+            <Color x:Key="StatusOfflineColor">#FF65696F</Color>
+            <Color x:Key="StatusErrorColor">#FFF66D67</Color>
             <SolidColorBrush x:Key="BgCanvasBrush" Color="{StaticResource BgCanvasColor}" />
             <SolidColorBrush x:Key="BgSurfaceBrush" Color="{StaticResource BgSurfaceColor}" />
             <SolidColorBrush x:Key="BgRaisedBrush" Color="{StaticResource BgRaisedColor}" />
@@ -88,6 +130,20 @@
             <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
+            <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
+            <SolidColorBrush x:Key="RiskSafeBgBrush" Color="{StaticResource RiskSafeBgColor}" />
+            <SolidColorBrush x:Key="RiskLowBrush" Color="{StaticResource RiskLowColor}" />
+            <SolidColorBrush x:Key="RiskLowBgBrush" Color="{StaticResource RiskLowBgColor}" />
+            <SolidColorBrush x:Key="RiskMediumBrush" Color="{StaticResource RiskMediumColor}" />
+            <SolidColorBrush x:Key="RiskMediumBgBrush" Color="{StaticResource RiskMediumBgColor}" />
+            <SolidColorBrush x:Key="RiskHighBrush" Color="{StaticResource RiskHighColor}" />
+            <SolidColorBrush x:Key="RiskHighBgBrush" Color="{StaticResource RiskHighBgColor}" />
+            <SolidColorBrush x:Key="RiskCriticalBrush" Color="{StaticResource RiskCriticalColor}" />
+            <SolidColorBrush x:Key="RiskCriticalBgBrush" Color="{StaticResource RiskCriticalBgColor}" />
+            <SolidColorBrush x:Key="StatusOnlineBrush" Color="{StaticResource StatusOnlineColor}" />
+            <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}" />
+            <SolidColorBrush x:Key="StatusOfflineBrush" Color="{StaticResource StatusOfflineColor}" />
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

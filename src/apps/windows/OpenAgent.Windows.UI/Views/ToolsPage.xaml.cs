@@ -1,10 +1,18 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.UI.Views;
 
+/// <summary>
+/// Enumerates the tool catalogue through <see cref="IAgentHost"/>: one list,
+/// whatever registered the tools (core, plugin, MCP, provider) — spec section 126.
+/// </summary>
 public sealed partial class ToolsPage : Page
 {
     public ToolsPage()
@@ -15,54 +23,57 @@ public sealed partial class ToolsPage : Page
 
     private void ToolsPage_Loaded(object sender, RoutedEventArgs e)
     {
-        var resources = Application.Current.Resources;
-        var safeBg = (Brush)resources["RiskSafeBgBrush"];
-        var safeFg = (Brush)resources["RiskSafeBrush"];
-        var lowBg = (Brush)resources["RiskLowBgBrush"];
-        var lowFg = (Brush)resources["RiskLowBrush"];
+        _ = RefreshAsync();
+    }
 
-        var items = new List<ToolItem>
+    private async Task RefreshAsync()
+    {
+        IReadOnlyList<ToolSummary> tools;
+        try
         {
-            new()
+            tools = await AgentHost.Current.ToolsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatsText.Text = $"工具列表读取失败：{ex.Message}";
+            return;
+        }
+
+        var items = tools
+            .Select(tool => new ToolItem
             {
-                Name = "system.get_info",
-                Description = "读取系统信息 · CPU、内存、进程工作集",
-                Glyph = "\uE770",
-                RiskLabel = "只读",
-                RiskBackground = safeBg,
-                RiskForeground = safeFg,
-            },
-            new()
-            {
-                Name = "process.list",
-                Description = "列出正在运行的进程 · 按内存排序",
-                Glyph = "\uE9D5",
-                RiskLabel = "只读",
-                RiskBackground = safeBg,
-                RiskForeground = safeFg,
-            },
-            new()
-            {
-                Name = "app.launch",
-                Description = "启动应用程序 · 拒绝系统目录",
-                Glyph = "\uE7AD",
-                RiskLabel = "低风险",
-                RiskBackground = lowBg,
-                RiskForeground = lowFg,
-            },
-        };
+                Name = tool.Id,
+                Description = Describe(tool),
+                Glyph = ToolViewMapper.Glyph(tool.Id),
+                RiskLabel = ToolViewMapper.RiskLabel(tool.Risk),
+                RiskBackground = UiBrushes.Get(ToolViewMapper.RiskBackgroundKey(tool.Risk), "#FFF0F2F5"),
+                RiskForeground = UiBrushes.Get(ToolViewMapper.RiskBrushKey(tool.Risk), "#FF52565A"),
+            })
+            .ToList();
 
         ToolList.ItemsSource = items;
-        StatsText.Text = $"{items.Count} 个内置工具 · 全部来自本地注册表";
+        StatsText.Text = items.Count == 0
+            ? "没有已注册的工具"
+            : $"{items.Count} 个工具 · 全部来自本地工具注册表";
+    }
+
+    private static string Describe(ToolSummary tool)
+    {
+        var description = string.IsNullOrWhiteSpace(tool.Description)
+            ? tool.DisplayName
+            : tool.Description;
+
+        var reversible = tool.Reversible ? "可逆" : "不可逆";
+        return $"{description} · {reversible}";
     }
 }
 
 public class ToolItem
 {
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public string Glyph { get; set; } = "";
-    public string RiskLabel { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Glyph { get; set; } = string.Empty;
+    public string RiskLabel { get; set; } = string.Empty;
     public Brush RiskBackground { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
     public Brush RiskForeground { get; set; } = new SolidColorBrush(Microsoft.UI.Colors.Gray);
 }

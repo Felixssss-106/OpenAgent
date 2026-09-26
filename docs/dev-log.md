@@ -120,6 +120,64 @@ argument validation and a real PNG screenshot.
 
 ---
 
+## 2026-09-26 · Phase 2 — UI wired to the composition root + motion
+
+**Change**
+
+- `App.xaml.cs` builds the DI composition root on launch
+  (`BuildCompositionRoot` → `ServiceRegistration.AddOpenAgent`) and registers an
+  `AgentHostAdapter` so the UI library reads real tasks and tools through
+  `IAgentHost` instead of sample data. The tray grows a right-click menu
+  (open window / open Command Center / exit) and `ExitApplication` releases the
+  hotkey, tray icon and provider.
+- `TasksPage` and `ToolsPage` enumerate the real `AgentTaskService` log and the
+  `ToolRegistry` catalogue. `MainWindow` is frameless
+  (`ExtendsContentIntoTitleBar` + `SetTitleBar`) and hides on close so the shell
+  lives in the tray.
+- `CommandCenterWindow` runs the real chain: `CommandPlanner.Plan` →
+  `AgentTaskService.CreateAsync` → `ToolExecutor.ExecuteAsync`, with an approval
+  card (`ApprovalService.RequestAsync` → `ResolveAsync`) shown when the
+  permission engine asks, plus a live countdown and timeout expiry.
+- Motion follows `design/motion.md`: a `Motion` static class holds the duration
+  ladder (Instant 120 / State 200 / Exit 240 / Layout 320 / Enter 480 /
+  LongPress 1200) and `Motion.Enabled` reads `UISettings.AnimationsEnabled` so
+  reduced-motion users get terminal values with no storyboard. `CommandCenter`
+  implements M-02 enter (scale 0.97 → 1 + opacity, 320ms, ease-out-expo) and exit
+  (scale 1 → 0.98 + opacity, 240ms, ease-in, closes after the storyboard),
+  M-14 approval expand (380ms, ease-out-quart, no overshoot), M-17 long-press
+  confirm for high/critical risk (1200ms with a progress fill, releases reset),
+  and M-24 drawn checkmark on completion (`StrokeDashOffset` over 480ms). Only
+  `transform` and `opacity` are animated (section 6); no backdrop blur on the
+  overlay.
+
+**Reason**
+
+The spec (sections 35, 97, 132, 155, 165) wants UI → agent service → storage,
+not sample data; the motion file is the project's single source for timing and
+easing. M-02 was violating it (180ms, scale 0.96, no exit), and high-risk
+approvals were one tap away.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 141 passing; the exe stayed alive for
+5s under a smoke launch (no XAML load crash from the motion storyboards).
+
+**Known issues**
+
+- The custom bezier curves in `motion.md` are approximated with the
+  like-named WinUI easing functions (`ExponentialEase`, `QuarticEase`,
+  `CubicEase`) because the projects target `net10.0` and avoid
+  `SplineDoubleKeyFrame`/`KeySpline` churn; durations, scales and the
+  reduced-motion gate are exact.
+- M-05 (shimmer) and M-11 (spotlight card) are not implemented this phase;
+  both are running-state-only and were deferred to keep the overlay idle at 0%
+  CPU.
+- `CommandPlanner` is still a deterministic keyword router, not a model call —
+  it stays until Phase 4 wires a provider.
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

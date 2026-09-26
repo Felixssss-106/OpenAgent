@@ -67,7 +67,10 @@ def to_hex(value: str) -> str:
 
 
 def parse_block(css: str, selector: str) -> dict:
-    pattern = re.escape(selector) + r"\s*\{(.*?)\}"
+    # Anchored at the start of a line: an unanchored search would mistake
+    # '[data-theme="light"]' for the tail of '[data-palette="graphite"][data-theme="light"]'
+    # and silently drop the shared risk/status block.
+    pattern = r"(?m)^[ \t]*" + re.escape(selector) + r"\s*\{(.*?)\}"
     match = re.search(pattern, css, flags=re.S)
     if not match:
         raise ValueError(f"selector not found: {selector}")

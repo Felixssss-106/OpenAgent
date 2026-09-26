@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAgent · 动效演示 Motion Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   OpenAgent · Motion Demo
+   参数与 design/motion.md 完全一致。纯 CSS + 原生 JS，无构建、无依赖。
+   ========================================================================== */
+
+/* --- 1. 动效 token（对齐 design/tokens.css） ---------------------------- */
+:root{
+  --dur-instant:120ms; --dur-state:200ms; --dur-exit:240ms;
+  --dur-layout:320ms;  --dur-enter:480ms;
+
+  --ease-out-expo:cubic-bezier(.16,1,.30,1);
+  --ease-out-quart:cubic-bezier(.25,1,.50,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+  --ease-in:cubic-bezier(.70,0,.84,0);
+  --ease-apple:cubic-bezier(.32,.72,0,1);
+
+  --font:"DM Sans",-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Code","SF Mono",Menlo,Consolas,monospace;
+  --radius:19.2px; --radius-sm:12px; --radius-pill:999px;
+}
+
+/* --- 2. 主题（Apple / Pinguo 落地设计系统） ----------------------------- */
+[data-theme="dark"]{
+  --bg:#131315; --surface:#1c1c1e; --raised:#2c2c2e; --inset:#242426;
+  --border:#3a3a3c; --border-strong:#545456;
+  --tx:#f5f5f7; --tx2:#a1a1a6; --tx3:#8e8e93; --tx4:#636366;
+  --brand:#0a84ff; --brand-quiet:rgba(10,132,255,.16);
+  --success:#30d158; --error:#ff453a; --warning:#ff9f0a;
+  --scrim:rgba(0,0,0,.56);
+  --glow:rgba(255,255,255,.08);
+  --glow-edge:rgba(255,255,255,.42);
+  --shimmer-hi:#ffffff;
+  --shadow:0 12px 32px -8px rgba(0,0,0,.5);
+}
+[data-theme="light"]{
+  --bg:#f2f2f7; --surface:#ffffff; --raised:#ffffff; --inset:#e5e5ea;
+  --border:#e5e5ea; --border-strong:#d1d1d6;
+  --tx:#1d1d1f; --tx2:#6e6e73; --tx3:#8e8e93; --tx4:#aeaeb2;
+  --brand:#007aff; --brand-quiet:rgba(0,122,255,.10);
+  --success:#34c759; --error:#ff3b30; --warning:#ff9500;
+  --scrim:rgba(0,0,0,.30);
+  --glow:rgba(0,122,255,.09);
+  --glow-edge:rgba(0,122,255,.45);
+  --shimmer-hi:#1d1d1f;
+  --shadow:0 8px 24px -8px rgba(0,0,0,.12);
+}
+
+/* --- 3. 基础 ------------------------------------------------------------ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--tx); font-family:var(--font);
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  transition:background var(--dur-state) var(--ease-apple), color var(--dur-state) var(--ease-apple);
+}
+h1,h2,h3{margin:0; letter-spacing:-.02em; font-weight:600}
+a{color:var(--brand); text-decoration:none}
+a:hover{text-decoration:underline}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+/* --- 4. 顶栏 ------------------------------------------------------------ */
+.topbar{
+  position:sticky; top:0; z-index:50; display:flex; flex-wrap:wrap; gap:12px;
+  align-items:center; padding:14px 28px; background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(20px); border-bottom:1px solid var(--border);
+}
+.brandmark{display:flex; align-items:center; gap:10px; margin-right:auto}
+.brandmark b{font-size:16px; letter-spacing:-.02em}
+.brandmark span{font-size:12px; color:var(--tx3); font-family:var(--mono); letter-spacing:.06em; text-transform:uppercase}
+.seg{display:flex; padding:2px; gap:2px; background:var(--inset); border-radius:var(--radius-pill)}
+.seg button{
+  border:0; background:transparent; color:var(--tx2); font:inherit; font-size:13px;
+  padding:5px 14px; border-radius:var(--radius-pill); cursor:pointer;
+  transition:background var(--dur-instant) var(--ease-apple), color var(--dur-instant) var(--ease-apple);
+}
+.seg button[aria-pressed="true"]{background:var(--raised); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.ghostbtn{
+  border:1px solid var(--border); background:transparent; color:var(--tx2); font:inherit;
+  font-size:13px; padding:6px 14px; border-radius:var(--radius-pill); cursor:pointer;
+  transition:background var(--dur-instant) var(--ease-apple), color var(--dur-instant) var(--ease-apple), border-color var(--dur-instant) var(--ease-apple);
+}
+.ghostbtn:hover{background:var(--inset); color:var(--tx); border-color:var(--border-strong)}
+
+/* --- 5. 布局 ------------------------------------------------------------ */
+main{max-width:1180px; margin:0 auto; padding:34px 28px 96px}
+.hero{margin-bottom:36px}
+.hero p{color:var(--tx2); max-width:66ch; margin:10px 0 0}
+.hero .kbd{font-family:var(--mono); font-size:12px; background:var(--inset); border:1px solid var(--border);
+  padding:1px 6px; border-radius:6px; color:var(--tx2)}
+.section{margin-top:46px}
+.section > h2{font-size:19px; display:flex; align-items:baseline; gap:10px}
+.section > h2 em{font-style:normal; font-size:12px; font-family:var(--mono); color:var(--tx3); letter-spacing:.08em; text-transform:uppercase}
+.section > p.hint{color:var(--tx3); font-size:13.5px; margin:6px 0 20px}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px}
+
+.demo{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px 18px; display:flex; flex-direction:column;
+  transition:border-color var(--dur-state) var(--ease-apple);
+}
+.demo:hover{border-color:var(--border-strong)}
+.demo-head{display:flex; align-items:center; gap:9px; margin-bottom:14px}
+.demo-id{font-family:var(--mono); font-size:11px; color:var(--brand); background:var(--brand-quiet);
+  padding:2px 7px; border-radius:6px; letter-spacing:.04em}
+.demo-head h3{font-size:14.5px; flex:1; line-height:1.3}
+.demo-head .en{display:block; font-size:11px; color:var(--tx3); font-family:var(--mono);
+  letter-spacing:.06em; text-transform:uppercase; font-weight:400; margin-top:2px}
+.replay{
+  border:1px solid var(--border); background:transparent; color:var(--tx3); cursor:pointer;
+  font:inherit; font-size:11.5px; font-family:var(--mono); padding:3px 9px; border-radius:7px;
+  transition:color var(--dur-instant), border-color var(--dur-instant), background var(--dur-instant);
+}
+.replay:hover{color:var(--tx); border-color:var(--border-strong); background:var(--inset)}
+.stage{
+  position:relative; min-height:150px; flex:1; display:flex; align-items:center; justify-content:center;
+  background:var(--inset); border-radius:var(--radius-sm); padding:18px; overflow:hidden;
+  background-image:radial-gradient(color-mix(in srgb,var(--tx4) 22%,transparent) 1px,transparent 1px);
+  background-size:14px 14px;
+}
+.spec{margin:12px 0 0; font-size:11.5px; color:var(--tx3); font-family:var(--mono); line-height:1.7}
+.spec b{color:var(--tx2); font-weight:500}
+.src{font-family:var(--mono); font-size:11px}
+
+/* --- 6. 全局降级：重播暂停 / 减弱动效 ----------------------------------- */
+.anim.paused, .anim.paused *{animation:none !important}
+[data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after{
+  animation:none !important; transition:none !important;
+}
+
+/* ==========================================================================
+   动效实现
+   ========================================================================== */
+
+/* M-01 / M-04 模糊浮现 ---------------------------------------------------- */
+@keyframes blurFadeIn{from{opacity:0;filter:blur(8px);transform:translateY(10px)}
+                      to{opacity:1;filter:blur(0);transform:translateY(0)}}
+.bfu{display:inline-block; animation:blurFadeIn .7s var(--ease-out-expo) var(--d,0s) both}
+.bf-wrap{font-size:24px; font-weight:600; letter-spacing:-.03em; text-align:center; line-height:1.35}
+.stg{display:flex; flex-direction:column; gap:9px; width:100%}
+.stg > div{animation:blurFadeIn .7s var(--ease-out-expo) var(--d,0s) both}
+.skel-line{height:11px; border-radius:6px; background:var(--raised); border:1px solid var(--border)}
+
+/* M-02 面板唤出 ----------------------------------------------------------- */
+@keyframes panelIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.panel{
+  width:100%; max-width:280px; background:var(--raised); border:1px solid var(--border);
+  border-radius:16px; padding:14px; box-shadow:var(--shadow); transform-origin:top center;
+}
+.anim .panel{animation:panelIn var(--dur-layout) var(--ease-out-expo) both}
+.panel .row{display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:9px; font-size:13.5px}
+.panel .row.sel{background:var(--brand-quiet); color:var(--brand)}
+.panel .row .k{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--tx3)}
+.panel .caret{width:2px; height:16px; background:var(--brand); border-radius:2px; animation:blink 1.1s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* M-03 逐行揭示 ----------------------------------------------------------- */
+.lr{width:100%; display:flex; flex-direction:column; gap:8px}
+.lr-row{overflow:hidden; display:block}
+.lr-row span{display:block; font-size:15px; letter-spacing:-.01em}
+.lr-row span.dim{color:var(--tx3); font-size:13px}
+@keyframes lineUp{from{transform:translateY(110%);filter:blur(6px);opacity:0}
+                  to{transform:translateY(0);filter:blur(0);opacity:1}}
+.anim .lr-row span{animation:lineUp var(--dur-enter) var(--ease-out-expo) var(--d,0s) both}
+
+/* M-05 流光文字 ----------------------------------------------------------- */
+.shimmer{
+  font-size:22px; font-weight:600; letter-spacing:-.02em; display:inline-block;
+  background-image:linear-gradient(120deg,
+    var(--tx3) 0%, var(--tx3) 38%, var(--shimmer-hi) 50%, var(--tx3) 62%, var(--tx3) 100%);
+  background-size:200% 100%; background-repeat:no-repeat;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:shimmerPass 7.5s linear infinite;
+}
+@keyframes shimmerPass{
+  0%{background-position:-150% 0}
+  33.33%{background-position:150% 0}
+  100%{background-position:150% 0}
+}
+.shimmer.single{animation:shimmerPass 2.5s linear 1}
+.shimmer-cap{display:block; font-size:12px; color:var(--tx3); font-family:var(--mono);
+  letter-spacing:.06em; text-align:center; margin-top:10px; text-transform:uppercase}
+
+/* M-06 三点跳跃 ----------------------------------------------------------- */
+.dots{display:flex; gap:7px; align-items:flex-end; height:14px}
+.dots i{width:7px; height:7px; border-radius:50%; background:var(--tx2); opacity:.45;
+  animation:dotJump 1.2s var(--ease-in-out) infinite}
+.dots i:nth-child(2){animation-delay:.2s} .dots i:nth-child(3){animation-delay:.4s}
+@keyframes dotJump{0%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+
+/* M-07 骨架屏 ------------------------------------------------------------- */
+.skcard{width:100%; max-width:300px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px; display:flex; gap:12px; align-items:center}
+.sk{background:var(--inset); border-radius:7px; position:relative; overflow:hidden}
+.sk::after{content:''; position:absolute; inset:0; transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--tx) 9%,transparent),transparent);
+  animation:sweep 1.6s var(--ease-in-out) infinite}
+.sk.sk-a::after{animation-delay:.2s} .sk.sk-b::after{animation-delay:.4s}
+@keyframes sweep{to{transform:translateX(100%)}}
+.sk-avatar{width:44px; height:44px; border-radius:50%; flex:none}
+.sk-lines{flex:1; display:flex; flex-direction:column; gap:9px}
+.sk-l1{height:12px; width:62%} .sk-l2{height:12px; width:88%}
+
+/* M-08 多步进度 ----------------------------------------------------------- */
+.steps{width:100%; max-width:320px; display:flex; flex-direction:column; gap:2px}
+.step{display:flex; gap:11px; align-items:center; padding:7px 0; position:relative; font-size:13.5px; color:var(--tx3)}
+.step .rail{position:absolute; left:0; top:6px; bottom:6px; width:2px; border-radius:2px;
+  background:var(--brand); transform:scaleY(0); transform-origin:top; opacity:0;
+  transition:transform var(--dur-layout) var(--ease-out-expo), opacity var(--dur-state)}
+.step[data-state="active"]{color:var(--tx)}
+.step[data-state="active"] .rail{transform:scaleY(1); opacity:1}
+.step .ic{width:16px; height:16px; flex:none; display:grid; place-items:center}
+.step .ic svg{width:16px; height:16px; stroke:var(--success); stroke-width:2.2; fill:none;
+  stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:1; stroke-dashoffset:1;
+  transition:stroke-dashoffset .4s var(--ease-out-expo)}
+.step[data-state="done"] .ic svg{stroke-dashoffset:0}
+.step[data-state="done"]{color:var(--tx2)}
+.step .pend{width:6px; height:6px; border-radius:50%; background:var(--border-strong)}
+
+/* M-09 环形进度 ----------------------------------------------------------- */
+.rings{display:flex; align-items:center; gap:22px}
+.ring{width:76px; height:76px}
+.ring circle{fill:none; stroke-width:4}
+.ring .track{stroke:var(--border)}
+.ring .arc{stroke:var(--brand); stroke-linecap:round; stroke-dasharray:1;
+  stroke-dashoffset:1; transform:rotate(-90deg); transform-origin:50% 50%;
+  transition:stroke-dashoffset .9s var(--ease-out-expo)}
+.ring-num{font-size:26px; font-weight:600; letter-spacing:-.03em}
+
+/* M-10 传输进度 ----------------------------------------------------------- */
+.tbar-wrap{width:100%; max-width:320px}
+.tbar-meta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--tx3); margin-bottom:8px}
+.tbar{height:6px; border-radius:999px; background:var(--inset); overflow:hidden; position:relative}
+.tbar-fill{height:100%; border-radius:999px; background:var(--brand); width:0;
+  transition:width .3s var(--ease-out-quart); position:relative; overflow:hidden}
+.tbar-fill::after{content:''; position:absolute; inset:0; transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  animation:sweep2 2.4s linear infinite}
+@keyframes sweep2{to{transform:translateX(100%)}}
+.tbar.done .tbar-fill{background:var(--success)}
+.tbar.done .tbar-fill::after{display:none}
+.tbar-note{margin-top:9px; font-size:12px; color:var(--success); opacity:0; transition:opacity .4s var(--ease-out-expo)}
+.tbar.done + .tbar-note{opacity:1}
+
+/* M-11 聚光灯卡片 --------------------------------------------------------- */
+.spot{position:relative; width:100%; max-width:320px; padding:18px; border-radius:16px;
+  background:var(--surface); border:1px solid var(--border); overflow:hidden; cursor:default}
+.spot::before{content:''; position:absolute; inset:0; border-radius:inherit; padding:1px;
+  background:radial-gradient(220px circle at var(--x,50%) var(--y,50%), var(--glow-edge), transparent 62%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite:exclude; opacity:0; transition:opacity var(--dur-state) var(--ease-apple); pointer-events:none}
+.spot-glow{position:absolute; inset:0; pointer-events:none; opacity:0;
+  background:radial-gradient(220px circle at var(--x,50%) var(--y,50%), var(--glow), transparent 65%);
+  transition:opacity var(--dur-state) var(--ease-apple)}
+.spot:hover::before,.spot:hover .spot-glow{opacity:1}
+.spot-t{font-size:14.5px; font-weight:600; position:relative}
+.spot-s{font-size:12.5px; color:var(--tx3); margin-top:5px; position:relative}
+.spot-badges{display:flex; gap:6px; margin-top:12px; position:relative}
+.badge{font-size:11px; font-family:var(--mono); padding:2px 8px; border-radius:999px;
+  border:1px solid var(--border); color:var(--tx2)}
+.badge.warn{border-color:color-mix(in srgb,var(--warning) 45%,transparent); color:var(--warning)}
+
+/* M-12 卡片网格聚焦 ------------------------------------------------------- */
+.focus-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%}
+.fg-item{padding:14px 10px; border-radius:11px; background:var(--surface); border:1px solid var(--border);
+  text-align:center; font-size:12.5px; color:var(--tx2); cursor:default;
+  transition:transform var(--dur-layout) var(--ease-out-expo), opacity var(--dur-layout) var(--ease-out-expo),
+             filter var(--dur-layout) var(--ease-out-expo), border-color var(--dur-layout) var(--ease-out-expo)}
+.focus-grid[data-focus] .fg-item:not(.fg-on){transform:scale(.985); opacity:.55; filter:blur(1.5px)}
+.focus-grid[data-focus] .fg-item.fg-on{transform:scale(1.02); opacity:1; border-color:var(--border-strong)}
+.fg-item .fg-ic{font-size:17px; display:block; margin-bottom:5px}
+
+/* M-13 横排卡片组展开 ----------------------------------------------------- */
+.shelf{display:flex; gap:8px; width:100%; height:120px}
+.sh{flex:1 1 0; min-width:0; border-radius:13px; padding:14px 12px; overflow:hidden;
+  background:var(--raised); border:1px solid var(--border); cursor:default;
+  transition:flex-grow .42s var(--ease-out-quart)}
+.sh b{font-size:13px; display:block; white-space:nowrap}
+.sh em{font-style:normal; font-size:11.5px; color:var(--tx3); display:block; margin-top:6px;
+  opacity:0; transition:opacity var(--dur-layout) var(--ease-out-expo) .08s; white-space:nowrap}
+.shelf:hover .sh{flex-grow:.55}
+.shelf .sh:hover{flex-grow:2.4}
+.shelf .sh:hover em{opacity:1}
+
+/* M-14 展开详情 ----------------------------------------------------------- */
+.exp-stage{position:relative; width:100%; min-height:170px; display:grid; place-items:center}
+.exp-card{width:100%; max-width:300px; padding:16px; border-radius:16px; background:var(--raised);
+  border:1px solid var(--border); cursor:pointer; overflow:hidden;
+  transition:transform var(--dur-layout) var(--ease-out-expo), opacity var(--dur-exit) var(--ease-in)}
+.exp-card.collapsed{transform:scale(.9); opacity:0; pointer-events:none; position:absolute}
+.exp-card h4{margin:0; font-size:14.5px; font-weight:600}
+.exp-card .sub{font-size:12px; color:var(--tx3); margin-top:5px}
+.exp-body{margin-top:13px; padding-top:13px; border-top:1px solid var(--border);
+  display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:var(--tx2);
+  animation:blurFadeIn .32s var(--ease-out-expo) .08s both}
+.exp-body .kv{display:flex; justify-content:space-between}
+.exp-body .kv span:last-child{font-family:var(--mono); color:var(--tx)}
+.exp-actions{display:flex; gap:8px; margin-top:14px}
+
+/* M-15 滚动堆叠 ----------------------------------------------------------- */
+.stack-scroll{width:100%; height:190px; overflow-y:auto; scrollbar-width:thin; scroll-snap-type:y proximity}
+.stack-scroll::-webkit-scrollbar{width:5px}
+.stack-scroll::-webkit-scrollbar-thumb{background:var(--border-strong); border-radius:9px}
+.stack-card{position:sticky; top:0; height:96px; margin-bottom:10px; border-radius:13px;
+  background:var(--raised); border:1px solid var(--border); padding:14px;
+  transition:transform .1s linear, opacity .1s linear}
+.stack-card b{font-size:13px} .stack-card span{display:block; font-size:11.5px; color:var(--tx3); margin-top:3px}
+
+/* M-16 微光按钮 ----------------------------------------------------------- */
+.shim-btn{position:relative; overflow:hidden; border:0; cursor:pointer; font:inherit; font-weight:500;
+  font-size:14px; color:#fff; background:var(--brand); padding:11px 24px; border-radius:999px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform var(--dur-instant) var(--ease-apple)}
+.shim-btn::after{content:''; position:absolute; top:-20%; bottom:-20%; left:0; width:60%;
+  transform:translateX(-120%) skewX(-20deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:shimSweep 2s linear infinite; animation-play-state:paused}
+@keyframes shimSweep{from{transform:translateX(-120%) skewX(-20deg)}
+                    to{transform:translateX(280%) skewX(-20deg)}}
+.shim-btn:hover::after{animation-play-state:running}
+.shim-btn:active{transform:scale(.98)}
+.shim-btn.idle::after{animation:shimIdle 4s linear infinite}
+@keyframes shimIdle{0%,55%{transform:translateX(-120%) skewX(-20deg)}
+                    85%,100%{transform:translateX(280%) skewX(-20deg)}}
+
+/* M-17 长按确认 ----------------------------------------------------------- */
+.hold{position:relative; overflow:hidden; border:1px solid color-mix(in srgb,var(--error) 55%,transparent);
+  background:transparent; color:var(--error); font:inherit; font-size:14px; font-weight:500;
+  padding:11px 26px; border-radius:999px; cursor:pointer; user-select:none; touch-action:none;
+  transition:color var(--dur-instant)}
+.hold .fill{position:absolute; inset:0; background:color-mix(in srgb,var(--error) 26%,transparent);
+  transform:scaleX(0); transform-origin:left; z-index:0}
+.hold .lbl{position:relative; z-index:1}
+.hold.charging{color:var(--error)}
+.hold.charging .fill{transform:scaleX(1); transition:transform 1.2s linear}
+
+/* M-18 文字滑换 / M-19 波纹 ---------------------------------------------- */
+.swapbtn{position:relative; overflow:hidden; border:1px solid var(--border); background:transparent;
+  color:var(--tx); font:inherit; font-size:13.5px; padding:9px 20px; border-radius:999px; cursor:pointer;
+  transition:border-color var(--dur-instant) var(--ease-apple)}
+.swapbtn:hover{border-color:var(--border-strong)}
+.swap-inner{position:relative; display:block; height:20px; overflow:hidden}
+.swap-inner span{display:block; height:20px; line-height:20px; white-space:nowrap;
+  transition:transform .26s var(--ease-out-quart), opacity .26s var(--ease-out-quart)}
+.swap-inner span:nth-child(2){position:absolute; inset:0; transform:translateY(100%); opacity:0}
+.swapbtn:hover .swap-inner span:nth-child(1),
+.swapbtn:focus-visible .swap-inner span:nth-child(1){transform:translateY(-100%); opacity:0}
+.swapbtn:hover .swap-inner span:nth-child(2),
+.swapbtn:focus-visible .swap-inner span:nth-child(2){transform:translateY(0); opacity:1}
+
+.ripple-box{position:relative; overflow:hidden; display:grid; place-items:center; width:100%; height:100%;
+  border-radius:12px; border:1px dashed var(--border-strong); color:var(--tx3); font-size:12.5px;
+  font-family:var(--mono); cursor:pointer; user-select:none}
+.ripple-box b{font-family:var(--font); font-size:13.5px; color:var(--tx); font-weight:500}
+.rp{position:absolute; border-radius:50%; background:var(--glow-edge); pointer-events:none;
+  transform:translate(-50%,-50%); animation:rpOut .6s var(--ease-out-expo) forwards}
+@keyframes rpOut{from{width:12px;height:12px;opacity:.5} to{width:280px;height:280px;opacity:0}}
+
+/* M-20 下载变形 ----------------------------------------------------------- */
+.morph{width:210px; height:44px; border-radius:999px; background:var(--brand); color:#fff;
+  border:0; font:inherit; font-size:14px; font-weight:500; cursor:pointer; position:relative;
+  overflow:hidden; display:grid; place-items:center}
+.morph .layer{position:absolute; inset:0; display:grid; place-items:center;
+  transition:opacity var(--dur-layout) var(--ease-out-expo)}
+.morph .l-bar{opacity:0; background:var(--brand); grid-template-columns:1fr; padding:0}
+.morph .l-bar .track{position:absolute; inset:5px; border-radius:999px; background:rgba(255,255,255,.22); overflow:hidden}
+.morph .l-bar .fill{height:100%; border-radius:999px; background:#fff; width:0;
+  transition:width .3s var(--ease-out-quart)}
+.morph .l-done{opacity:0; background:var(--success)}
+.morph[data-s="down"] .l-idle, .morph[data-s="done"] .l-idle{opacity:0}
+.morph[data-s="down"] .l-bar{opacity:1}
+.morph[data-s="done"] .l-bar{opacity:0}
+.morph[data-s="done"] .l-done{opacity:1}
+.morph .l-done svg{width:22px; height:22px; stroke:#fff; stroke-width:2.6; fill:none;
+  stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:1; stroke-dashoffset:1}
+.morph[data-s="done"] .l-done svg{animation:draw .4s var(--ease-out-expo) both}
+@keyframes draw{from{stroke-dashoffset:1} to{stroke-dashoffset:0}}
+
+/* M-21 模态 -------------------------------------------------------------- */
+.mod-scrim{position:absolute; inset:0; background:var(--scrim); opacity:0; pointer-events:none;
+  transition:opacity var(--dur-state) var(--ease-out-expo); z-index:3}
+.mod-scrim.on{opacity:1; pointer-events:auto}
+.mod{position:absolute; z-index:4; width:min(320px,86%); background:var(--raised);
+  border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow);
+  opacity:0; transform:scale(.97); pointer-events:none;
+  transition:opacity var(--dur-layout) var(--ease-out-expo), transform var(--dur-layout) var(--ease-out-expo)}
+.mod.on{opacity:1; transform:scale(1); pointer-events:auto}
+.mod h4{margin:0; font-size:15px} .mod p{margin:8px 0 0; font-size:12.5px; color:var(--tx2)}
+.mod-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:16px}
+
+/* M-22 气泡 -------------------------------------------------------------- */
+.tt-wrap{position:relative; display:grid; place-items:center}
+.tip{position:absolute; bottom:calc(100% + 8px); left:50%; transform:translate(-50%,4px) scale(.96);
+  background:var(--raised); border:1px solid var(--border); color:var(--tx); font-size:12px;
+  padding:7px 11px; border-radius:10px; white-space:nowrap; opacity:0; pointer-events:none;
+  box-shadow:var(--shadow);
+  transition:opacity var(--dur-state) var(--ease-out-expo), transform var(--dur-state) var(--ease-out-expo)}
+.tip::after{content:''; position:absolute; top:100%; left:50%; margin-left:-4px;
+  border:4px solid transparent; border-top-color:var(--raised)}
+.tt-wrap:hover .tip,.tt-wrap:focus-within .tip{opacity:1; transform:translate(-50%,0) scale(1)}
+
+/* M-23 开关 -------------------------------------------------------------- */
+.sw{width:46px; height:27px; border-radius:999px; background:var(--border-strong); border:0;
+  padding:0; cursor:pointer; position:relative; transition:background .26s var(--ease-out-expo)}
+.sw[aria-checked="true"]{background:var(--brand)}
+.sw i{position:absolute; top:2.5px; left:2.5px; width:22px; height:22px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28);
+  transition:transform .26s var(--ease-out-expo)}
+.sw[aria-checked="true"] i{transform:translateX(19px)}
+
+/* M-24 描绘打勾 ----------------------------------------------------------- */
+.dcheck{width:56px; height:56px; stroke:var(--success); stroke-width:2.4; fill:none;
+  stroke-linecap:round; stroke-linejoin:round; overflow:visible}
+.dcheck circle,.dcheck path{stroke-dasharray:1}
+.anim .dcheck circle{animation:draw .35s var(--ease-out-expo) both}
+.anim .dcheck path{animation:draw .35s var(--ease-out-expo) .25s both}
+.anim .dcheck{animation:pop .1s var(--ease-out-expo) .6s both}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+/* M-25 滚动数字 ----------------------------------------------------------- */
+.counter{display:flex; align-items:flex-end; font-family:var(--mono); font-size:38px; font-weight:500;
+  letter-spacing:-.02em; line-height:1}
+.cd-box{display:inline-block; height:1em; overflow:hidden}
+.cd-strip{display:block; transition:transform 1.2s var(--ease-out-expo)}
+.cd-strip > span{display:block; height:1em; line-height:1}
+.cd-cap{font-size:12px; color:var(--tx3); margin-top:12px; font-family:var(--mono); letter-spacing:.05em}
+
+/* M-26 抖动输入 ----------------------------------------------------------- */
+.wob{width:100%; max-width:280px}
+.wob-field{width:100%; background:var(--surface); border:1px solid var(--border); border-radius:11px;
+  padding:11px 13px; color:var(--tx); font:inherit; font-size:13.5px; outline:none;
+  transition:border-color .15s var(--ease-out-expo), box-shadow .15s var(--ease-out-expo)}
+.wob-field:focus{border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-quiet)}
+.wob-field.err{border-color:var(--error)}
+@keyframes shake{0%{transform:translateX(0)}12.5%{transform:translateX(-8px)}25%{transform:translateX(8px)}
+  37.5%{transform:translateX(-6px)}50%{transform:translateX(6px)}62.5%{transform:translateX(-3px)}
+  75%{transform:translateX(3px)}100%{transform:translateX(0)}}
+.wob-field.shake{animation:shake .4s var(--ease-in-out)}
+.wob-msg{font-size:12px; color:var(--error); margin-top:7px; opacity:0; transform:translateY(-4px);
+  transition:opacity var(--dur-state) var(--ease-out-expo), transform var(--dur-state) var(--ease-out-expo)}
+.wob-msg.on{opacity:1; transform:translateY(0)}
+
+/* M-27 Toast ------------------------------------------------------------- */
+.toast-zone{position:absolute; right:12px; bottom:12px; width:min(268px,80%); z-index:5;
+  display:flex; flex-direction:column-reverse; gap:8px}
+.toast{position:relative; overflow:hidden; background:var(--raised); border:1px solid var(--border);
+  border-radius:13px; padding:11px 13px; box-shadow:var(--shadow);
+  animation:toastIn var(--dur-layout) var(--ease-out-expo) both}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px)} to{opacity:1;transform:translateX(0)}}
+.toast.out{animation:toastOut var(--dur-exit) var(--ease-in) both}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(24px)}}
+.toast b{font-size:13px; display:block}
+.toast small{font-size:11.5px; color:var(--tx3)}
+.toast .hair{position:absolute; left:0; bottom:0; height:2px; background:var(--brand); width:100%;
+  transform-origin:left; animation:drain 5s linear both}
+@keyframes drain{from{transform:scaleX(1)} to{transform:scaleX(0)}}
+.toast.err .hair{background:var(--error); animation:none}
+
+/* M-28 导航指示 ----------------------------------------------------------- */
+.tabs{position:relative; display:flex; gap:3px; padding:4px; background:var(--inset);
+  border-radius:999px; font-size:13px}
+.tabs .pill{position:absolute; top:4px; left:4px; height:calc(100% - 8px); border-radius:999px;
+  background:var(--raised); box-shadow:0 1px 3px rgba(0,0,0,.14);
+  transition:transform .3s var(--ease-out-expo), width .3s var(--ease-out-expo)}
+.tabs button{position:relative; z-index:1; border:0; background:transparent; font:inherit;
+  font-size:13px; color:var(--tx2); padding:6px 15px; border-radius:999px; cursor:pointer;
+  transition:color .3s var(--ease-out-expo); white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--tx)}
+
+/* M-29 背景网格 ----------------------------------------------------------- */
+.sgrid{position:absolute; inset:0; --x:-999px; --y:-999px}
+.sgrid .layer{position:absolute; inset:0;
+  background-image:radial-gradient(color-mix(in srgb,var(--tx4) 30%,transparent) 1.2px,transparent 1.2px);
+  background-size:15px 15px}
+.sgrid .bright{background-image:radial-gradient(var(--brand) 1.4px,transparent 1.4px);
+  -webkit-mask-image:radial-gradient(180px circle at var(--x) var(--y),#000 0%,rgba(0,0,0,.55) 45%,transparent 72%);
+  mask-image:radial-gradient(180px circle at var(--x) var(--y),#000 0%,rgba(0,0,0,.55) 45%,transparent 72%)}
+.sgrid-label{position:relative; z-index:2; font-size:13px; color:var(--tx2); text-align:center}
+
+.footnote{margin-top:56px; padding-top:22px; border-top:1px solid var(--border);
+  font-size:12.5px; color:var(--tx3); line-height:1.9}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brandmark">
+    <b>OpenAgent</b><span>Motion Demo</span>
+  </div>
+  <div class="seg" role="group" aria-label="主题">
+    <button type="button" data-theme-set="light">浅色</button>
+    <button type="button" data-theme-set="dark" aria-pressed="true">深色</button>
+  </div>
+  <button class="ghostbtn" type="button" id="motionToggle">减弱动效：关</button>
+  <button class="ghostbtn" type="button" id="replayAll">全部重播</button>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>UI 动效演示</h1>
+    <p>与 <span class="num">design/motion.md</span> 逐条对应 —— 时长、缓动、触发方式全部一致。
+       鼠标悬停或点击各演示区即可看到效果，右上角可切换主题与减弱动效。
+       按住 <span class="kbd">Alt</span> + <span class="kbd">Space</span> 在本项目里唤起 Command Center。</p>
+  </div>
+
+  <!-- ============ 组 1 · 启动与进入 ============ -->
+  <section class="section">
+    <h2>组 1 · 启动与进入 <em>Launch &amp; Entry</em></h2>
+    <p class="hint">开场问候、面板唤出、页面切换、首屏内容入场。全部使用 --ease-out-expo。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-01</span>
+          <h3>开场问候语 · 模糊浮现<span class="en">Blur Fade In</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="bf-wrap anim" id="greeting" data-text="你好，今天想做什么？" aria-label="你好，今天想做什么？"></div>
+        </div>
+        <p class="spec"><b>700ms</b> · cubic-bezier(.16,1,.3,1) · 单元间隔 120ms<br>
+          触发：自动播放，每 4200ms 循环 · 组件：GreetingHero / EmptyState<br>
+          <span class="src">来源：MotionVault 文字 01</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-02</span>
+          <h3>Command Center 唤出<span class="en">Panel Reveal</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="anim" style="width:100%; display:grid; place-items:center">
+            <div class="panel">
+              <div class="row sel"><span class="caret"></span><span>整理下载目录里 3 天前的文件</span><span class="k">⏎</span></div>
+              <div class="row"><span>查看当前运行的 Agent 任务</span><span class="k">⌘K</span></div>
+              <div class="row"><span>把这份文档发到手机</span><span class="k">⌘D</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="spec"><b>320ms</b> 进 / <b>240ms</b> 出 · scale .97→1 + opacity<br>
+          触发：快捷键 Alt+Space · 组件：CommandCenter / TrayPopup<br>
+          <span class="src">无位移、无模糊、无过冲</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-03</span>
+          <h3>页面切换 · 逐行揭示<span class="en">Line Reveal</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="lr anim">
+            <span class="lr-row"><span style="--d:0s">今日完成 12 个任务</span></span>
+            <span class="lr-row"><span class="dim" style="--d:.12s">其中 3 个等待你的批准</span></span>
+            <span class="lr-row"><span style="--d:.24s">设备 · Pixel 8 在线</span></span>
+            <span class="lr-row"><span class="dim" style="--d:.36s">上次同步 2 分钟前</span></span>
+          </div>
+        </div>
+        <p class="spec"><b>480ms</b> / 行 · 行间 <b>120ms</b> · cubic-bezier(.16,1,.3,1)<br>
+          触发：路由切换 · 组件：页面容器 / SectionHeader<br>
+          <span class="src">来源：MotionVault 文字 09</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-04</span>
+          <h3>首屏内容块入场<span class="en">Stagger In</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="stg anim">
+            <div style="--d:0s"><div class="skel-line" style="width:70%"></div></div>
+            <div style="--d:.06s"><div class="skel-line" style="width:88%"></div></div>
+            <div style="--d:.12s"><div class="skel-line" style="width:56%"></div></div>
+            <div style="--d:.18s"><div class="skel-line" style="width:78%"></div></div>
+          </div>
+        </div>
+        <p class="spec"><b>700ms</b> / 块 · 块间 <b>60ms</b> · 进入视口一次<br>
+          触发：whileInView once · 组件：卡片网格 / 列表容器<br>
+          <span class="src">总时长封顶 1.2s（clamp index）</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 2 · 等待与进行中 ============ -->
+  <section class="section">
+    <h2>组 2 · 等待与进行中 <em>Waiting &amp; In-progress</em></h2>
+    <p class="hint">循环动效只允许出现在有明确终点的状态里，状态结束后立即卸载。Idle CPU &lt; 2%。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-05</span>
+          <h3>工具调用中 · 流光文字<span class="en">Shimmer Text</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div style="text-align:center">
+            <div class="shimmer" id="shimmer" style="--i:0">正在调用 file.read…</div>
+            <span class="shimmer-cap">悬停此处触发单次扫光</span>
+          </div>
+        </div>
+        <p class="spec"><b>2500ms</b> 扫过 · 间隔 <b>5000ms</b> · linear<br>
+          触发：状态驱动（isWorking）/ 悬停单次 · 组件：ToolCallRow / ThinkingIndicator<br>
+          <span class="src">来源：MotionVault 文字 05 · 仅动 background-position</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-06</span>
+          <h3>流式输出前缓冲<span class="en">Typing Dots</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="dots anim"><i></i><i></i><i></i></div>
+        </div>
+        <p class="spec"><b>1200ms</b> 循环 · 点间 <b>200ms</b> · cubic-bezier(.65,0,.35,1)<br>
+          触发：状态驱动，首 token 到达即卸载 · 组件：TypingIndicator<br>
+          <span class="src">来源：MotionVault 加载 02</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-07</span>
+          <h3>首屏骨架屏<span class="en">Skeleton</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="skcard">
+            <div class="sk sk-avatar sk-a"></div>
+            <div class="sk-lines">
+              <div class="sk sk-l1"></div>
+              <div class="sk sk-l2 sk-b"></div>
+            </div>
+          </div>
+        </div>
+        <p class="spec"><b>1600ms</b> 循环 · 微光扫过 · 块间 200ms 错峰<br>
+          触发：数据加载中 · 组件：TaskCardSkeleton / DeviceCardSkeleton<br>
+          <span class="src">来源：MotionVault 加载 08 · 与真实卡片零布局位移</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-08</span>
+          <h3>多步任务进度<span class="en">Step Progress</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="steps" id="steps">
+            <div class="step" data-state="pending"><span class="rail"></span>
+              <span class="ic"><svg viewBox="0 0 24 24" pathLength="1"><path d="M5 13l4 4L19 7" pathLength="1"/></svg></span>
+              <span>解析任务计划</span></div>
+            <div class="step" data-state="pending"><span class="rail"></span>
+              <span class="ic"><svg viewBox="0 0 24 24" pathLength="1"><path d="M5 13l4 4L19 7" pathLength="1"/></svg></span>
+              <span>读取 3 个文件</span></div>
+            <div class="step" data-state="pending"><span class="rail"></span>
+              <span class="ic"><svg viewBox="0 0 24 24" pathLength="1"><path d="M5 13l4 4L19 7" pathLength="1"/></svg></span>
+              <span>等待你的批准</span></div>
+            <div class="step" data-state="pending"><span class="rail"></span>
+              <span class="ic"><svg viewBox="0 0 24 24" pathLength="1"><path d="M5 13l4 4L19 7" pathLength="1"/></svg></span>
+              <span>写入目标目录</span></div>
+          </div>
+        </div>
+        <p class="spec"><b>900ms</b> / 步 · 对勾描绘 400ms · 已完成后不再重播<br>
+          触发：状态推进 · 组件：TaskTimeline / PlanSteps<br>
+          <span class="src">来源：MotionVault 加载 09</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-09</span>
+          <h3>任务完成度环<span class="en">Progress Ring</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="rings">
+            <svg class="ring" viewBox="0 0 48 48">
+              <circle class="track" cx="24" cy="24" r="20"/>
+              <circle class="arc" id="ringArc" cx="24" cy="24" r="20" pathLength="1"/>
+            </svg>
+            <div>
+              <div class="ring-num num" id="ringNum">0%</div>
+              <div class="spec" style="margin-top:4px">4 / 5 步已完成</div>
+            </div>
+          </div>
+        </div>
+        <p class="spec"><b>900ms</b> · cubic-bezier(.16,1,.3,1) · 数字同步计数<br>
+          触发：数值变化 · 组件：ProgressRing / TaskHeader<br>
+          <span class="src">来源：MotionVault SVG 05 · 数字用 tabular-nums</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-10</span>
+          <h3>文件传输进度<span class="en">Transfer Bar</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="tbar-wrap">
+            <div class="tbar-meta">
+              <span class="num" id="tbarTxt">0.0 MB / 48.0 MB · 1.2 MB/s</span>
+              <span class="num" id="tbarPct">0%</span>
+            </div>
+            <div class="tbar" id="tbar"><div class="tbar-fill" id="tbarFill"></div></div>
+            <div class="tbar-note">已完成 · 传输到 Pixel 8</div>
+          </div>
+        </div>
+        <p class="spec">填充 <b>300ms</b> cubic-bezier(.25,1,.5,1) · 高光 <b>2400ms</b> 循环<br>
+          触发：进度事件（chunk 到达）· 组件：TransferBar / PluginInstallBar<br>
+          <span class="src">来源：MotionVault 加载 14</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 3 · 卡片 ============ -->
+  <section class="section">
+    <h2>组 3 · 卡片（电脑版） <em>Cards</em></h2>
+    <p class="hint">M-11 是全站卡片的统一底层交互，所有卡片组件继承它。移动鼠标到卡片上试试。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-11</span>
+          <h3>电脑版全部卡片 · 聚光灯<span class="en">Spotlight Card</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="spot" data-spot>
+            <div class="spot-glow"></div>
+            <div class="spot-t">整理下载目录</div>
+            <div class="spot-s">3 个工具调用 · 等待批准</div>
+            <div class="spot-badges">
+              <span class="badge warn">risk: high</span>
+              <span class="badge">可撤销</span>
+              <span class="badge">4 个文件</span>
+            </div>
+          </div>
+        </div>
+        <p class="spec">光晕半径 <b>220px</b> · 8% 白 → 透明 · 跟随指针，无补间<br>
+          触发：mousemove · 组件：Card（全站继承）/ TaskCard / DeviceCard / PluginCard<br>
+          <span class="src">来源：MotionVault 卡片 02 · 浅色主题改用 accent 光晕</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-12</span>
+          <h3>卡片网格聚焦<span class="en">Focus Grid</span></h3>
+        </div>
+        <div class="stage">
+          <div class="focus-grid anim" id="focusGrid">
+            <div class="fg-item"><span class="fg-ic">⛅</span>天气</div>
+            <div class="fg-item"><span class="fg-ic">📁</span>文件</div>
+            <div class="fg-item"><span class="fg-ic">🖥</span>进程</div>
+            <div class="fg-item"><span class="fg-ic">⌨️</span>终端</div>
+            <div class="fg-item"><span class="fg-ic">📸</span>截图</div>
+            <div class="fg-item"><span class="fg-ic">🎬</span>媒体</div>
+          </div>
+        </div>
+        <p class="spec"><b>320ms</b> · cubic-bezier(.16,1,.3,1) · 悬停卡 1.02 / 同级 0.985 + blur<br>
+          触发：悬停 与 :focus-visible 同效 · 组件：PluginGrid / ToolGrid<br>
+          <span class="src">来源：MotionVault 卡片 25</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-13</span>
+          <h3>横排卡片组展开<span class="en">Expand Shelf</span></h3>
+        </div>
+        <div class="stage">
+          <div class="shelf">
+            <div class="sh"><b>Pixel 8</b><em>在线 · 电量 82%</em></div>
+            <div class="sh"><b>ThinkPad</b><em>本机 · Agent 运行中</em></div>
+            <div class="sh"><b>iPad</b><em>离线 3 小时</em></div>
+          </div>
+        </div>
+        <p class="spec"><b>420ms</b> · cubic-bezier(.25,1,.5,1) · 展开至行宽约 60%<br>
+          触发：悬停 / 聚焦 · 组件：DeviceShelf / RecentTaskShelf<br>
+          <span class="src">来源：MotionVault 卡片 28 · 用 flex-grow 过渡</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-14</span>
+          <h3>审批卡展开详情<span class="en">Expandable Card</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="exp-stage" id="expStage">
+            <div class="exp-card" id="expCard" role="button" tabindex="0"
+                 aria-label="展开审批详情，风险等级 高">
+              <h4>删除 3 天前的下载文件</h4>
+              <div class="sub">风险 高 · 影响 4 个文件 · 可撤销</div>
+              <div class="exp-body" style="animation:none">
+                <div class="kv"><span>影响面</span><span>4 个文件 · 1.2 GB</span></div>
+                <div class="kv"><span>可逆性</span><span>已备份，可撤销</span></div>
+                <div class="kv"><span>执行端</span><span>ThinkPad · 本机</span></div>
+              </div>
+              <div class="exp-actions"><span class="badge warn">点击收起</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="spec">展开 <b>380ms</b> / 收起 <b>240ms</b> · 进入无过冲（spring ζ≈1.03）<br>
+          触发：点击卡片 · 组件：ApprovalCard（产品视觉签名）<br>
+          <span class="src">来源：MotionVault 卡片 39 · 去弹性版</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-15</span>
+          <h3>任务时间线堆叠<span class="en">Scroll Stack</span></h3>
+        </div>
+        <div class="stage">
+          <div class="stack-scroll" id="stackScroll">
+            <div class="stack-card"><b>· 读取 config.json</b><span>2.1s · risk: safe</span></div>
+            <div class="stack-card"><b>· 列出下载目录</b><span>1.4s · risk: safe</span></div>
+            <div class="stack-card"><b>· 匹配 3 天前文件</b><span>0.8s · risk: low</span></div>
+            <div class="stack-card"><b>· 等待批准删除</b><span>已暂停 · risk: high</span></div>
+            <div class="stack-card"><b>· 移动到回收站</b><span>未执行</span></div>
+          </div>
+        </div>
+        <p class="spec">跟随滚动 · 前卡 scale→<b>0.94</b> / opacity→<b>0.7</b> · 仅 transform/opacity<br>
+          触发：滚动 · 组件：TaskTimeline / AuditLog<br>
+          <span class="src">来源：MotionVault 卡片 06 · 向滚动区域滚动</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 4 · 按钮与操作反馈 ============ -->
+  <section class="section">
+    <h2>组 4 · 按钮与操作反馈 <em>Buttons</em></h2>
+    <p class="hint">按压反馈统一 120ms；危险操作强制走长按确认，这是「审批有重量」的一部分。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-16</span>
+          <h3>主按钮悬停 · 微光<span class="en">Shimmer Button</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <button class="shim-btn idle" type="button">批准并执行</button>
+        </div>
+        <p class="spec">扫过 <b>2000ms</b> · 空闲每 4s 一次、悬停连续 · linear<br>
+          触发：悬停 / 自动 · 组件：Button variant="primary" / ApproveButton<br>
+          <span class="src">来源：MotionVault 按钮 06 · 1px 内高光为静态</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-17</span>
+          <h3>高风险操作确认<span class="en">Hold To Confirm</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <button class="hold" id="holdBtn" type="button">
+            <span class="fill"></span><span class="lbl">按住确认 · 执行删除</span>
+          </button>
+        </div>
+        <p class="spec">长按 <b>1200ms</b> linear（3% 前可取消）· 取消回吐 <b>200ms</b> ease-in<br>
+          触发：长按（指针 / 空格）· 组件：DangerButton / RevokeDeviceButton<br>
+          <span class="src">来源：MotionVault 按钮 12 · 换成 scaleX，不动 width</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-18</span>
+          <h3>次级按钮悬停 · 文字滑换<span class="en">Text Swap</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <button class="swapbtn" type="button">
+            <span class="swap-inner">
+              <span>查看全部任务</span><span>共 24 条记录 →</span>
+            </span>
+          </button>
+        </div>
+        <p class="spec"><b>260ms</b> · cubic-bezier(.25,1,.5,1) · 按钮宽度锁定不回流<br>
+          触发：悬停 / 聚焦 · 组件：Button variant="ghost" / LinkButton<br>
+          <span class="src">来源：MotionVault 按钮 07</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-19</span>
+          <h3>指针按下反馈 · 波纹<span class="en">Ripple</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="ripple-box" id="rippleBox"><b>在任意位置按下</b></div>
+        </div>
+        <p class="spec"><b>600ms</b> · cubic-bezier(.16,1,.3,1) · 最多 3 个并发<br>
+          触发：pointerdown（坐标为落点）· 组件：Card / Button / ListItem<br>
+          <span class="src">来源：MotionVault 按钮 03 · 不拦截指针事件</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-20</span>
+          <h3>传输 / 下载按钮<span class="en">Download Morph</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <button class="morph" id="morphBtn" data-s="idle" type="button">
+            <span class="layer l-idle">安装插件 · 48 MB</span>
+            <span class="layer l-bar">
+              <span class="track"><span class="fill" id="morphFill"></span></span>
+              <span class="num" id="morphPct" style="position:relative">0%</span>
+            </span>
+            <span class="layer l-done">
+              <svg viewBox="0 0 24 24" pathLength="1"><path d="M5 13l4 4L19 7" pathLength="1"/></svg>
+            </span>
+          </button>
+        </div>
+        <p class="spec">填充 <b>300ms</b> cubic-bezier(.25,1,.5,1) · 变形成 <b>320ms</b> · 完成停留 600ms<br>
+          触发：点击 · 组件：InstallButton / DownloadButton<br>
+          <span class="src">来源：MotionVault 按钮 11 · 外宽 210px 恒定</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 5 · 模态与浮层 ============ -->
+  <section class="section">
+    <h2>组 5 · 模态与浮层 <em>Modals &amp; Overlays</em></h2>
+    <p class="hint">唯一允许使用弹簧（spring ζ≈1.03）的分组 —— 但必须无可见过冲。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-21</span>
+          <h3>模态弹出<span class="en">Spring Modal</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage">
+          <div class="mod-scrim" id="modScrim"></div>
+          <button class="ghostbtn" type="button" id="modOpen">打开设置弹窗</button>
+          <div class="mod" id="mod" role="dialog" aria-modal="true" aria-label="权限模式">
+            <h4>权限模式</h4>
+            <p>高危工具执行前始终询问。你也可以临时放宽到「本次会话内允许」，会话结束后自动恢复。</p>
+            <div class="mod-actions">
+              <button class="ghostbtn" type="button" id="modClose">取消</button>
+              <button class="shim-btn" type="button" style="padding:7px 18px; font-size:13px">保存</button>
+            </div>
+          </div>
+        </div>
+        <p class="spec">进入 <b>320ms</b> spring(380/40/1) · 退出 <b>240ms</b> ease-in · 遮罩 200ms<br>
+          触发：点击 / 事件 · 组件：Dialog / PairingModal / SettingsModal<br>
+          <span class="src">来源：MotionVault 弹簧 02 · 去过冲</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-22</span>
+          <h3>气泡提示<span class="en">Spring Tooltip</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="tt-wrap">
+            <div class="tip">risk: high — 会删除 4 个文件，可撤销</div>
+            <button class="ghostbtn" type="button">悬停查看风险说明</button>
+          </div>
+        </div>
+        <p class="spec">进入 <b>200ms</b> spring(420/44/1) · 退出 <b>120ms</b> ease-in · 延迟 400ms 显示<br>
+          触发：悬停 + 键盘聚焦 · 组件：Tooltip / RiskBadge help<br>
+          <span class="src">来源：MotionVault 弹簧 04 · 无过冲</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-23</span>
+          <h3>设置开关<span class="en">Switch</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <div style="display:flex; align-items:center; gap:12px">
+              <button class="sw" role="switch" aria-checked="true" type="button" aria-label="开机自启"><i></i></button>
+              <span style="font-size:13.5px">开机自启</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px">
+              <button class="sw" role="switch" aria-checked="false" type="button" aria-label="开发者模式"><i></i></button>
+              <span style="font-size:13.5px">开发者模式</span>
+            </div>
+          </div>
+        </div>
+        <p class="spec"><b>260ms</b> spring(380/40/1) · 轨道变色同步 · 滑块<b>不变形</b><br>
+          触发：点击 / 空格 · 组件：Switch / PermissionToggle<br>
+          <span class="src">来源：MotionVault 弹簧 06 · 去掉橡皮糖拉伸</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-24</span>
+          <h3>审批通过 · 描绘打勾<span class="en">Draw Check</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="anim" style="display:grid; place-items:center; gap:12px">
+            <svg class="dcheck" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" pathLength="1"/>
+              <path d="M15 24.5 L21.5 31 L34 18" pathLength="1"/>
+            </svg>
+            <span style="font-size:12.5px; color:var(--tx2)">已批准 · 开始执行</span>
+          </div>
+        </div>
+        <p class="spec">圆 <b>350ms</b> → 勾 <b>350ms</b> → 收尾 pop 100ms · 总计 800ms<br>
+          触发：状态变化 approved / success · 组件：ApprovalResult / PairingSuccess<br>
+          <span class="src">来源：MotionVault SVG 06 · 只在状态变化时播一次</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 6 · 状态与反馈 ============ -->
+  <section class="section">
+    <h2>组 6 · 状态与反馈 <em>Status &amp; Feedback</em></h2>
+    <p class="hint">数字一律用等宽 tabular-nums，避免计数时宽度抖动。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-25</span>
+          <h3>统计数字滚动<span class="en">Rolling Counter</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div style="text-align:center">
+            <div class="counter" id="counter" data-value="1284"></div>
+            <div class="cd-cap">今日已完成的工具调用</div>
+          </div>
+        </div>
+        <p class="spec"><b>1200ms</b> · 位间错峰 <b>100ms</b>（个位先动）· cubic-bezier(.16,1,.3,1)<br>
+          触发：进入视口 / 数值变化 · 组件：StatNumber / DashboardMetrics<br>
+          <span class="src">来源：MotionVault 文字 13 · 无过冲</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-26</span>
+          <h3>输入校验失败<span class="en">Wobble Field</span></h3>
+          <button class="replay" type="button" data-replay>重播</button>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="wob">
+            <input class="wob-field" id="wobField" value="sk-invalid-key" readonly aria-label="API Key">
+            <div class="wob-msg" id="wobMsg" role="alert">API Key 无效，请检查后重试</div>
+          </div>
+        </div>
+        <p class="spec">抖动 <b>400ms</b> cubic-bezier(.65,0,.35,1) · 提示 <b>200ms</b> ease-out<br>
+          触发：校验失败，聚焦即复位 · 组件：ApiKeyField / PairCodeInput<br>
+          <span class="src">来源：MotionVault 弹簧 05 · 只播一次</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-27</span>
+          <h3>通知 / Toast<span class="en">Toast Stack</span></h3>
+        </div>
+        <div class="stage">
+          <button class="ghostbtn" type="button" id="toastBtn">推送一条通知</button>
+          <div class="toast-zone" id="toastZone" aria-live="polite"></div>
+        </div>
+        <p class="spec">进入 <b>320ms</b> ease-out（x:24 滑入）· 退出 <b>240ms</b> ease-in<br>
+          触发：事件推送，5s 自动消失 · 组件：Toast / NotificationStack<br>
+          <span class="src">来源：MotionVault 卡片 31 · 最多 3 条可见</span></p>
+      </article>
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-28</span>
+          <h3>侧边导航切换<span class="en">Nav Indicator</span></h3>
+        </div>
+        <div class="stage" style="background-image:none">
+          <div class="tabs" id="tabs">
+            <span class="pill" id="tabPill"></span>
+            <button type="button" aria-selected="true">任务</button>
+            <button type="button" aria-selected="false">设备</button>
+            <button type="button" aria-selected="false">工具</button>
+            <button type="button" aria-selected="false">设置</button>
+          </div>
+        </div>
+        <p class="spec"><b>300ms</b> spring(380/40/1) · 指示块位移 + 宽度过渡 · 无 gooey 滤镜<br>
+          触发：点击 / 方向键 · 组件：SideNav / TabBar / SegmentedControl<br>
+          <span class="src">来源：MotionVault 弹簧 11 · 去融合滤镜</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ 组 7 · 背景氛围 ============ -->
+  <section class="section">
+    <h2>组 7 · 背景氛围（受限） <em>Ambient</em></h2>
+    <p class="hint">唯一允许的常驻背景效果，且指针静止 8 秒后必须自动淡出，有任务运行时卸载。</p>
+    <div class="grid">
+
+      <article class="demo">
+        <div class="demo-head">
+          <span class="demo-id">M-29</span>
+          <h3>起始页背景 · 点亮网格<span class="en">Spotlight Grid</span></h3>
+        </div>
+        <div class="stage" id="sgridStage" style="padding:0">
+          <div class="sgrid" id="sgrid">
+            <div class="layer"></div>
+            <div class="layer bright"></div>
+          </div>
+          <div class="sgrid-label">鼠标在网格上移动</div>
+        </div>
+        <p class="spec">光斑半径 <b>180px</b> · 跟随指针 · 静止 8s 后整体淡出<br>
+          触发：mousemove（rAF 驱动，零 setState）· 组件：StartPage / EmptyState<br>
+          <span class="src">来源：MotionVault 背景 06</span></p>
+      </article>
+
+    </div>
+  </section>
+
+  <p class="footnote">
+    参数真源：<span class="num">design/motion.md</span> ·
+    动效来源：<a href="https://xiyu519.github.io/MotionVault/" target="_blank" rel="noreferrer">MotionVault</a><br>
+    本页为纯 CSS + 原生 JS 实现（无 React / 无 CDN），用于肉眼验收动效；<br>
+    组件实现请复制 motion.md 中各条的 AI Prompt（React + Tailwind + Framer Motion）。<br>
+    全局规则：只动画化 transform / opacity · 循环动效必须有终点 · 尊重 prefers-reduced-motion。
+  </p>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  const rmq = matchMedia('(prefers-reduced-motion: reduce)');
+  const motionOn = () => root.dataset.motion !== 'off';
+  const timers = [];
+  const every = (fn, ms) => { const t = setInterval(fn, ms); timers.push(t); return t; };
+  const after = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
+  const clearAll = () => timers.splice(0).forEach(id => { clearInterval(id); clearTimeout(id); });
+  /* 纯事件绑定只执行一次，避免切换主题/动效时重复注册监听 */
+  const boundKeys = new Set();
+  const once = (key, fn) => { if (boundKeys.has(key)) return; boundKeys.add(key); fn(); };
+  const easeOutExpo = t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  /* 每个 stage 只绑定一次重播回调，避免切换主题/动效时重复注册 */
+  const onReplay = (stage, fn) => {
+    if (!stage || stage.dataset.rpBound) return;
+    stage.dataset.rpBound = '1';
+    stage.addEventListener('demo:replay', () => fn());
+  };
+
+  /* 系统默认：尊重 Reduce Motion */
+  if (rmq.matches) root.dataset.motion = 'off';
+
+  /* ---------- 主题切换 ---------- */
+  document.querySelectorAll('[data-theme-set]').forEach(b => {
+    b.addEventListener('click', () => {
+      root.dataset.theme = b.dataset.themeSet;
+      document.querySelectorAll('[data-theme-set]').forEach(x =>
+        x.setAttribute('aria-pressed', String(x === b)));
+    });
+  });
+
+  /* ---------- 减弱动效开关 ---------- */
+  const mt = document.getElementById('motionToggle');
+  const syncMt = () => {
+    const off = !motionOn();
+    mt.textContent = '减弱动效：' + (off ? '开' : '关');
+    mt.setAttribute('aria-pressed', String(off));
+  };
+  mt.addEventListener('click', () => {
+    root.dataset.motion = motionOn() ? 'off' : 'on';
+    syncMt();
+    clearAll();
+    boot();
+  });
+  syncMt();
+
+  /* ---------- 重播机制 ---------- */
+  const restart = stage => {
+    stage.querySelectorAll('.anim').forEach(el => el.classList.add('paused'));
+    void stage.offsetWidth;
+    stage.querySelectorAll('.anim').forEach(el => el.classList.remove('paused'));
+    stage.dispatchEvent(new CustomEvent('demo:replay', { bubbles: true }));
+  };
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-replay]');
+    if (!btn) return;
+    const stage = btn.closest('.demo').querySelector('.stage');
+    if (stage) restart(stage);
+  });
+  document.getElementById('replayAll').addEventListener('click', () =>
+    document.querySelectorAll('.stage').forEach(restart));
+
+  /* ================= M-01 模糊浮现 ================= */
+  function bootBlurFade() {
+    const el = document.getElementById('greeting');
+    if (!el) return;
+    const text = el.dataset.text;
+    const byWord = /\s/.test(text.trim());
+    el.textContent = '';
+    if (byWord) {
+      text.split(/(\s+)/).forEach(tok => {
+        if (tok === '') return;
+        if (/^\s+$/.test(tok)) { el.appendChild(document.createTextNode(' ')); return; }
+        el.appendChild(unit(tok));
+      });
+    } else {
+      Array.from(text).forEach(ch => el.appendChild(unit(ch)));
+    }
+    function unit(txt) {
+      const s = document.createElement('span');
+      s.className = 'bfu';
+      s.textContent = txt;
+      s.setAttribute('aria-hidden', 'true');
+      s.style.setProperty('--d', (el.children.length * 0.12) + 's');
+      return s;
+    }
+    el.setAttribute('aria-label', text);
+    if (motionOn()) every(() => restart(el.closest('.stage')), 4200);
+  }
+
+  /* ================= M-08 多步进度 ================= */
+  function bootSteps() {
+    const box = document.getElementById('steps');
+    if (!box) return;
+    const steps = [...box.querySelectorAll('.step')];
+    let i = 0;
+    const set = () => {
+      steps.forEach((s, n) => s.dataset.state = n < i ? 'done' : (n === i ? 'active' : 'pending'));
+    };
+    set();
+    if (!motionOn()) { i = steps.length; set(); return; }
+    every(() => { i = i >= steps.length ? 0 : i + 1; set(); }, 900);
+  }
+
+  /* ================= M-09 环形进度 ================= */
+  function bootRing() {
+    const arc = document.getElementById('ringArc');
+    const num = document.getElementById('ringNum');
+    if (!arc || !num) return;
+    const target = 80;
+    const play = () => {
+      arc.style.transition = 'none';
+      arc.style.strokeDashoffset = 1;
+      num.textContent = '0%';
+      void arc.getBoundingClientRect();
+      arc.style.transition = '';
+      arc.style.strokeDashoffset = 1 - target / 100;
+      const t0 = performance.now(), dur = 900;
+      const tick = now => {
+        const p = Math.min(1, (now - t0) / dur);
+        num.textContent = Math.round(easeOutExpo(p) * target) + '%';
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      if (motionOn()) requestAnimationFrame(tick); else num.textContent = target + '%';
+    };
+    play();
+    after(play, 2400);
+    onReplay(arc.closest('.stage'), () => setTimeout(play, 20));
+    every(play, 4200);
+  }
+
+  /* ================= M-10 传输进度 ================= */
+  function bootTransfer() {
+    const bar = document.getElementById('tbar');
+    const fill = document.getElementById('tbarFill');
+    const pct = document.getElementById('tbarPct');
+    const txt = document.getElementById('tbarTxt');
+    if (!bar) return;
+    const total = 48;
+    let v = 0, dir = 1, run = null;
+    const render = () => {
+      fill.style.width = v + '%';
+      pct.textContent = Math.round(v) + '%';
+      txt.textContent = (v / 100 * total).toFixed(1) + ' MB / ' + total.toFixed(1) + ' MB · 1.2 MB/s';
+      bar.classList.toggle('done', v >= 100);
+    };
+    const reset = () => { v = 0; run = null; bar.classList.remove('done'); render(); };
+    reset();
+    if (motionOn()) {
+      every(() => {
+        if (v >= 100) { after(reset, 900); return; }
+        v = Math.min(100, v + (1.6 + v * 0.05));
+        render();
+      }, 90);
+      after(reset, 4000);
+      every(reset, 6000);
+    } else { v = 100; render(); }
+  }
+
+  /* ================= M-11 聚光灯卡片 ================= */
+  function bootSpot() {
+    document.querySelectorAll('[data-spot]').forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--x', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--y', (e.clientY - r.top) + 'px');
+      });
+    });
+  }
+
+  /* ================= M-12 网格聚焦 ================= */
+  function bootFocusGrid() {
+    const grid = document.getElementById('focusGrid');
+    if (!grid) return;
+    const items = [...grid.children];
+    items.forEach(it => {
+      const on = () => {
+        if (!motionOn()) return;
+        grid.dataset.focus = '1';
+        items.forEach(x => x.classList.toggle('fg-on', x === it));
+      };
+      it.addEventListener('pointerenter', on);
+      it.addEventListener('focusin', on);
+    });
+    grid.addEventListener('pointerleave', () => {
+      delete grid.dataset.focus;
+      items.forEach(x => x.classList.remove('fg-on'));
+    });
+    grid.addEventListener('focusout', e => {
+      if (!grid.contains(e.relatedTarget)) {
+        delete grid.dataset.focus;
+        items.forEach(x => x.classList.remove('fg-on'));
+      }
+    });
+  }
+
+  /* ================= M-14 展开审批卡 ================= */
+  function bootExpand() {
+    const card = document.getElementById('expCard');
+    if (!card) return;
+    const body = card.querySelector('.exp-body');
+    let open = false;
+    const apply = () => {
+      card.classList.toggle('collapsed', !open);
+      card.setAttribute('aria-expanded', String(open));
+      body.style.animation = '';
+    };
+    const toggle = () => { open = !open; apply(); };
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+    /* 初始收起 -> 稍后展开，让用户看到 380ms 入场 */
+    open = false; card.classList.add('collapsed');
+    card.setAttribute('aria-expanded', 'false');
+    const openIt = () => { open = true; body.style.animation = ''; apply(); };
+    card.style.transition = 'none';
+    requestAnimationFrame(() => { card.style.transition = ''; openIt(); });
+    card.closest('.stage') && onReplay(card.closest('.stage'), () => {
+      card.style.transition = 'none';
+      open = false; apply();
+      void card.offsetWidth;
+      card.style.transition = '';
+      requestAnimationFrame(openIt);
+    });
+  }
+
+  /* ================= M-15 滚动堆叠 ================= */
+  function bootStack() {
+    const box = document.getElementById('stackScroll');
+    if (!box) return;
+    const cards = [...box.querySelectorAll('.stack-card')];
+    const update = () => {
+      const top = box.scrollTop;
+      cards.forEach((c, i) => {
+        const y = i * 106 - top;
+        const p = Math.max(0, Math.min(1, -y / 106));
+        if (!motionOn()) { c.style.transform = ''; c.style.opacity = ''; return; }
+        c.style.transform = `scale(${1 - p * 0.06})`;
+        c.style.opacity = String(1 - p * 0.3);
+      });
+    };
+    box.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+
+  /* ================= M-17 长按确认 ================= */
+  function bootHold() {
+    const btn = document.getElementById('holdBtn');
+    if (!btn) return;
+    const fill = btn.querySelector('.fill');
+    const lbl = btn.querySelector('.lbl');
+    const idle = '按住确认 · 执行删除';
+    let timer = null, done = false;
+    const start = () => {
+      if (done) return;
+      btn.classList.add('charging');
+      lbl.textContent = '松开即取消';
+      if (!motionOn()) { fire(); return; }
+      timer = setTimeout(fire, 1200);
+    };
+    const cancel = () => {
+      clearTimeout(timer);
+      btn.classList.remove('charging');
+      fill.style.transition = 'transform 200ms cubic-bezier(.70,0,.84,0)';
+      fill.style.transform = 'scaleX(0)';
+      lbl.textContent = idle;
+      setTimeout(() => { fill.style.transition = ''; }, 220);
+    };
+    const fire = () => {
+      done = true;
+      btn.classList.remove('charging');
+      lbl.textContent = '已确认 · 正在执行';
+      after(() => { done = false; fill.style.transform = 'scaleX(0)'; lbl.textContent = idle; }, 1400);
+    };
+    btn.addEventListener('pointerdown', e => { e.preventDefault(); start(); });
+    btn.addEventListener('pointerup', cancel);
+    btn.addEventListener('pointerleave', cancel);
+    btn.addEventListener('pointercancel', cancel);
+    btn.addEventListener('keydown', e => { if (e.key === ' ' && !e.repeat) { e.preventDefault(); start(); } });
+    btn.addEventListener('keyup', e => { if (e.key === ' ') cancel(); });
+  }
+
+  /* ================= M-19 波纹 ================= */
+  function bootRipple() {
+    const box = document.getElementById('rippleBox');
+    if (!box) return;
+    box.addEventListener('pointerdown', e => {
+      if (!motionOn()) return;
+      if (box.querySelectorAll('.rp').length >= 3) return;
+      const r = box.getBoundingClientRect();
+      const s = document.createElement('span');
+      s.className = 'rp';
+      s.style.left = (e.clientX - r.left) + 'px';
+      s.style.top = (e.clientY - r.top) + 'px';
+      box.appendChild(s);
+      setTimeout(() => s.remove(), 620);
+    });
+  }
+
+  /* ================= M-20 下载变形 ================= */
+  function bootMorph() {
+    const btn = document.getElementById('morphBtn');
+    if (!btn) return;
+    const fill = document.getElementById('morphFill');
+    const pct = document.getElementById('morphPct');
+    let busy = false;
+    btn.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+      btn.dataset.s = 'down';
+      fill.style.width = '0%';
+      pct.textContent = '0%';
+      const t0 = performance.now(), dur = motionOn() ? 2000 : 200;
+      const tick = now => {
+        const p = Math.min(1, (now - t0) / dur);
+        const v = Math.round(easeOutExpo(p) * 100);
+        fill.style.width = v + '%';
+        pct.textContent = v + '%';
+        if (p < 1) requestAnimationFrame(tick);
+        else {
+          btn.dataset.s = 'done';
+          after(() => { btn.dataset.s = 'idle'; busy = false; }, 1500);
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* ================= M-21 模态 ================= */
+  function bootModal() {
+    const mod = document.getElementById('mod'), scrim = document.getElementById('modScrim');
+    const open = document.getElementById('modOpen'), close = document.getElementById('modClose');
+    if (!mod) return;
+    const set = on => {
+      mod.classList.toggle('on', on);
+      scrim.classList.toggle('on', on);
+      if (on) mod.querySelector('.shim-btn').focus();
+      else open.focus();
+    };
+    open.addEventListener('click', () => set(true));
+    close.addEventListener('click', () => set(false));
+    scrim.addEventListener('click', () => set(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && mod.classList.contains('on')) set(false); });
+    mod.closest('.stage') && onReplay(mod.closest('.stage'), () => { set(true); setTimeout(() => set(false), 1500); });
+  }
+
+  /* ================= M-23 开关 ================= */
+  function bootSwitch() {
+    document.querySelectorAll('.sw').forEach(s => {
+      s.addEventListener('click', () => {
+        s.setAttribute('aria-checked', s.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+      });
+    });
+  }
+
+  /* ================= M-25 滚动数字 ================= */
+  function buildCounter(el, to, animate) {
+    const str = String(to);
+    el.innerHTML = '';
+    const boxes = [];
+    [...str].forEach(ch => {
+      if (!/\d/.test(ch)) {
+        const sep = document.createElement('span');
+        sep.textContent = ch;
+        sep.style.cssText = 'display:inline-block;height:1em;line-height:1';
+        el.appendChild(sep);
+        return;
+      }
+      const box = document.createElement('span');
+      box.className = 'cd-box';
+      const strip = document.createElement('span');
+      strip.className = 'cd-strip';
+      for (let n = 0; n <= 9; n++) {
+        const d = document.createElement('span');
+        d.textContent = n;
+        strip.appendChild(d);
+      }
+      box.appendChild(strip);
+      el.appendChild(box);
+      boxes.push({ strip, digit: Number(ch) });
+    });
+    boxes.forEach((b, i) => {
+      const from = Math.max(0, boxes.length - 1 - i);
+      b.strip.style.transition = 'none';
+      b.strip.style.transform = 'translateY(0)';
+      b.strip.style.transitionDelay = (from * 0.1) + 's';
+    });
+    void el.offsetWidth;
+    boxes.forEach(b => {
+      b.strip.style.transition = '';
+      b.strip.style.transform = `translateY(-${b.digit}em)`;
+    });
+    if (!animate) {
+      boxes.forEach(b => { b.strip.style.transition = 'none'; b.strip.style.transform = `translateY(-${b.digit}em)`; });
+    }
+  }
+  function bootCounter() {
+    const el = document.getElementById('counter');
+    if (!el) return;
+    const run = () => {
+      const val = 1000 + Math.floor(Math.random() * 900);
+      buildCounter(el, val, motionOn());
+      el.setAttribute('aria-label', String(val));
+    };
+    run();
+    onReplay(el.closest('.stage'), () => setTimeout(run, 20));
+    every(run, 3600);
+  }
+
+  /* ================= M-26 抖动输入 ================= */
+  function bootWobble() {
+    const f = document.getElementById('wobField'), m = document.getElementById('wobMsg');
+    if (!f) return;
+    const run = () => {
+      m.classList.add('on');
+      f.classList.add('err');
+      if (!motionOn()) return;
+      f.classList.remove('shake');
+      void f.offsetWidth;
+      f.classList.add('shake');
+    };
+    run();
+    once('wobbleFocus', () => f.addEventListener('focus', () => {
+      f.classList.remove('shake', 'err'); m.classList.remove('on');
+    }));
+    onReplay(f.closest('.stage'), () => setTimeout(run, 20));
+    every(run, 4200);
+  }
+
+  /* ================= M-27 Toast ================= */
+  function bootToast() {
+    const btn = document.getElementById('toastBtn'), zone = document.getElementById('toastZone');
+    if (!btn) return;
+    let n = 0;
+    const push = (err) => {
+      n++;
+      const t = document.createElement('div');
+      t.className = 'toast' + (err ? ' err' : '');
+      t.innerHTML = err
+        ? `<b>设备已离线</b><small>Pixel 8 · 无法继续推送任务</small>`
+        : `<b>任务已完成</b><small>整理下载目录 · 4 个文件已移动</small>`;
+      if (!err) t.insertAdjacentHTML('beforeend', '<span class="hair"></span>');
+      zone.appendChild(t);
+      const live = [...zone.children];
+      if (live.length > 3) live[0].remove();
+      if (!err) setTimeout(() => {
+        t.classList.add('out');
+        setTimeout(() => t.remove(), 260);
+      }, 5000);
+    };
+    once('toastBtn', () => btn.addEventListener('click', () => push(n % 4 === 3)));
+    once('toastSeed', () => push(false));
+    every(() => push(n % 4 === 3), 5200);
+  }
+
+  /* ================= M-28 导航指示 ================= */
+  function bootTabs() {
+    const tabs = document.getElementById('tabs'), pill = document.getElementById('tabPill');
+    if (!tabs) return;
+    const btns = [...tabs.querySelectorAll('button')];
+    const move = btn => {
+      pill.style.transform = `translateX(${btn.offsetLeft - 4}px)`;
+      pill.style.width = btn.offsetWidth + 'px';
+      btns.forEach(b => b.setAttribute('aria-selected', String(b === btn)));
+    };
+    once('tabsBind', () => btns.forEach((b, i) => {
+      b.addEventListener('click', () => move(b));
+      b.addEventListener('keydown', e => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        const n = (i + (e.key === 'ArrowRight' ? 1 : -1) + btns.length) % btns.length;
+        btns[n].focus(); move(btns[n]);
+      });
+    }));
+    requestAnimationFrame(() => move(btns[0]));
+    every(() => move(btns[(btns.indexOf(tabs.querySelector('[aria-selected="true"]')) + 1) % btns.length]), 2600);
+  }
+
+  /* ================= M-29 背景网格 ================= */
+  function bootSpotGrid() {
+    const g = document.getElementById('sgrid'), stage = document.getElementById('sgridStage');
+    if (!g) return;
+    let idleT = null;
+    stage.addEventListener('pointermove', e => {
+      if (!motionOn()) return;
+      const r = stage.getBoundingClientRect();
+      g.style.setProperty('--x', (e.clientX - r.left) + 'px');
+      g.style.setProperty('--y', (e.clientY - r.top) + 'px');
+      g.style.opacity = '1';
+      clearTimeout(idleT);
+      idleT = setTimeout(() => { g.style.opacity = '0'; }, 8000);
+    });
+    stage.addEventListener('pointerleave', () => { g.style.opacity = '0'; });
+    g.style.transition = 'opacity 600ms cubic-bezier(.16,1,.3,1)';
+  }
+
+  /* ---------- 启动 ---------- */
+  function boot() {
+    /* 循环 / 状态类：每次 boot 重建，切换动效后才能正确重启 */
+    bootBlurFade(); bootSteps(); bootRing(); bootTransfer();
+    bootCounter(); bootWobble(); bootToast(); bootTabs();
+    /* 纯事件绑定类：只注册一次 */
+    once('spot', bootSpot); once('focusGrid', bootFocusGrid); once('expand', bootExpand);
+    once('stack', bootStack); once('hold', bootHold); once('ripple', bootRipple);
+    once('morph', bootMorph); once('modal', bootModal); once('switch', bootSwitch);
+    once('spotGrid', bootSpotGrid);
+  }
+  boot();
+
+  if (rmq.addEventListener) rmq.addEventListener('change', e => {
+    root.dataset.motion = e.matches ? 'off' : 'on';
+    syncMt();
+    clearAll();
+    boot();
+  });
+})();
+</script>
+</body>
+</html>
