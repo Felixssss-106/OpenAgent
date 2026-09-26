@@ -861,6 +861,31 @@ restored to `Default`. `dotnet build` clean, `dotnet test` 266/266, installers r
 Recorded as AGENTS.md §8.18.
 
 
+## 2026-09-27 · Three settings rows state capabilities the app does not have
+
+**Found by** reading the shipped 设置 page for truth rather than for layout, after the
+theme bug showed that a value on screen can be decoration.
+
+Every row except 主题 is a XAML literal, and three of them assert things no code does:
+
+| Row | Shows | Reality |
+|---|---|---|
+| 开机启动 | `已开启` | nothing writes a `Run` key — `grep` for `RunKey` / `StartupTask` across `src/` is empty |
+| Relay | `官方 Relay` | Cloudflare Relay is in the NOT IMPLEMENTED registry (Phase 7) |
+| 界面密度 | `舒适` | there is no density switch anywhere |
+
+The other four hold up: 语言 简体中文 (the app ships in Chinese), 默认 Agent
+OpenAgent Native, 权限模式 请求批准 (the approval card really gates), 连接方式
+直连 · 局域网 (UDP beacon + loopback). The AgentPage capsule's `权限：请求批准` is a
+literal too, but it happens to match the permission manager's actual behaviour.
+
+**Deliberately not changed here.** The artboards draw these rows with those values, so
+"match the artboard" and "tell the truth" point in opposite directions, and the two
+fixes available — implement autostart (writes `HKCU\...\Run`, a system-side effect) or
+relabel the rows (contradicts the design source of truth) — are product calls, not
+layout ones. Needs a decision from the user; recorded as a task.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
