@@ -1154,6 +1154,24 @@ matched-band positions mean anything.
 `ui-band-sweep.py` (row-band positions, both themes, all seven pages).
 
 
+## 2026-09-27 · Proved the installer carries the verified tree, byte for byte
+
+**Why it was still open** — every Windows screenshot this goal was verified against came
+from `artifacts/windows/win-x64`, but what ships is the MSI. The only link established
+so far was "the administrative image launches and shows the fixed greeting" plus a file
+**count** (581), and a count passes just as happily when a file is stale or renamed.
+
+**Now checked properly**: `scripts/verify-installer-payload.py` runs `msiexec /a` itself
+and compares every file's SHA-256 between the package and the publish directory.
+Result: **580 files each side, 0 missing, 0 extra, 0 differing — IDENTICAL**. (The older
+"581" in the release notes counted the bundled copy of the `.msi` the administrative
+image drops next to the payload.) With the earlier `burn extract` proof that the EXE
+embeds this same MSI, the chain is closed: the directory that was screenshotted is the
+directory that installs.
+
+Added to the AGENTS release flow as a gate. Scratch extract removed after the run.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

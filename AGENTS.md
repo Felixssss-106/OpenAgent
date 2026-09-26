@@ -442,6 +442,9 @@ dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
 dotnet tool restore && ./scripts/build-installer.ps1 -SkipPublish
 #    → artifacts/installer/OpenAgent-<ver>-x64.{msi,exe}
 #    → 装一遍再卸一遍：msiexec /i ... /qn，起窗口，msiexec /x ... /qn
+python scripts/verify-installer-payload.py
+#    → 用 msiexec /a 解出管理镜像，与验收过的 publish 目录逐文件比 SHA-256
+#      （以前只比"581 个文件"这种计数，改名/陈旧载荷能在计数相同的情况下蒙混过关）
 
 # 3. Android 产物
 cd android && JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRelease
