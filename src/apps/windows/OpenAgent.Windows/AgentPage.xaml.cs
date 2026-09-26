@@ -307,7 +307,7 @@ public sealed partial class AgentPage : Page
             var summary = Summarize(outcome.Result);
             await _tasks.AppendEventAsync(task.Id, TaskEventKinds.Tool, $"{plan.ToolId} → {summary}");
             await _tasks.TransitionAsync(task.Id, AgentTaskStatus.Completed);
-            AddToolCall(plan.ToolId, plan.ArgumentsJson, summary, failed: false, elapsed);
+            AddToolCall(plan.ToolId, PlanViewMapper.DescribeArguments(plan.ArgumentsJson), summary, failed: false, elapsed);
         }
         else
         {
@@ -315,7 +315,7 @@ public sealed partial class AgentPage : Page
             var message = outcome.Result.Error?.Message ?? "工具执行失败";
             await _tasks.AppendEventAsync(task.Id, TaskEventKinds.Error, $"{code} {message}");
             await _tasks.TransitionAsync(task.Id, AgentTaskStatus.Failed, $"{code} {message}");
-            AddToolCall(plan.ToolId, plan.ArgumentsJson, $"{code} {message}", failed: true, elapsed);
+            AddToolCall(plan.ToolId, PlanViewMapper.DescribeArguments(plan.ArgumentsJson), $"{code} {message}", failed: true, elapsed);
         }
 
         _tasks.Release(task.Id);
@@ -366,7 +366,7 @@ public sealed partial class AgentPage : Page
         ApprovalTitle.Text = string.IsNullOrWhiteSpace(plan.Rationale)
             ? displayName
             : plan.Rationale;
-        ApprovalArgsText.Text = plan.ArgumentsJson;
+        ApprovalArgsText.Text = PlanViewMapper.DescribeArguments(plan.ArgumentsJson);
         ApprovalReversibleText.Text = approval.Reversible ? "可撤销" : "不可撤销";
         ApprovalNoteText.Text = approval.Reversible
             ? "该操作可逆。"
@@ -587,7 +587,9 @@ public sealed partial class AgentPage : Page
         ChatColumn.Children.Add(Line("你", 11, "TextQuaternaryBrush", weight: FontWeights.SemiBold));
         ChatColumn.Children.Add(Line(prompt, 20, "TextPrimaryBrush", weight: FontWeights.SemiBold, top: 4));
         ChatColumn.Children.Add(Line(
-            $"AGENT · {ProviderDisplayName()} · {DateTime.Now:HH:mm}",
+            // Artboards 03-06 draw this whole line in caps. The provider is mixed-case
+            // everywhere else (pill, providers list, settings), so only this label turns.
+            $"AGENT · {ProviderDisplayName().ToUpperInvariant()} · {DateTime.Now:HH:mm}",
             11,
             "TextQuaternaryBrush",
             weight: FontWeights.SemiBold,

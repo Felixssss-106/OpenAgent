@@ -1440,6 +1440,56 @@ a per-machine package cannot elevate when the UI level is silent. Rollback was c
 state it was found in. Recorded as the outstanding verification step rather than claimed.
 
 
+## 2026-09-27 · Driving the shipped app into the chat and approval states, and what the frames said about it
+
+Artboards 03–06 are the only Windows frames the automated gate never re-shoots, because
+getting there needs a real prompt. Drove the published exe through UIA (type into
+`CommandInput`, Enter, `capture-window.ps1`) and compared what came back.
+
+**Three findings, one of them mine.**
+
+1. *The meta line was mixed-case where every frame draws caps.* Artboards 03/04/05/06 all
+   read `AGENT · OPENAGENT NATIVE · 12:04`; the build rendered
+   `AGENT · OpenAgent Native · 05:14`. Uppercased that one label — the provider stays
+   mixed-case in the pill, the providers list and settings, which is what those frames
+   show. The line now measures 181px against the frames' 197px at identical 8px ink height
+   and identical start x. No `letter-spacing` token exists anywhere in `design/`, so the
+   16px is the same typeface difference already on record; adding tracking to compensate
+   for a font we deliberately don't bundle would be inventing a token.
+2. *The approval card and the tool row dumped raw JSON.* Artboard 05 draws
+   `D:\Downloads\* → D:\Downloads\2026-09-25\` and 03/04 draw `file.list  D:\Downloads`,
+   while the shipped build put `{"target":"记事本"}` and
+   `{"path":"D:\\Downloads"}` on the same lines. Moved the formatting into
+   `PlanViewMapper.DescribeArguments` (UI library, same shape as `TaskViewMapper`), and
+   used it at all three call sites. One argument renders as its bare value because the
+   tool name already says what it is; `source`+`destination` render with `→`; everything
+   else keeps its keys, because a two-argument write must not look like one path becoming
+   another; unparseable input is shown raw, since those are the parameters the user is
+   being asked to confirm.
+3. *The card is 8px taller than the frame's, and that one is not a layout bug.* Its top
+   border sits at y=634 against the artboard's 642 while both bottoms are at 875. Every
+   interior gap matches to 1px (28/17/13/21/40/24 against 29/16/12/21/39/25) and the
+   argument, meta and button rows start on the same rows as the artboard's. The extra
+   height is ink: the build's title 启动 记事本 inks 23px where the frame's 移动 35 个文件
+   inks 17px. Adjusting a margin to compensate for a different word would break the pages
+   that share it.
+
+**Tests caught a mistake in their own expectations, not in the mapper**: two cases asserted
+the keyed form while passing single-argument JSON, which correctly yields the bare value.
+Fixed the cases; the mapper never changed. UI tests 61 → 70, suite 266 → 275, all green,
+and `AGENTS.md` updated to match (it is the file a future reader trusts).
+
+**A self-inflicted trap worth recording**: publishing while the driven instance was still
+running failed with `MSB3026` retries and a final `MSB3027 … file is locked by OpenAgent
+(pid)` — and the first ten lines of that log are warnings, so `tail` reads as success.
+Now §8.27: stop the app, take the exit code without a pipe, confirm by artifact mtime.
+
+**Re-proved everything after the change**: build 0 warnings, 275/275, publish, 14 fresh
+captures (ΔE 0.0, chrome 0 failures), installers rebuilt, MSI payload 580 files
+byte-identical to the publish dir. New digests recorded on the release-assets task; the
+elevation-blocked "install this MSI once" step is still open.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
