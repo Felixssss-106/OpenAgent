@@ -26,9 +26,10 @@ def bluest(path):
 
 def main():
     cases = [
-        ("light", "01", "artifacts/shots/acc-agent-light.png"),
-        ("dark", "02", "artifacts/shots/acc-agent-dark.png"),
+        ("light", "01", "artifacts/shots/cur-agent-light.png"),
+        ("dark", "02", "artifacts/shots/cur-agent-dark.png"),
     ]
+    worst = 0.0
     for theme, number, build in cases:
         design = art(number)
         print(f"--- {theme} ---")
@@ -40,12 +41,19 @@ def main():
             d = modal(design, *box)
             b = modal(build, *box)
             delta = round(float(np.sqrt(sum((p - q) ** 2 for p, q in zip(d, b)))), 1)
+            worst = max(worst, delta)
             mark = "   <-- differs" if delta > 12 else ""
             print(f"  {label:14s} design {str(d):20s} build {str(b):20s} dE {delta}{mark}")
         (d, dpos) = bluest(design)
         (b, bpos) = bluest(build)
         delta = round(float(np.sqrt(sum((p - q) ** 2 for p, q in zip(d, b)))), 1)
+        worst = max(worst, delta)
         print(f"  {'accent':14s} design {str(d):20s} build {str(b):20s} dE {delta} at {dpos}/{bpos}")
+
+    # A gate that cannot fail is not a gate: this must exit non-zero on drift, or
+    # ui-verify.sh would be comparing against a constant.
+    print(f"worst landmark delta: {worst} (tolerance 12)")
+    return 0 if worst <= 12 else 1
 
 
 if __name__ == "__main__":

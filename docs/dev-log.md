@@ -1242,6 +1242,36 @@ an explicit call: either accept the honest vocabulary, or carry task state over 
 protocol — which is task #14's work.
 
 
+## 2026-09-27 · One command to regenerate the evidence — and two ways it was fake before it was real
+
+**Added** `scripts/ui-verify.sh`: captures all seven pages in both themes from
+`artifacts/windows/win-x64` (the tree proven byte-identical to the MSI payload), then
+runs the landmark-colour and row-band audits over the fresh captures. `SKIP_SHOTS=1`
+re-audits without re-capturing.
+
+**The gate was vacuous the first time I wrote it.** `ui-colour-audit.py` printed ΔE
+values but its `main()` returned `None`, so `sys.exit(None)` gave exit 0 no matter what —
+and `ui-verify.sh` was comparing that constant against zero and always saying OK. A green
+check that cannot go red is worse than no check, because it reads like evidence.
+
+**Proven to discriminate**, both directions, without a pipe in sight:
+- correct pair → exit **0**, worst landmark delta **0.0**;
+- artboard 01 (light) against the dark capture → exit **1**, worst landmark delta
+  **422.1**.
+
+**Fell into the trap I had documented one turn earlier.** While testing, the command
+`python … | tail -5; echo "exit=$?"` reported `exit=0` for a run that actually returned
+1 — `tail`'s status, not Python's, exactly AGENTS §8.20. And the first negative-test
+attempt returned 2, which was a broken temp script from a sloppy `||` chain, not a
+verdict. Both were caught only because the exit code was read from the process itself
+rather than from the pipeline.
+
+**Also recorded**: `ui-semantic-colour-audit.py` is a *report*, not a gate — even the
+correct pair leaves ~4 unmatched entries from anti-aliasing tints landing in neighbouring
+quantisation buckets, so it exits 1 on true and false alike. The pass/fail decision rests
+on the landmark audit, which compares specific pixels rather than whole colour sets.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

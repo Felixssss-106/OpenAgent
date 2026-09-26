@@ -391,6 +391,16 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 必须连设备/模拟器跑：
 `adb install -r app-debug.apk && adb install -r -g app-debug-androidTest.apk && adb shell am instrument -w com.openagent.android.test/androidx.test.runner.AndroidJUnitRunner`。
 
+### 8.22 门禁必须能失败，否则它就是假绿
+写校验脚本时最容易犯的错：只 `print` 差异，`main()` 忘了 `return`，
+`sys.exit(None)` → 永远 0；调用方拿这个 0 去判断"通过"，于是门禁形同不存在，
+还比没有更糟——它看起来像证据。
+**每个新门禁都要跑一次"故意错"的输入确认它返回非 0**，并且正反两次都不要经过管道。
+本项目现例：`scripts/ui-colour-audit.py` 正确配对退 0（最大 ΔE 0.0），
+把浅色效果图配深色截图就退 1（最大 ΔE 422.1）。
+另注：`scripts/ui-semantic-colour-audit.py` 是**报告**不是门禁——抗锯齿色调会让
+正确配对也留下约 4 条未匹配，真错也退 1，所以不能用它的退出码做判断。
+
 ---
 
 ## 9. 数据与安全
@@ -434,6 +444,7 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 266
+bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色并核对地标色（能失败才算门禁，见 §8.22）
 
 # 2. Windows 安装包
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
