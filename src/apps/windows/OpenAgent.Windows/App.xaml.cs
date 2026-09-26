@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using OpenAgent.Agent;
+using OpenAgent.Providers;
 using OpenAgent.Security;
 using OpenAgent.Tools;
 using OpenAgent.Windows.Native;
@@ -82,6 +83,7 @@ public partial class App : Application
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         services.AddOpenAgent(options => options.PermissionMode = PermissionMode.AskBeforeActions);
+        services.AddOpenAgentProviders();
 
         Services = services.BuildServiceProvider();
 

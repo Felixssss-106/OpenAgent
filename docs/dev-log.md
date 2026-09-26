@@ -178,6 +178,53 @@ approvals were one tap away.
 
 ---
 
+## 2026-09-26 · Phase 4 — credential-free provider core
+
+**Change**
+
+- `OpenAgent.Providers` now hosts the provider abstraction and a credential-free
+  default: `IAgentProvider` (Id / DisplayName / Capabilities / CreateSession /
+  SendPrompt / Stop / Resume / HealthCheck), `AgentCapabilities` flags
+  (Streaming / ToolCalling / Approval / SessionResume / ImageInput /
+  InteractiveTerminal / JsonOutput / StructuredOutput / Mcp), and supporting
+  records (`ProviderToolInfo`, `AgentSession`, `AgentHealth`, `ProviderStep`).
+- `NativeAgentProvider` (`openagent.native`): the always-on floor — deterministic
+  keyword routing (`Plan`), Capabilities = ToolCalling | Approval |
+  SessionResume | StructuredOutput. `Plan` is a pure static function exported for
+  tests; `ExtractTarget` iteratively strips punctuation and whitespace so
+  `"spotify" 的` → `spotify`.
+- `ProviderRegistry`: aggregates providers, Native is always installed (spec
+  §22). `AddOpenAgentProviders(this IServiceCollection)` extension lives in the
+  Providers project so the App (top-level host) calls it without creating an
+  Agent → Providers cycle.
+- `CliDiscovery`: scans PATH for Codex / Claude Code / OpenCode / Pi / Gemini
+  via `where.exe` + `--version` probe (spec §24–26). Discovery only — never
+  installs, never drives; `KnownClis` table and `ParseVersion` are pure and
+  exported for tests.
+- `App.xaml.cs` wires `services.AddOpenAgentProviders()` in the composition
+  root; `OpenAgent.Windows.csproj` references `OpenAgent.Providers`.
+- `tests/OpenAgent.Providers.Tests` (net10.0): 35 tests covering `Plan` routing
+  (6 cases), no-match (3), empty tools, `ExtractTarget` edge cases, `SendPrompt`
+  happy path and error path, `HealthCheck`, `Stop/Resume` no-ops, `KnownClis`
+  coverage, `ParseVersion` (5 positive + 5 negative), `Scan` non-throw guard,
+  and `ProviderRegistry` (4 cases).
+
+**Reason**
+
+Spec §22–23 require a provider layer between the UI and the tool executor; the
+Native provider is the zero-dependency floor that always works before any CLI
+adapter is detected. CLI discovery (§24–26) finds and verifies external agents
+without hardcoding flags or driving them — that belongs to each adapter, written
+when its CLI is actually present.
+
+**Test**
+
+`dotnet build OpenAgent.sln -c Release -p:Platform=x64` → 0 errors / 0 warnings;
+`dotnet test OpenAgent.sln -c Release` → 176 passing (141 baseline + 35
+Providers).
+
+---
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
@@ -186,7 +233,7 @@ code, not a silent stub.
 | Area | What | Planned phase |
 |---|---|---|
 | `OpenAgent.Transport` | LAN / Relay connection implementations | Phase 6–7 |
-| `OpenAgent.Providers` | Codex / Claude Code / OpenCode / Pi adapters | Phase 4 |
+| `OpenAgent.Providers` | CLI adapters that drive Codex / Claude Code / OpenCode / Pi | Phase 4+ |
 | `OpenAgent.Plugins` | plugin loader, manifest validation, isolation | Phase 12 |
 | `OpenAgent.Mcp` | MCP client and server bridge | Phase 11 |
 | `OpenAgent.Agent` | Native agent loop backed by a real model | Phase 3 |

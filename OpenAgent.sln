@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Windows.UI", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Windows", "src\apps\windows\OpenAgent.Windows\OpenAgent.Windows.csproj", "{3CC0813B-882C-4100-A877-3257BD4D42C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Providers.Tests", "tests\OpenAgent.Providers.Tests\OpenAgent.Providers.Tests.csproj", "{B3735C9B-EE2C-4411-893B-595029763758}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -271,6 +273,18 @@ Global
 		{3CC0813B-882C-4100-A877-3257BD4D42C9}.Release|x64.Build.0 = Release|x64
 		{3CC0813B-882C-4100-A877-3257BD4D42C9}.Release|x86.ActiveCfg = Release|x64
 		{3CC0813B-882C-4100-A877-3257BD4D42C9}.Release|x86.Build.0 = Release|x64
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|x64.Build.0 = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Debug|x86.Build.0 = Debug|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|x64.Build.0 = Release|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|x86.ActiveCfg = Release|Any CPU
+		{B3735C9B-EE2C-4411-893B-595029763758}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -301,5 +315,6 @@ Global
 		{A37A5F3F-0515-8F67-9A15-D38A666265B7} = {AD2A5A3B-A595-3E96-334A-002D08FE630C}
 		{545C72D6-9203-4767-A0CB-F9C2A1491D43} = {A37A5F3F-0515-8F67-9A15-D38A666265B7}
 		{3CC0813B-882C-4100-A877-3257BD4D42C9} = {A37A5F3F-0515-8F67-9A15-D38A666265B7}
+		{B3735C9B-EE2C-4411-893B-595029763758} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
