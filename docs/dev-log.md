@@ -856,7 +856,11 @@ through it and a screenshot must not rewrite the user's choice.
 `{"ui.theme":"Light"}`, restarted with no arguments at all and the window came back
 light (sidebar 243 / canvas 255), matching artboard 01 — which also closes the
 "artboard 01 from the shipped binary without a startup override" gap. Setting then
-restored to `Default`. `dotnet build` clean, `dotnet test` 266/266, installers rebuilt
+restored to `Default`. The effort half was checked the other way round: with
+`agent.reasoning-effort` pre-seeded to `3`, the conversation state's pill read
+`思考强度 · 高`, so `ReadEffort` works against the new store too (and tolerates the
+UTF-8 BOM a hand-written file can carry). Setting restored afterwards.
+`dotnet build` clean, `dotnet test` 266/266, installers rebuilt
 (MSI 76,330,192 B / EXE 77,055,731 B) with only the known `ICE03 File.Language` reports.
 Recorded as AGENTS.md §8.18.
 
