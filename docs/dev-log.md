@@ -1128,6 +1128,32 @@ build's text runs are different lengths. The light-side accent reading differs s
 from the Windows reading only because the phone capture was down-scaled 1080→390 first.
 
 
+## 2026-09-27 · Re-shooting Windows on the current build, and one false alarm worth recording
+
+**Done**
+
+The fourteen page captures behind the earlier numeric sweep were taken before two later
+fixes (the approval card's title, and the settings store), so they were re-shot from the
+current publish directory as `cur-<page>-<theme>.png` and re-compared. Colour audit on
+the new captures: eight of eight landmarks still ΔE 0.0 in both themes.
+
+**The false alarm.** The new sweep reported the tools page as `22 vs 5` content bands
+where the older probe had said `20 vs 18`, which reads like a page that lost most of its
+rows. It did not: `cur-tools-light.png` and `acc-tools-light.png` are statistically
+identical (mean 248.1, 731 ink rows in the content column), and re-running the same
+sweep over the *old* captures gives the same `22 vs 5`. Two different band functions had
+been used — the earlier one from `ui_measure` with a fixed tolerance and a sampled
+reference, the new one with an area-median reference that flips when a page is mostly
+cards. Fixed to sample the canvas outside the content column, and the docstring now says
+outright that **band counts are not comparable across a design and a build** — the
+build lists real data, and differently spaced rows merge into fewer, taller bands. Only
+matched-band positions mean anything.
+
+**Reusable tooling now in `scripts/`**: `ui-colour-audit.py` (landmark colours),
+`ui-semantic-colour-audit.py` (coordinate-free saturated-colour sets),
+`ui-band-sweep.py` (row-band positions, both themes, all seven pages).
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
