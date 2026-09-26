@@ -482,7 +482,7 @@ contact with the machine:
   section claimed end-to-end encryption and QR pairing as if shipped. Both are
   still `NOT IMPLEMENTED`, so the section now separates *implemented* from
   *planned* and warns the LAN channel is cleartext.
-- `AGENTS.md`: numbers corrected, release procedure documented, five new
+- `AGENTS.md`: numbers corrected, release procedure documented, four new
   pitfalls (§8.8–8.11) recorded.
 
 **Reason**
@@ -501,12 +501,23 @@ blocked until the Windows binary actually opened a window.
 - `./gradlew assembleDebug assembleRelease` → BUILD SUCCESSFUL;
   `app-release.apk` signed by `CN=OpenAgent, OU=Releases` (verified with
   `apksigner --print-certs`), `app-debug.apk` still debug-signed.
+- The release APK was installed on a headless API 36 emulator and driven:
+  `topResumedActivity=MainActivity`, no `AndroidRuntime`/`FATAL` in logcat, the
+  Devices screen renders its empty state, and tapping the settings button
+  (uiautomator bounds `[944,278][1070,404]`) navigates to Settings showing
+  `OpenAgent Android v1.0.0`, the generated device id, `端口: 47819 (UDP)` and
+  `Android 16 (API 36)`. The verification AVD was deleted afterwards.
 
 **Known issues**
 
-- The Android APK is build- and signature-verified, **not** yet installed and
-  driven on a device or emulator, so cross-device LAN interop with the Windows
-  app is still unproven end to end.
+- Cross-device LAN interop is **still unproven end to end**. The release APK was
+  installed and driven on an API 36 emulator (Devices screen renders, Settings
+  shows the real device id / UDP 47819 / protocol v1, navigation works), but the
+  emulator sits behind its own NAT at `10.0.2.x`, so it cannot hear the Windows
+  host's LAN broadcast — discovery between the two binaries needs a real phone on
+  the same Wi-Fi to confirm.
+- The Command Center FAB exposes no accessibility label (`NAF="true"` in the
+  uiautomator dump); the settings button correctly carries `content-desc="设置"`.
 - The `v1.0.0` tag now points at the first commit whose Windows binary launches.
   It was moved from the earlier commit, which was local-only and never pushed.
 
