@@ -375,7 +375,12 @@ public sealed partial class AgentPage : Page
     {
         _pendingApproval = approval;
 
-        ApprovalTitle.Text = displayName;
+        // Artboard 05 titles the card with what is about to happen ("移动 35 个
+        // 文件"), not with the tool's registry name, so the plan's own rationale
+        // wins whenever the planner produced one.
+        ApprovalTitle.Text = string.IsNullOrWhiteSpace(plan.Rationale)
+            ? displayName
+            : plan.Rationale;
         ApprovalArgsText.Text = plan.ArgumentsJson;
         ApprovalReversibleText.Text = approval.Reversible ? "可撤销" : "不可撤销";
         ApprovalNoteText.Text = approval.Reversible

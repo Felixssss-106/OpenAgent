@@ -764,6 +764,49 @@ nothing had been rebuilt. Recorded as AGENTS.md §8.16: kill the shell, run
 Verification AVD deleted afterwards; `AILifeTest` and `QpApi29` untouched.
 
 
+## 2026-09-27 · Acceptance pass against the shipped artifacts, and what only night-time showed
+
+**Change**
+
+Every earlier comparison this week was made against a build run out of `bin` or a
+debug APK. This pass rebuilt the three things a user actually downloads — the
+self-contained publish directory, the MSI/Burn EXE, and the signed release APK —
+and screenshotted *those* against all 30 artboards:
+
+- Windows: 7 pages × 2 themes launched from `artifacts/windows/win-x64` with
+  `--page=` / `--theme=`, plus the 对话态 and 审批态 driven through UI Automation.
+- MSI: `msiexec /a` administrative image → 581 files, `OpenAgent.pri` and
+  `Assets/tray.ico` present → `OpenAgent.exe` launched **from that image** and
+  captured. The greeting's ink spans y 371…486 there, same as the publish dir.
+- Android: `app-release.apk` installed on a fresh `OaReleaseCheck` AVD (API 36),
+  all four tabs captured in light and in dark through `cmd uimode night`.
+
+Three defects fell out, none of them visible from the states previously checked:
+
+- **The hero greeting clipped its descenders.** The two greeting lines were
+  TextBlocks with `Height="60"` in a StackPanel; the hero is 56px, whose natural
+  line box is ~77 tall, so the "g" was cut at the baseline. Every artboard shows
+  "Good afternoon" — the bug only surfaces between 22:00 and 05:00, where the app
+  reads "Good **niaht**". A row of `Height="60"` clamps a Top-aligned child to the
+  row, so raising the TextBlock's own height changed nothing; the pair now sits in
+  a `Canvas Height="120"` with `Canvas.Top` 0 and 60, which keeps the artboard's
+  60px advance and lets the descender hang into the next line's box the way CSS does.
+- **The approval card titled itself with the tool's registry name** — "Launch
+  application" where artboard 05 draws what is about to happen ("移动 35 个文件").
+  `CommandPlan.Rationale` already carries that sentence; the card now prefers it and
+  falls back to the display name. Re-checked: the card reads 启动 记事本.
+- **Two phone composer/row details.** The send disc only filled with the accent when
+  a command was sendable, but artboards 07/08 draw it filled against an empty field
+  (the fill is not the enabled signal, the click gate is); and `ValueRow` let a long
+  value wrap, so 设备标识 ran into its own label and out of the 46dp row. The value
+  is now single-line, right-aligned, ellipsised.
+
+**Verified:** `dotnet build` clean, `dotnet test` 266/266 across 8 projects,
+`assembleRelease` green, installers rebuilt (MSI 76,334,288 B / EXE 77,061,565 B)
+with only the known `ICE03 File.Language` reports the gate already documents.
+Verification AVD deleted afterwards; `AILifeTest` and `QpApi29` untouched.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

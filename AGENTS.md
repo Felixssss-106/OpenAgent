@@ -350,6 +350,15 @@ H.NotifyIcon 把 `ImageSource` 经 GDI 转成 `Icon`，PNG 转不了：
 改过外壳就必须：先 `Get-Process OpenAgent | Stop-Process -Force`（否则 MSB3027 复制失败），
 再 `dotnet build OpenAgent.sln -c Release -p:Platform=x64`，然后才截图。
 
+### 8.17 固定高度的行会把文字的下伸部剪掉
+`Height="60"` 的行里放一个 56px 的 `TextBlock`（自然行高约 77），WinUI 会把元素的 arrange
+高度夹到行高，而 **TextBlock 会按自己的边界裁剪**——于是 "Good night" 的 `g` 在下伸处被切平，
+屏幕上读作 "Good niaht"。把 `Height` 调大没用：行（Panel row）先把子元素夹回 60。
+CSS 的 `line-height` 比字形矮时是溢出绘制，WinUI 是裁剪，所以效果图上"行距 60"的写法搬不过来。
+修法：用 `Canvas`（不裁剪、按子元素自身尺寸 arrange）配 `Canvas.Top` 保持 60 的行距。
+效果图里所有示例文案都不带下伸部（`Good afternoon`），所以这个 bug 只在 22:00–05:00 出现，
+截图验收必须覆盖到夜间分支。
+
 ---
 
 ## 9. 数据与安全

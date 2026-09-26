@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openagent.android.ui.theme.LocalPalette
@@ -123,8 +124,18 @@ fun ValueRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, style = Type.body, color = ink.textPrimary)
-        Spacer(Modifier.weight(1f))
-        Text(value, style = Type.caption, color = valueColor)
+        Spacer(Modifier.width(12.dp))
+        // The artboards keep one value per row; a device name long enough to wrap
+        // would overflow the 46dp row and collide with the label beside it.
+        Text(
+            value,
+            style = Type.caption,
+            color = valueColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f, fill = false),
+        )
         if (showChevron) {
             Spacer(Modifier.width(6.dp))
             GlyphIcon(Glyph.ChevronRight, tint = ink.textQuaternary, size = 14.dp)

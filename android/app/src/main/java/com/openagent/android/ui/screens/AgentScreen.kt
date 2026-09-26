@@ -247,7 +247,10 @@ private fun Composer(draft: String, onDraft: (String) -> Unit, onSend: () -> Uni
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(if (enabled) ink.accent else ink.bgInset)
+                    // Artboards 07/08 draw the send disc filled while the field is
+                    // still empty, so the fill is not the enabled signal here; only
+                    // the click is gated.
+                    .background(ink.accent)
                     .clickable(enabled = enabled, onClick = onSend),
                 contentAlignment = Alignment.Center,
             ) {

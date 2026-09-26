@@ -28,16 +28,23 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="1">
-                <TextBlock
-                    x:Name="GreetingLine1"
-                    Style="{StaticResource TypeHero}"
-                    Height="60"
-                    VerticalAlignment="Top" />
-                <TextBlock
-                    x:Name="GreetingLine2"
-                    Style="{StaticResource TypeHero}"
-                    Height="60"
-                    VerticalAlignment="Top" />
+                <!-- The artboards draw two lines 60 apart with "Good" alone on the
+                     first, but the hero is 56px, whose natural line box is ~77 tall.
+                     A panel row (or a Height) clamps the TextBlock to 60 and it clips
+                     to its own bounds, so the "g" loses its descender and "Good night"
+                     reads "Good niaht". A Canvas arranges each line at its full height
+                     and does not clip, which is what the browser does with the design's
+                     tight line-height. -->
+                <Canvas Height="120">
+                    <TextBlock
+                        x:Name="GreetingLine1"
+                        Canvas.Top="0"
+                        Style="{StaticResource TypeHero}" />
+                    <TextBlock
+                        x:Name="GreetingLine2"
+                        Canvas.Top="60"
+                        Style="{StaticResource TypeHero}" />
+                </Canvas>
 
                 <Border
                     Height="40"
