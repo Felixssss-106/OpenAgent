@@ -941,6 +941,29 @@ arrives. One-directional by design, so AGENTS §11's "still needs a real device 
 same Wi-Fi" holds — checked rather than assumed.
 
 
+## 2026-09-27 · Artboard 03's open flyout, which no window capture can see
+
+**Done**
+
+Closed the last reachable gap in the matrix: the light palette on the shipped binary.
+`--theme=light` drove 对话态 with a real `system.get_info` run and matched artboard 03 —
+turn list, disclosure row with its `0.1s`, the sunken 纯文本 card, the meta row, the
+composer. Artboard 03 also draws the 思考强度 flyout **open**, a state never captured
+before: it was blank in the window grab, absent from the UIA tree, and the process
+listed no second window, which briefly looked like a keyboard-accessibility defect.
+It is not — `EffortButton` is a plain `Button` with a `Click` handler, so Invoke does
+open it; `capture-window.ps1` calls `MoveWindow`, and the move light-dismisses the
+popup before the grab lands. A real click followed immediately by `CopyFromScreen`
+shows the panel, and it matches the artboard: 思考强度 heading, current value 中 in
+accent at the right, the slider with its thumb on 中, the 关闭/低/中/高 ticks with the
+active one accented, and 平衡响应速度与推理深度 beneath. Recorded as AGENTS §8.19.
+
+**Also confirmed as a dead end**: the phone cannot be driven into its connected states
+from an emulator. `UdpLanTransport` only broadcasts its own beacon and records peers it
+hears — it never answers one — so behind NAT the direction that matters does not exist.
+AGENTS §11's "needs a real device on the same Wi-Fi" is now checked rather than assumed.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

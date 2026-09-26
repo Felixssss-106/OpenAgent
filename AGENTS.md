@@ -369,6 +369,14 @@ CSS 的 `line-height` 比字形矮时是溢出绘制，WinUI 是裁剪，所以�
 另外 `App.ApplyTheme` 只负责上色、不写设置——`--theme=` 截图开关也走它，
 否则截一轮图就把用户的主题改掉了。
 
+### 8.19 Flyout / 弹出层不能用 PrintWindow 截，也不能先挪窗口
+WinUI 的 `Flyout` 挂在独立的 popup HWND 上：`list_windows` 列不出它，
+对主窗口 `PrintWindow(PW_RENDERFULLCONTENT)` 截出来那块位置是一片纯色（看起来像"没打开"）。
+UIA 树里同样找不到 `Slider` 节点。
+截这类状态只能：真鼠标点击 → **立刻** `CopyFromScreen` 抓屏幕矩形。
+任何一次 `MoveWindow`/`ShowWindow`（`capture-window.ps1` 每次都做）都会触发 light dismiss
+把它关掉——先用 `-e`/UIA Invoke 试的时候，很可能它开过又被截前的挪窗关了。
+
 ---
 
 ## 9. 数据与安全
