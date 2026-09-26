@@ -20,7 +20,7 @@ public sealed class NativeAgentProviderTests
     public void Id_and_display_name_are_stable()
     {
         Assert.Equal("openagent.native", Provider.Id);
-        Assert.Equal("OpenAgent Native Agent", Provider.DisplayName);
+        Assert.Equal("OpenAgent Native", Provider.DisplayName);
     }
 
     [Fact]

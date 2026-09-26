@@ -428,6 +428,16 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 门禁有效性两向验过：把 `cur-agent-light.png` 侧栏头部整体下移 8px → exit 1 并点名 5 条带；
 拿外壳对齐前的旧图（`now-dashboard.png`、`dbg-settings.png`）当成品喂进去 → 15/17 条 FAIL。
 
+### 8.26 per-machine MSI 静默安装拿不到提权：1603 只是表象
+`msiexec /i xxx.msi /qn` 在非管理员 shell 里返回 **1603**（"fatal error during installation"），
+什么信息都不给。加 `/L*v log.txt` 才看得到真正那条：
+`MSI_LUA: Installation UI level is silent, no credential elevation is possible` →
+`Error 1925. You do not have sufficient privileges to complete this installation for all users of the machine.`
+静默模式**不能**弹凭据框，所以这一步要么由用户批准一次交互式 UAC，要么就如实登记为未验，
+不能因为"MSI 构建成功"就声称装过。日志是 **UTF-16LE**，Git Bash 里 `grep` 读不出东西，
+用 `open(path, encoding="utf-16")` 读。回滚是干净的（安装目录与卸载注册表都不留残迹），
+但每次跑完都要自己确认一遍。
+
 ---
 
 ## 9. 数据与安全

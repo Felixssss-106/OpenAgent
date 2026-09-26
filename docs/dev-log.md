@@ -1404,6 +1404,42 @@ frames-disagree rule, because the natural first attempt is to gate heights and t
 "fix" a 4px non-problem.
 
 
+## 2026-09-27 · A duplicated word in the shipped UI, and a 2px dot deliberately left alone
+
+Re-measuring the agent page hero against artboard 01 turned up nothing wrong — the build's
+second line inks to `y=486` where the artboard's stops at `469`, and the 17px is simply
+that the artboard says "afternoon" while the build, captured at 4am, says "night". The
+greeting's line pitch matches at 60px and both lines start within 2px.
+
+**The pill separator was measured and then left alone.** Artboard 01's dot between the
+pill's clauses inks 3×3; the shipped one inks 1×2. Before changing the character to a
+bullet, artboard 16's header line was measured with the same method: its dot is 3×2 and
+the shipped providers page draws 2×2 — those agree. So the design uses a mid dot where the
+build uses a mid dot, and the pill's slightly fatter dot is a property of the typeface the
+frames were rendered with, which is the already-accepted DM Sans deviation. Swapping in
+U+2022 would have made the dot 4×4 — further from the design's intent, not closer.
+
+**A real defect came out of the same crops.** The shipped providers page row reads
+"OpenAgent Native **Agent**", and the chat meta line repeats it, while artboards 01, 05,
+09 and 16 all say "OpenAgent Native" — as do the app's own hard-coded pill and settings
+strings. The source was `NativeAgentProvider.DisplayName`; the spec's "OpenAgent Native
+Agent" is the section heading naming the module (lines 1028/1038/3062), and its UI strings
+(widget mockups at 1950/1978) say "OpenAgent Native". One property changed, its stability
+test updated, and the phone's "AGENT · OPENAGENT" line — which would need the host's
+provider id in the envelope to be honest — registered under the deferred protocol work.
+
+**Re-proved the whole chain after the change**: build 0 warnings, 266/266 tests, publish,
+14 fresh captures (landmark ΔE 0.0, chrome 0 failures), MSI rebuilt, its payload compared
+file-by-file against the publish dir (580 files, IDENTICAL). The providers row was then
+re-cropped against artboard 16 and reads identically.
+
+**One step could not be repeated**: installing this MSI. `msiexec /qn` returned 1603 and
+the verbose log said `Error 1925 … sufficient privileges … for all users of the machine` —
+a per-machine package cannot elevate when the UI level is silent. Rollback was clean
+(no `C:\Program Files\OpenAgent`, no uninstall entry), and the machine was left in the
+state it was found in. Recorded as the outstanding verification step rather than claimed.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

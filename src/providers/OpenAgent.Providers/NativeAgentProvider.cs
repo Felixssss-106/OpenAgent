@@ -27,7 +27,12 @@ public sealed class NativeAgentProvider : IAgentProvider
     };
 
     public string Id => ProviderId;
-    public string DisplayName => "OpenAgent Native Agent";
+
+    // Every surface that names this provider shows this string verbatim — the providers
+    // list, the chat meta line, the status pill — and artboards 01/05/16 all draw
+    // "OpenAgent Native". The spec's "OpenAgent Native Agent" is the section heading
+    // naming the module, not a UI label.
+    public string DisplayName => "OpenAgent Native";
 
     // Native is deterministic and local: it calls tools, supports approval,
     // can resume a session and emits structured output, but it does not stream
