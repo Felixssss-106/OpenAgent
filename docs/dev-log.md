@@ -1009,6 +1009,44 @@ artboard, the 设备标识 value still ellipsises on one line, nothing clipped. 
 AVD deleted.
 
 
+## 2026-09-27 · The manifest says DM Sans; the delivered frames say otherwise, and the frames win
+
+**The apparent gap**
+
+`design/pixso-final/manifest.json` states the typeface is **DM Sans** (weights Regular /
+Medium / Bold, "SemiBold 不可用"), and `.impeccable.md` repeats it. The implementation
+uses Segoe UI Variable Text/Display with no DM Sans anywhere, DM Sans is not installed on
+this machine, and **no note anywhere records the substitution** — which reads like drift,
+and would be the largest remaining deviation: every glyph on every screen.
+
+**Measured before acting**
+
+Latin metrics, artboard vs shipped build, same strings:
+
+| String | Size | Artboard | Build | Δ |
+|---|---|---|---|---|
+| `Provider` (nav) | 13px | 47px wide | 47px | 0 |
+| `OpenAgent` (brand) | 16px | 75px | 77px | +2.7% |
+| `Good` (hero) | 56px | 141×41 | 137×42 | −2.8% / +1px |
+
+DM Sans is a wide geometric grotesque; had the frames really been rendered in it, the
+13px and 56px strings would not agree with Segoe to 0–3%. The likeliest explanation is
+that Pixso exported the frames with a fallback face, because DM Sans was not available
+in the export environment. So bundling DM Sans would move the app **away** from the
+pixels the user designated as the source of truth ("所有 UI 设计以 pixso 上已经设计好的
+效果图为准"), while matching the manifest's prose.
+
+**Decision recorded rather than made unilaterally**: keep the current stack. If the
+stated design system is wanted over the delivered frames, that is a font-bundling change
+across both platforms (Windows content + `ms-appx`-style FontFamily, Android `res/font`),
+and it would break the agreement measured above.
+
+**Knock-on**: `tokens.css` declares weight **600** for display/title/heading/micro, which
+is fine for Segoe (it has SemiBold) but contradicts the manifest's "SemiBold 不可用" —
+another sign the token file was written against the rendered frames, not the prose.
+Left as is; noted so nobody "fixes" 600 → 500 on the manifest's word alone.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
