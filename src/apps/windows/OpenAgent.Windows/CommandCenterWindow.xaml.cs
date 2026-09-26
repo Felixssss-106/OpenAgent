@@ -530,9 +530,9 @@ public sealed partial class CommandCenterWindow : Window
         {
             _longPressTicks++;
             if (_longPressProgress is not null)
-                _longPressProgress.Value = Math.Min(_longPressTicks * 50, Motion.LongPress);
+                _longPressProgress.Value = LongPressCounter.ProgressMs(_longPressTicks);
 
-            if (_longPressTicks * 50 >= Motion.LongPress)
+            if (LongPressCounter.IsComplete(_longPressTicks))
             {
                 StopLongPressTimer();
                 _ = ResolveApprovalAsync(true);

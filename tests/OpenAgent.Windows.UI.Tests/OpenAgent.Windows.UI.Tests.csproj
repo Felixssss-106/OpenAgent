@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/apps/windows/OpenAgent.Windows.UI/OpenAgent.Windows.UI.csproj" />
+    <ProjectReference Include="../../src/core/OpenAgent.Core/OpenAgent.Core.csproj" />
+    <ProjectReference Include="../../src/shared/OpenAgent.Shared/OpenAgent.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

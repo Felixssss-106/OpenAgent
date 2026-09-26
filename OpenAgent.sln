@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Providers.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Transport.Tests", "tests\OpenAgent.Transport.Tests\OpenAgent.Transport.Tests.csproj", "{68019974-E7EA-4DD4-AB3C-BC2C6D9CE272}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAgent.Windows.UI.Tests", "tests\OpenAgent.Windows.UI.Tests\OpenAgent.Windows.UI.Tests.csproj", "{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -299,6 +301,18 @@ Global
 		{68019974-E7EA-4DD4-AB3C-BC2C6D9CE272}.Release|x64.Build.0 = Release|Any CPU
 		{68019974-E7EA-4DD4-AB3C-BC2C6D9CE272}.Release|x86.ActiveCfg = Release|Any CPU
 		{68019974-E7EA-4DD4-AB3C-BC2C6D9CE272}.Release|x86.Build.0 = Release|Any CPU
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|Any CPU.Build.0 = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|x64.ActiveCfg = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|x64.Build.0 = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|x86.ActiveCfg = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Debug|x86.Build.0 = Debug|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|Any CPU.ActiveCfg = Release|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|Any CPU.Build.0 = Release|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|x64.ActiveCfg = Release|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|x64.Build.0 = Release|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|x86.ActiveCfg = Release|x64
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -331,5 +345,6 @@ Global
 		{3CC0813B-882C-4100-A877-3257BD4D42C9} = {A37A5F3F-0515-8F67-9A15-D38A666265B7}
 		{B3735C9B-EE2C-4411-893B-595029763758} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{68019974-E7EA-4DD4-AB3C-BC2C6D9CE272} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{6034E2EB-0AD7-4B4F-93DC-8EC93B206CDD} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
