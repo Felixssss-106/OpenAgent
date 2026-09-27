@@ -45,6 +45,27 @@ PAIRS = [
     ("24-windows-设置-深色.png", "cur-settings-dark.png"),
 ]
 
+# The phone's AVD is 1080x2400 (390x866 dp) and the artboards are 390x844, so a whole-frame
+# diff has no common origin. Both do draw the tab bar's top hairline at a known
+# colour, so the frames are registered on that and compared over the band around
+# it — the composer, the tab bar and the content above them.
+PHONE_PAIRS = [
+    ("07-android-起始页-浅色.png", "raw-agent-light.png", (255, 255, 255)),
+    ("08-android-起始页-深色.png", "raw-agent-dark.png", (10, 10, 10)),
+    ("25-android-任务-浅色.png", "raw-tasks-light.png", (255, 255, 255)),
+    ("28-android-任务-深色.png", "raw-tasks-dark.png", (10, 10, 10)),
+    ("26-android-设备-浅色.png", "raw-devices-light.png", (255, 255, 255)),
+    ("29-android-设备-深色.png", "raw-devices-dark.png", (10, 10, 10)),
+    ("27-android-设置-浅色.png", "raw-settings-light.png", (255, 255, 255)),
+    ("30-android-设置-深色.png", "raw-settings-dark.png", (10, 10, 10)),
+]
+HAIRLINE = {(255, 255, 255): (229, 229, 234), (10, 10, 10): (44, 44, 46)}
+# Only the band around the registered landmark is honestly comparable: the tab
+# bar and composer hang off the bottom of the window while the scrolling content
+# above them is anchored to the top, and the AVD is 866dp tall against the
+# artboard's 844. Widening this to cover the content just measures that 22dp.
+BAND = 120
+
 
 def flat_mask(a):
     mn = a.copy()
@@ -83,6 +104,41 @@ def clusters(mask):
     return sorted(boxes, reverse=True)
 
 
+def report(label, shot, a, b, y0=0, y1=None):
+    """Print the flat-but-different clusters in one window of two aligned frames."""
+    y1 = a.shape[0] if y1 is None else min(y1, a.shape[0], b.shape[0])
+    sa, sb = a[y0:y1], b[y0:y1]
+    if sa.shape != sb.shape:
+        print(f"-- {label}: window {sa.shape} vs {sb.shape}")
+        return
+    mask = flat_mask(sa) & flat_mask(sb) & (np.abs(sa - sb).max(axis=2) > DIFF)
+    print(f"-- {label} vs {shot}: {int(mask.sum())} structural pixels")
+    for area, x0, x1, by0, by1 in clusters(mask)[:5]:
+        ca = tuple(int(v) for v in sa[(by0 + by1) // 2, (x0 + x1) // 2])
+        cb = tuple(int(v) for v in sb[(by0 + by1) // 2, (x0 + x1) // 2])
+        print(f"     {area:6d}px  x {x0:4d}..{x1:4d}  y {by0 + y0:4d}..{by1 + y0:4d}  art{ca} build{cb}")
+    sys.stdout.flush()
+
+
+def tabbar_top(px, hair, h):
+    """The y of the tab bar's top hairline: the lowest full-width row of that colour.
+    Tolerant because resampling a 3-device-pixel line to dp blends it; exact matching
+    only ever worked on the artboards, which are already drawn at dp."""
+    for y in range(h - 1, int(h * 0.5), -1):
+        if all(max(abs(int(u) - int(v)) for u, v in zip(px[x, y], hair)) <= 6
+               for x in range(60, 330, 10)):
+            return y
+    return None
+
+
+def phone_dp(path):
+    """Raw device pixels, rescaled to dp *without* squashing the extra height."""
+    im = Image.open(path).convert("RGB")
+    if im.size[0] != 390:
+        im = im.resize((390, round(im.size[1] * 390 / im.size[0])))
+    return np.asarray(im).astype(np.int16)
+
+
 def main():
     for art, shot in PAIRS:
         ap = ROOT / "design" / "pixso-final" / art
@@ -95,16 +151,27 @@ def main():
         if a.shape != b.shape:
             print(f"-- {art[:2]}: size {b.shape[:2]} vs {a.shape[:2]}")
             continue
-        both_flat = flat_mask(a) & flat_mask(b)
-        diff = np.abs(a - b).max(axis=2)
-        mask = both_flat & (diff > DIFF)
-        boxes = clusters(mask)
-        print(f"-- {art[:2]} vs {shot}: {int(mask.sum())} structural pixels")
-        for area, x0, x1, y0, y1 in boxes[:6]:
-            sa = tuple(int(v) for v in a[(y0 + y1) // 2, (x0 + x1) // 2])
-            sb = tuple(int(v) for v in b[(y0 + y1) // 2, (x0 + x1) // 2])
-            print(f"     {area:6d}px  x {x0:4d}..{x1:4d}  y {y0:4d}..{y1:4d}  art{sa} build{sb}")
-        sys.stdout.flush()
+        report(art[:2], shot, a, b)
+
+    for art, shot, canvas in PHONE_PAIRS:
+        ap, bp = ROOT / "design" / "pixso-final" / art, ROOT / "artifacts" / "shots" / shot
+        if not ap.exists() or not bp.exists():
+            print(f"-- {art[:2]}: skipped (missing {shot})")
+            continue
+        a, b = phone_dp(ap), phone_dp(bp)
+        hair = HAIRLINE[canvas]
+        ya = tabbar_top(Image.fromarray(a.astype(np.uint8)).load(), hair, a.shape[0])
+        yb = tabbar_top(Image.fromarray(b.astype(np.uint8)).load(), hair, b.shape[0])
+        if ya is None or yb is None:
+            print(f"-- {art[:2]}: no {hair} tab-bar hairline (art {ya}, build {yb})")
+            continue
+        # Register on the hairline, then compare BAND rows above and below it.
+        top = max(ya, yb) - BAND
+        lo_a, lo_b = max(0, top - ya), max(0, top - yb)
+        note = "" if ya == yb else f" [frame differs by {yb - ya}dp; see BAND]"
+        report(f"{art[:2]} (tabbar art{ya} build{yb})", shot, a[lo_a:], b[lo_b:])
+        if note:
+            print(f"     note{note}")
 
 
 if __name__ == "__main__":

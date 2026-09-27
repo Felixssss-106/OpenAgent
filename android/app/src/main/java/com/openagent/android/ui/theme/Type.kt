@@ -57,6 +57,12 @@ object Shape {
     val barInset = 16.dp
     val tabHeight = 60.dp
     val composerHeight = 52.dp
+    /**
+     * A list row inside a card. Artboards 26/27 put a card's two rows 77dp apart
+     * border to border, so a row plus its separator is 38.5; 38 + the 1dp
+     * RowDivider lands on it. The 46 this used to carry measured 47.
+     */
+    val rowHeight = 38.dp
     /** --shadow-float: the halo under the two floating capsules reaches ~12dp out. */
     val floatElevation = 5.5.dp
     val navbarHeight = 44.dp

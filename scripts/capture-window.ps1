@@ -109,12 +109,17 @@ if ($offsetX -lt 0 -or $offsetY -lt 0 -or $offsetX + $Width -gt $winW -or $offse
 # A window activated with nothing focused yet hands focus to the page's first focusable
 # element, and WinUI draws its adorner there: the shipped settings capture carried a 2px
 # near-black rectangle around 开机启动 (x 358..1321, y 196..241) that no artboard draws,
-# and it also skewed that card's measured corner. One click on empty canvas moves the
-# focus to the root and the transient state is gone. (700,100) is above the first card on
-# every page and clear of the composer on the agent page.
+# and it also skewed that card's measured corner. One click moves the focus to the root
+# and the transient state is gone — and light-dismisses any flyout a previous run left open.
+#
+# The spot has to be inert on *every* page. It used to be canvas at (700,100), which is
+# fine until the task list has rows in it: with 50 tasks the first card starts at y=69, so
+# that click opened a task's detail dialog and the capture recorded a popup instead of a
+# page. The sidebar's gap between the last nav item (插件, ~423) and 设置 (~788) is dead
+# space on all seven pages and activates nothing.
 $neutral = New-Object Win32Cap+POINT
-$neutral.X = $clientOrigin.X + 700
-$neutral.Y = $clientOrigin.Y + 100
+$neutral.X = $clientOrigin.X + 120
+$neutral.Y = $clientOrigin.Y + 500
 [void][Win32Cap]::SetCursorPos($neutral.X, $neutral.Y)
 Start-Sleep -Milliseconds 200
 [void][Win32Cap]::mouse_event(0x0002 -bor 0x0004, 0, 0, 0, [IntPtr]::Zero)  # left down | up

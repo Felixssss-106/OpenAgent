@@ -1960,6 +1960,67 @@ as a known deviation next to the DM Sans and CJK substitution ones.
 280 tests pass; all five Windows audits pass over 14 regenerated captures.
 
 
+## 2026-09-27 · Pointing the same sweep at the phone, where it stops being a fair test
+
+The flat-region diff worked on Windows, so it went at the Android frames too. The phone's
+artboards are 390x844 and the AVD is 1080x2400 at 420dpi — **411x866 dp**. Two different
+frames, so nothing lines up until you register on something; the tab bar's top hairline is
+a colour both images draw, so that is the anchor.
+
+It found one real defect and one honest limit.
+
+**The phone's list rows were 47dp against a designed 38.5.** Measuring hairline to hairline
+inside a card (artboards 26/27 put a card's two rows 77 apart border to border), the build
+sat at 47.7. `ValueRow` declared `.height(46.dp)` and `RowDivider` added a pixel beside it —
+the same divider-is-extra mistake as on Windows, just seven times bigger. Now
+`Shape.rowHeight = 38.dp`, and the measured pitch is 39.9.
+
+**The limit: the phone cannot be whole-frame diffed.** The tab bar and composer hang off the
+bottom of the window; the scrolling content above them is anchored to the top. Aligning on
+the bar therefore misaligns everything above it by the 22dp the two frames differ by, and
+aligning on the top does the same to the bar. Switching the AVD from 3-button to gesture
+navigation (`settings put secure navigation_mode 2`) moved the count the *wrong* way —
+3,652 to 14,417 on artboard 07 — because the emulator's gesture inset is 24dp where the
+artboard's iOS-derived home area is 34, so the bar itself sits 11dp lower. The sweep now
+restricts the phone window to ±120dp of the anchor and prints the frame delta next to every
+phone number, so nobody reads that 14,417 as a defect count.
+
+One thing it surfaced that I did **not** fix: the gap between the composer's bottom border
+and the tab bar's top is 18.3dp in the build against 12dp in artboard 07. The only spacer I
+can find in that path is `Spacer(Modifier.height(10.dp))` in `AgentScreenContent`, so 8dp is
+coming from somewhere I have not identified — the suggestion column's own
+`padding(bottom = 16.dp)`, or double-counted `innerPadding`. Shrinking the visible spacer to
+4 to compensate would encode a guess as a design number, so the 6dp is left in place and
+measured.
+
+All Android gates pass after the change (36 assertions across the audit and the halo gate),
+from a rebuilt release APK.
+
+
+## 2026-09-27 · The screenshot harness was clicking on a task row
+
+Regenerating the 14 captures after the row-height fix, `tasks/dark` failed the chrome gate:
+"artboard band y=139..150 not drawn", plus the header divider. The capture was not blank
+(stddev 19.1) — it was a **task detail dialog** sitting over a list scrolled to the focused
+row, with the page title scrolled out of view.
+
+The cause was the harness, not the app. `capture-window.ps1` clicks once before shooting, to
+move the transient activation focus off the first control (see the focus-adorner entry above),
+and the spot was chosen as "empty canvas at (700,100), above the first card on every page".
+That was true while the task list was short. The interactive-state runs had since accumulated
+**50 tasks**, so the first card now starts at y=69, the click landed on it, opened its detail
+card, and focused it hard enough that the ScrollViewer jumped. The gate then correctly reported
+a page whose header was missing.
+
+Fixed by moving the click to the sidebar's dead zone, client `(120,500)` — below the last nav
+item (插件, ~423) and above 设置 (~788), inert on all seven pages, and it light-dismisses any
+flyout a previous run left behind. All 14 captures regenerate and all five audits pass.
+
+Worth keeping as a rule for anyone adding a capture step: **a "safe" click point has to be
+safe against the app having real data**, not against the empty state you developed against.
+The harness passed for weeks because the list it was breaking was empty.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
