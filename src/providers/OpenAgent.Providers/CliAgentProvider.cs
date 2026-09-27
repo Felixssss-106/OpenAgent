@@ -54,7 +54,7 @@ public sealed class CliAgentProvider : IAgentProvider
         ProcessRunResult result;
         try
         {
-            result = await _runner.RunAsync(_profile.Executables[0], _profile.BuildArguments(prompt), cancellationToken)
+            result = await _runner.RunAsync(_profile.Executables[0], _profile.BuildArgumentList(prompt), cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception ex)

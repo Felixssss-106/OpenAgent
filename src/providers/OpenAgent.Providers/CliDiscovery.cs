@@ -102,12 +102,16 @@ public static class CliDiscovery
     {
         try
         {
-            var info = new ProcessStartInfo("where.exe", exe)
+            var info = new ProcessStartInfo("where.exe")
             {
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+            foreach (var name in new[] { exe })
+            {
+                info.ArgumentList.Add(name);
+            }
 
             using var process = Process.Start(info);
             if (process is null)
@@ -136,13 +140,17 @@ public static class CliDiscovery
     {
         try
         {
-            var info = new ProcessStartInfo(path, "--version")
+            var info = new ProcessStartInfo(path)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+            foreach (var flag in new[] { "--version" })
+            {
+                info.ArgumentList.Add(flag);
+            }
 
             using var process = Process.Start(info);
             if (process is null)

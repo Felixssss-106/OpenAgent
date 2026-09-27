@@ -33,18 +33,31 @@ def nearest(colour, others, limit=STEP * 2):
     return best, best_d
 
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def fenced(raw: str) -> pathlib.Path:
+    """The audit reads frames and captures that live under the repository; a
+    resolved path escaping that root is refused instead of opened."""
+    p = pathlib.Path(raw).resolve()
+    if not p.is_relative_to(ROOT):
+        print(f"path escapes the repository: {raw}")
+        raise SystemExit(2)
+    return p
+
+
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
         return 2
-    design_path = pathlib.Path(sys.argv[1])
+    design_path = fenced(sys.argv[1])
     if not design_path.exists():
-        found = sorted(pathlib.Path("design/pixso-final").glob(f"{design_path.stem}-*.png"))
+        found = sorted((ROOT / "design" / "pixso-final").glob(f"{design_path.stem}-*.png"))
         if not found:
             print(f"no artboard matching {sys.argv[1]}")
             return 1
         design_path = found[0]
-    build_path = pathlib.Path(sys.argv[2])
+    build_path = fenced(sys.argv[2])
 
     d, b = palette(design_path), palette(build_path)
     print(f"design {design_path.name}  vs  build {build_path.name}")

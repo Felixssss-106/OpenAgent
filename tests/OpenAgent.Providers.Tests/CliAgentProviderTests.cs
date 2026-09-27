@@ -18,12 +18,12 @@ public sealed class CliAgentProviderTests
         private readonly ProcessRunResult? _result;
         private readonly Exception? _throw;
         public string? LastFileName;
-        public string? LastArguments;
+        public IReadOnlyList<string>? LastArguments;
 
         public FakeRunner(ProcessRunResult result) => _result = result;
         public FakeRunner(Exception ex) => _throw = ex;
 
-        public Task<ProcessRunResult> RunAsync(string fileName, string arguments, CancellationToken cancellationToken = default)
+        public Task<ProcessRunResult> RunAsync(string fileName, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default)
         {
             LastFileName = fileName;
             LastArguments = arguments;
@@ -52,7 +52,7 @@ public sealed class CliAgentProviderTests
     }
 
     [Fact]
-    public async Task SendPrompt_passes_prompt_as_final_quoted_argument()
+    public async Task SendPrompt_passes_prompt_as_final_literal_argument()
     {
         var runner = new FakeRunner(new ProcessRunResult(0, "ok", string.Empty));
         var provider = Provider(runner);
@@ -61,7 +61,10 @@ public sealed class CliAgentProviderTests
         await provider.SendPromptAsync(session, "打开 notepad", Array.Empty<ProviderToolInfo>());
 
         Assert.Equal("testcli", runner.LastFileName);
-        Assert.Equal("-p \"打开 notepad\"", runner.LastArguments);
+        // The prompt travels as one argv element after the profile's prefix args:
+        // no quoting layer exists, so a prompt can never add argv items.
+        Assert.NotNull(runner.LastArguments);
+        Assert.Equal(new[] { "-p", "打开 notepad" }, runner.LastArguments);
     }
 
     [Fact]

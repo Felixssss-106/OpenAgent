@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OpenAgent.Core;
 
 namespace OpenAgent.Providers;
@@ -8,8 +9,8 @@ namespace OpenAgent.Providers;
 /// profile is the minimal prompt-passing form for that CLI. Per-CLI prefixes are
 /// the documented, deliberate config of each adapter (spec section 27 — "each
 /// CLI's own adapter, written when its CLI is actually present"), not behaviour
-/// guessed or scattered through the shell. The prompt is always the final, quoted
-/// argument.
+/// guessed or scattered through the shell. The prompt is always the final argv
+/// entry, passed as its own list element.
 /// </summary>
 public sealed record CliInvocationProfile(
     /// <summary>Provider id, e.g. "openagent.cli.claude".</summary>
@@ -23,12 +24,12 @@ public sealed record CliInvocationProfile(
     /// <summary>Arguments placed before the prompt (e.g. ["-p"]).</summary>
     string[] PrefixArgs)
 {
-    /// <summary>Builds the argument string: prefix args, then the quoted prompt (with " escaped).</summary>
-    public string BuildArguments(string prompt)
-    {
-        var prefix = PrefixArgs.Length == 0
-            ? string.Empty
-            : string.Join(" ", PrefixArgs) + " ";
-        return prefix + "\"" + (prompt ?? string.Empty).Replace("\"", "\\\"") + "\"";
-    }
+    /// <summary>
+    /// Builds the argv list: prefix args, then the prompt as one literal final
+    /// argument. The OS joins the list, so no quoting layer exists for a prompt
+    /// to break out of — a prompt can never add argv items to the CLI's command
+    /// line, no matter what quotes or backslashes it contains.
+    /// </summary>
+    public IReadOnlyList<string> BuildArgumentList(string prompt) =>
+        new List<string>(PrefixArgs) { prompt ?? string.Empty };
 }

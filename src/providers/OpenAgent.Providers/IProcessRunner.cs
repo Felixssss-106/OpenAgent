@@ -13,8 +13,12 @@ namespace OpenAgent.Providers;
 /// </summary>
 public interface IProcessRunner
 {
-    /// <summary>Runs <paramref name="fileName"/> with <paramref name="arguments"/> and captures output.</summary>
-    Task<ProcessRunResult> RunAsync(string fileName, string arguments, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Runs <paramref name="fileName"/> with <paramref name="arguments"/> and
+    /// captures output. Arguments are an argv list the OS joins — the prompt
+    /// travels as one literal element and can never reshape the command line.
+    /// </summary>
+    Task<ProcessRunResult> RunAsync(string fileName, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default);
 }
 
 /// <summary>The captured result of a CLI run.</summary>
@@ -23,18 +27,22 @@ public sealed record ProcessRunResult(int ExitCode, string StdOut, string StdErr
 /// <summary>Runs a CLI via <see cref="System.Diagnostics.Process"/>.</summary>
 public sealed class RealProcessRunner : IProcessRunner
 {
-    public async Task<ProcessRunResult> RunAsync(string fileName, string arguments, CancellationToken cancellationToken = default)
+    public async Task<ProcessRunResult> RunAsync(string fileName, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default)
     {
-        var start = new ProcessStartInfo(fileName, arguments)
+        var start = new ProcessStartInfo(fileName)
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
         };
+        foreach (var argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
 
         using var process = Process.Start(start)
-            ?? throw new InvalidOperationException($"无法启动进程: {fileName} {arguments}");
+            ?? throw new InvalidOperationException($"无法启动 CLI 进程: {fileName}");
 
         // Read both streams concurrently, then await exit — avoids the classic
         // fill-the-buffer deadlock when stderr and stdout race.

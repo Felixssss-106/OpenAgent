@@ -54,14 +54,22 @@ public sealed class AppLaunchTool : ITool
 
         try
         {
+            // The resolved value is a real file path, so shell execution adds
+            // nothing but risk: arguments go through the CRT-style split into an
+            // explicit argv list (Internal.WindowsCommandLine), and the OS builds
+            // the target's command line from it — no string can reshape the line
+            // after the split (spec section 43).
             var startInfo = new ProcessStartInfo(resolved.Value!)
             {
-                UseShellExecute = true,
+                UseShellExecute = false,
             };
 
             if (!string.IsNullOrWhiteSpace(processArguments))
             {
-                startInfo.Arguments = processArguments;
+            foreach (var arg in Internal.WindowsCommandLine.Split(processArguments))
+            {
+                startInfo.ArgumentList.Add(arg);
+            }
             }
 
             if (!string.IsNullOrWhiteSpace(context.WorkingDirectory))

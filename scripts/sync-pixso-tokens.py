@@ -15,11 +15,17 @@ import json
 import re
 import urllib.request
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 TOKENS = ROOT / "design" / "tokens.css"
 SNAPSHOT = ROOT / "design" / "pixso-variables.json"
 MCP_URL = "http://127.0.0.1:3667/mcp"
+
+# Same containment as pixso-mcp.py: the sync target is the local Pixso desktop
+# connector, and only the loopback qualifies.
+if urlparse(MCP_URL).hostname not in ("127.0.0.1", "localhost", "::1"):
+    raise SystemExit("token sync only talks to the loopback connector")
 
 # Pixso variable -> tokens.css custom property. The XAML keys downstream stay as
 # they are, so only the values move; "primary" is the same role the code calls

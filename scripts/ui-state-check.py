@@ -193,4 +193,9 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print(__doc__)
         sys.exit(2)
+    # state/theme are interpolated into capture paths below; only the two known
+    # values of each are meaningful, and the whitelist closes the traversal.
+    if sys.argv[1] not in {"approval", "chat"} or sys.argv[2] not in {"light", "dark"}:
+        print(__doc__)
+        sys.exit(2)
     sys.exit(check(sys.argv[1], sys.argv[2]))
