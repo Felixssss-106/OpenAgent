@@ -105,6 +105,7 @@ COLOUR_TOKENS = [
     "accent", "accent-hover", "accent-quiet", "accent-text", "on-accent",
     "sidebar", "sidebar-accent", "tab-highlight", "icon", "icon-muted",
     "focus-ring-color", "scrim",
+    "composer-halo",
 ]
 
 RISK_TOKENS = [

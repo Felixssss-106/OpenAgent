@@ -2,7 +2,7 @@
 # Regenerate the Windows UI parity evidence against the shipped publish directory.
 #
 # Captures every page in both themes from artifacts/windows/win-x64 (the tree the MSI
-# is proven byte-identical to), then runs four audits over the new captures: landmark
+# is proven byte-identical to), then runs five audits over the new captures: landmark
 # colours, row-band positions (report only), the sidebar and page-header geometry gate,
 # and the two interactive states (artboards 03-06), which are driven, captured and
 # colour-checked here rather than eyeballed. Fails if any page did not produce a fresh
@@ -72,6 +72,11 @@ echo "--- focus adorner (no artboard draws one) ---"
 python scripts/ui-focus-ring-audit.py
 rings=$?
 
+echo
+echo "--- composer halo (the one soft shadow in the app) ---"
+python scripts/ui-halo-gate.py
+halo=$?
+
 states=0
 if [ "${SKIP_STATES:-0}" != "1" ]; then
     echo
@@ -90,6 +95,10 @@ if [ $chrome -ne 0 ]; then
 fi
 if [ $rings -ne 0 ]; then
     echo "FAILED: a capture carries a focus adorner no artboard draws"
+    exit 1
+fi
+if [ $halo -ne 0 ]; then
+    echo "FAILED: the composer halo does not match the artboard falloff"
     exit 1
 fi
 if [ $states -ne 0 ]; then

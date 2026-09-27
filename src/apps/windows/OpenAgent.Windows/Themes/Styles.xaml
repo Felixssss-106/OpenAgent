@@ -81,6 +81,16 @@
         </Setter>
     </Style>
 
+    <!-- One ring of the composer's halo. AgentPage stacks ten of these behind the
+         pill, each inflated a little further than the last, and the count that
+         reaches a given edge is what inkens it — WinUI 3 gives no other way to
+         draw a soft shadow. See the comment at ComposerHalo in AgentPage.xaml. -->
+    <Style x:Key="ComposerHaloLayer" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource ComposerHaloBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+
     <!-- The command input inside the composer capsule. Same reason as SearchBox:
          the stock template animates a 2px accent underline in the focused state,
          which the artboards do not have. -->

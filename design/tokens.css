@@ -116,6 +116,17 @@
   --shadow-overlay: 0 24px 60px -12px oklch(0% 0 0 / 0.28), 0 2px 8px -2px oklch(0% 0 0 / 0.12);
   --shadow-float:   0 12px 32px -8px oklch(0% 0 0 / 0.18), 0 1px 3px -1px oklch(0% 0 0 / 0.08);
 
+  /* WinUI 3 里没有可用的阴影挂载点：ThemeShadow 不带 Receiver，Composition 的
+     DropShadow 造得出来却没有 Visual.Shadow / Shadows 可挂（三条都由编译器证实）。
+     所以输入条那圈光晕改成同心胶囊层叠加：每层一份 --composer-halo 覆盖率，压到边框
+     上的层数决定该边的强度。几何取自效果图 01/02 的逐行采样——
+       浅色：边框下 20/255 · 侧面 10/255 · 上 4/255，16 / 12 / 7px 内衰减到 0
+       深色：边框下 3/255 · 侧面 2 · 上 1（底色只有 10，整段阴影只占 3 个量化级）
+     两份 alpha 不能互推：WinUI 每合一层都把 8bit 通道四舍五入一次，深色底 10 ×
+     (1-0.031) = 9.69 又回到 10，十层叠完等于没叠；浅底 255 不会被这一步吃掉。
+     于是各自的 alpha 按本主题的取整链反推：浅色 2/255 十层到 235，深色 17/255 十层
+     走 10→9→8→7 后停在 7。层数与几何见 AgentPage.xaml 的 ComposerHalo。*/
+
   --focus-ring: 0 0 0 3px var(--focus-ring-color), 0 0 0 1px var(--accent);
 }
 
@@ -289,6 +300,7 @@
 
 [data-theme="light"] {
   --bg-canvas: #FFFFFF;
+  --composer-halo: oklch(0% 0 0 / 0.0078);
   --bg-surface: #F7F7FA;
   --bg-sunken: #F2F2F7;
   --bg-inset: #E5E5EA;
@@ -329,6 +341,7 @@
 
 [data-theme="dark"] {
   --bg-canvas: #0A0A0A;
+  --composer-halo: oklch(0% 0 0 / 0.0667);
   --bg-surface: #1C1C1E;
   --bg-sunken: #000000;
   --bg-inset: #2C2C2E;

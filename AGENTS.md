@@ -506,6 +506,36 @@ Android 真实的自动化覆盖只有 `androidTest` 里那两个类（AgentScre
 ——第一次验证明显失败（numpy 广播报错，图根本没改），**报 0 不等于能看见**，重画一个矩形才确认它能报
 `RING settings/light`。
 
+### 8.33 WinUI 3 里根本没有"把阴影挂上去"这一步，且深底会把叠加吃掉
+效果图 01/02 的输入条外面有一圈 `--shadow-float` 软光晕（全应用只有它有：设置卡、审批卡
+实测都是平的）。发布版以前完全不画，逐行采样：白底上边框下 20/255、侧面 10、上方 4，
+分别在 16/12/7px 内衰减到 0；深色底（10）下是 3/2/1。
+
+四条"正统"路子全部**由编译器**判死（不是文档、不是猜测）：
+1. `ThemeShadow` 在 WinUI 3 没有 `Receiver` / `SetReceiver`（UWP 才有），找不到投影面就等于没有阴影。
+2. `UIElement.Shadow` 的声明类型是 `Microsoft.UI.Xaml.Media.Shadow`（`ThemeShadow` 的基类），
+   把 `Compositor.CreateDropShadow()` 的结果赋给它 → `CS0029`。注意 **`CreateDropShadow()` 本身是存在的**。
+3. `Compositor.CreateShadowCollection()`、`Visual.Shadows`、`Visual.Shadow`、`ContainerVisual.Shadow`
+   四个挂载点全部 `CS1061`。
+4. XAML 里也没有 `DropShadow` 这个可实例化类型。
+
+改用 10 个同心胶囊 `Border` 叠在输入条下面（`AgentPage.xaml` 的 `ComposerHalo`）：每层一份
+`ComposerHaloBrush`，**能盖到某条边的层数就是那条边的浓度**——10 层压到下边、5 层压到侧面、
+2 层压到上边，正好复现三条边的峰值。层的几何按效果图逐行采样反量化得到。
+
+再一个坑：**每层的 alpha 不能两个主题共用**。WinUI 每合一层就把 8bit 通道四舍五入一次，
+深色底 `round(10 × (1-0.031)) = round(9.69) = 10`，十层叠完一层推进都没有；浅色底
+`255 × (1-0.0078) = 253` 不受这一步影响。所以 `--composer-halo` 在明暗两块里分别是
+`0.0078`（→ `#02000000`）和 `0.0667`（→ `#11000000`），各自沿本主题的取整链反推。
+代价是深色侧面只能是 3 而不是效果图的 1——10 级底上只有 3 个量化级，叠不出更细的台阶。
+
+门禁 `scripts/ui-halo-gate.py`（已并入 `ui-verify.sh`，共五条）把明暗 × 三条边共 6 条衰减曲线
+逐像素比一遍，容差 2 级；把光晕抹平重跑会报 3 条 FAIL 并退 1，确认它看得见"没有阴影"这件事。
+
+顺带两条踩过的：XAML 注释里不能出现 `--`（`<!-- --shadow-float` 直接是畸形 XML，注释开头写
+token 名就会中）；而 C# 编译报错时 XAML 编译器会连带吐一条
+`WMC9999 未将对象引用设置到对象的实例`，它是噪声不是第二个故障，只认 `error CS` 那几行。
+
 ---
 
 ## 9. 数据与安全

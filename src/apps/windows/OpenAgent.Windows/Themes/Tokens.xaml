@@ -31,6 +31,7 @@
             <Color x:Key="IconMutedColor">#FF8E8E93</Color>
             <Color x:Key="FocusRingColorColor">#733C79D1</Color>
             <Color x:Key="ScrimColor">#521B2025</Color>
+            <Color x:Key="ComposerHaloColor">#02000000</Color>
             <Color x:Key="RiskSafeColor">#FF46607C</Color>
             <Color x:Key="RiskSafeBgColor">#FFE8EDF3</Color>
             <Color x:Key="RiskLowColor">#FF00694A</Color>
@@ -73,6 +74,7 @@
             <SolidColorBrush x:Key="IconMutedBrush" Color="{StaticResource IconMutedColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
+            <SolidColorBrush x:Key="ComposerHaloBrush" Color="{StaticResource ComposerHaloColor}" />
             <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
             <SolidColorBrush x:Key="RiskSafeBgBrush" Color="{StaticResource RiskSafeBgColor}" />
             <SolidColorBrush x:Key="RiskLowBrush" Color="{StaticResource RiskLowColor}" />
@@ -117,6 +119,7 @@
             <Color x:Key="IconMutedColor">#FF8E8E93</Color>
             <Color x:Key="FocusRingColorColor">#8070A6F5</Color>
             <Color x:Key="ScrimColor">#8F010204</Color>
+            <Color x:Key="ComposerHaloColor">#11000000</Color>
             <Color x:Key="RiskSafeColor">#FF90A7C0</Color>
             <Color x:Key="RiskSafeBgColor">#FF20252A</Color>
             <Color x:Key="RiskLowColor">#FF5AC299</Color>
@@ -159,6 +162,7 @@
             <SolidColorBrush x:Key="IconMutedBrush" Color="{StaticResource IconMutedColor}" />
             <SolidColorBrush x:Key="FocusRingColorBrush" Color="{StaticResource FocusRingColorColor}" />
             <SolidColorBrush x:Key="ScrimBrush" Color="{StaticResource ScrimColor}" />
+            <SolidColorBrush x:Key="ComposerHaloBrush" Color="{StaticResource ComposerHaloColor}" />
             <SolidColorBrush x:Key="RiskSafeBrush" Color="{StaticResource RiskSafeColor}" />
             <SolidColorBrush x:Key="RiskSafeBgBrush" Color="{StaticResource RiskSafeBgColor}" />
             <SolidColorBrush x:Key="RiskLowBrush" Color="{StaticResource RiskLowColor}" />

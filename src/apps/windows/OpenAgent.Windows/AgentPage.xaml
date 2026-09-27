@@ -217,65 +217,92 @@
                     </Button>
                 </Grid>
 
-                <Border
-                    Height="56"
-                    Background="{ThemeResource BgSurfaceBrush}"
-                    BorderBrush="{ThemeResource BorderDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Capsule56}"
-                    Padding="20,0,12,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox
-                            x:Name="CommandInput"
-                            Grid.Column="0"
-                            Style="{StaticResource InputBox}"
-                            PlaceholderText="输入指令…"
-                            KeyDown="CommandInput_KeyDown"
-                            VerticalAlignment="Center" />
-
-                        <TextBlock
-                            Grid.Column="1"
-                            x:Name="ComposerHint"
-                            Text="Alt + Space"
-                            FontSize="{StaticResource TypeCaptionSize}"
-                            Margin="0,0,28,0"
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextQuaternaryBrush}" />
-
-                        <Button
-                            Grid.Column="2"
-                            x:Name="SendButton"
-                            Width="32"
-                            Height="32"
-                            Padding="0"
-                            Background="{ThemeResource AccentBrush}"
-                            Foreground="{ThemeResource OnAccentBrush}"
-                            BorderThickness="0"
-                            Click="SendButton_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border
-                                        Background="{TemplateBinding Background}"
-                                        CornerRadius="{StaticResource Capsule32}">
-                                        <ContentPresenter
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center" />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <FontIcon
-                                Glyph="&#xE74A;"
-                                FontSize="14"
-                                Foreground="{ThemeResource OnAccentBrush}" />
-                        </Button>
+                <!-- shadow-float, and the only surface in the app that gets one.
+                     WinUI 3 has no shadow mount point here — ThemeShadow carries no
+                     Receiver, and a Composition DropShadow can be created but there is
+                     no Visual.Shadow / Visual.Shadows to hang it on (all three checked
+                     with the compiler, not the docs). So the halo is stacked capsules:
+                     every layer contributes one ComposerHaloBrush, and how many of them
+                     reach an edge is what sets that edge's strength. Ten reach the
+                     bottom (artboard 01: 20/255 darkening), five the sides (10/255),
+                     two the top (4/255), decaying to nothing across 16 / 12 / 7px.
+                     Radii are half the layer height so each stays a capsule around the
+                     56px pill — change the pill height and these have to move. The last
+                     two layers are identical on purpose: it is the count that carries ink. -->
+                <Grid>
+                    <Grid x:Name="ComposerHalo" Height="56" IsHitTestVisible="False">
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="79" Margin="-12,-7,-12,-16" CornerRadius="39.5" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="72" Margin="-8,-2,-8,-14" CornerRadius="36" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="68" Margin="-6,0,-6,-12" CornerRadius="34" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="66" Margin="-3,0,-3,-10" CornerRadius="33" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="65" Margin="-1,0,-1,-9" CornerRadius="32.5" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="63" Margin="0,0,0,-7" CornerRadius="31.5" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="61" Margin="0,0,0,-5" CornerRadius="30.5" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="59" Margin="0,0,0,-3" CornerRadius="29.5" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="58" Margin="0,0,0,-2" CornerRadius="29" />
+                        <Border Style="{StaticResource ComposerHaloLayer}" Height="58" Margin="0,0,0,-2" CornerRadius="29" />
                     </Grid>
-                </Border>
+
+                    <Border
+                        Height="56"
+                        Background="{ThemeResource BgSurfaceBrush}"
+                        BorderBrush="{ThemeResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource Capsule56}"
+                        Padding="20,0,12,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox
+                                x:Name="CommandInput"
+                                Grid.Column="0"
+                                Style="{StaticResource InputBox}"
+                                PlaceholderText="输入指令…"
+                                KeyDown="CommandInput_KeyDown"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                x:Name="ComposerHint"
+                                Text="Alt + Space"
+                                FontSize="{StaticResource TypeCaptionSize}"
+                                Margin="0,0,28,0"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextQuaternaryBrush}" />
+
+                            <Button
+                                Grid.Column="2"
+                                x:Name="SendButton"
+                                Width="32"
+                                Height="32"
+                                Padding="0"
+                                Background="{ThemeResource AccentBrush}"
+                                Foreground="{ThemeResource OnAccentBrush}"
+                                BorderThickness="0"
+                                Click="SendButton_Click">
+                                <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="{StaticResource Capsule32}">
+                                                <ContentPresenter
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Center" />
+                                            </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <FontIcon
+                                    Glyph="&#xE74A;"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource OnAccentBrush}" />
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
             </StackPanel>
 
             <!-- 审批态: 760px wide so it aligns with the answer column, left-aligned

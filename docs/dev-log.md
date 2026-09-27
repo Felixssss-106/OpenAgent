@@ -1794,6 +1794,64 @@ Since the same comparison is already covered by the card and panel extents, no r
 was added rather than ship one whose numbers mean nothing.
 
 
+## 2026-09-27 · The composer's halo: four shadow APIs the compiler said no to, and the tenth one that worked
+
+Artboards 01/02 put a soft halo around the floating command bar. The shipped build drew
+**nothing** there — measured as 0.0 while the artboard reads 20/255 one pixel below the
+border. Every other surface was already flat and matching (settings card, approval card),
+so this is the app's only shadow, and it is the one thing the whole parity pass had no
+mechanism for.
+
+Four routes, each closed by `dotnet build` rather than by reading about it:
+
+| Attempt | Result |
+|---|---|
+| `ThemeShadow` + receiver | `Receiver` / `SetReceiver` do not exist in WinUI 3 (UWP-only) |
+| `UIElement.Shadow = compositor.CreateDropShadow()` | `CS0029` — the property is typed `Microsoft.UI.Xaml.Media.Shadow`; **the `DropShadow` itself builds fine** |
+| `compositor.CreateShadowCollection()` → `visual.Shadows` | `CS1061` on both |
+| `visual.Shadow` / `((ContainerVisual)visual).Shadow` | `CS1061` on both |
+
+So the halo is drawn as **ten concentric capsule `Border`s** stacked behind the pill
+(`ComposerHalo` in `AgentPage.xaml`), each carrying one `ComposerHaloBrush`. What makes an
+edge dark is **how many layers reach it**: 10 land below the pill, 5 at the sides, 2 above —
+which is exactly the artboard's 20 / 10 / 4 profile. Layer offsets came from de-quantising
+the sampled ramps, not from a formula.
+
+The trap that cost a rebuild: **the per-layer alpha cannot be shared between themes.** WinUI
+rounds the 8-bit channel after compositing *each* layer, so on the dark canvas
+`round(10 × (1 − 0.031)) = round(9.69) = 10` — ten layers stack and the pixel never moves.
+Light is immune because `255 × (1 − 0.0078) = 253` survives the rounding. `--composer-halo`
+is therefore a themed token: `0.0078` → `#02000000` for light, `0.0667` → `#11000000` for
+dark, each traced through its own rounding chain.
+
+| Edge | Artboard (light) | Build | Artboard (dark) | Build |
+|---|---|---|---|---|
+| 1px below | 20 | 20 | 3 | 3 |
+| 4px below | 16 | 16 | 3 | 3 |
+| 9px below | 8 | 8 | 1 | 3 |
+| 1px right | 10 | 9 | 1 | 3 |
+| 1px above | 4 | 4 | 1 | 2 |
+
+Light matches to ≤2 levels everywhere. Dark's side and top are **2 levels too heavy** and
+that is the floor: the canvas sits at 10, the entire shadow occupies three quantisation
+steps, and any band with ≥3 layers saturates at the same stall value, so the sides cannot
+be made lighter than the bottom by stacking. Accepted and recorded rather than hidden.
+
+New gate `scripts/ui-halo-gate.py` (fifth one wired into `ui-verify.sh`) compares all six
+curves pixel by pixel at ±2. It was proven by erasing the halo from copies of both captures
+— 3 `FAIL`s, exit 1. The first attempt at that proof did nothing at all: `python script.py
+/tmp/dir` gets its argument rewritten by MSYS to `C:\Users\…\Temp\dir`, while a `/tmp/…`
+path *inside* the script resolves to `D:\tmp\…`, so the mutation silently targeted a
+different directory than the gate read. In-repo scratch paths only.
+
+Two smaller findings: a XAML comment must not contain `--`, so opening one with a token name
+(`<!-- --shadow-float`) is malformed XML; and while the C# side has errors the XAML compiler
+also emits `WMC9999 未将对象引用设置到对象的实例`, which is fallout, not a second fault.
+
+280 tests still pass; all five audits pass over 14 freshly regenerated captures from the
+publish directory, and the driven states (03–06) are unaffected.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
