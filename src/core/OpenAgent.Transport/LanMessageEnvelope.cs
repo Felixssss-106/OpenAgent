@@ -16,6 +16,24 @@ public enum LanMessageType
 
     /// <summary>A presence handshake beyond the UDP beacon.</summary>
     Hello,
+
+    /// <summary>Pairing step 1: the initiator offers its identity key (v2, docs/protocol.md §4).</summary>
+    PairRequest,
+
+    /// <summary>Pairing step 2: the host answers with its identity key after the user accepts the PIN.</summary>
+    PairChallenge,
+
+    /// <summary>Pairing step 3: the initiator proves it derived the same key.</summary>
+    PairConfirm,
+
+    /// <summary>Pairing final: the host accepts the proof and both store the key.</summary>
+    PairComplete,
+
+    /// <summary>A task on the host needs a decision (v2, encrypted; phase 8 of the app).</summary>
+    ApprovalRequest,
+
+    /// <summary>The phone's decision on an <see cref="LanMessageType.ApprovalRequest"/>.</summary>
+    ApprovalResolve,
 }
 
 /// <summary>
@@ -24,7 +42,9 @@ public enum LanMessageType
 /// (spec §287): dependency-free so the Kotlin Android client and the .NET
 /// Windows host speak the same wire format. <see cref="Decode"/> returns null on
 /// anything that is not a well-formed envelope, so the listener can safely
-/// ignore noise on the port.
+/// ignore noise on the port. v2 adds the pairing types and the optional
+/// <c>pub</c>/<c>nonce</c>/<c>cipher</c> fields (§4); a v1 peer simply never
+/// emits them and refuses what it cannot read.
 /// </summary>
 public sealed record LanMessageEnvelope(
     LanMessageType Type,
@@ -32,7 +52,10 @@ public sealed record LanMessageEnvelope(
     string From,
     string To,
     string Text,
-    long Ts)
+    long Ts,
+    string? Pub = null,
+    string? Nonce = null,
+    string? Cipher = null)
 {
     /// <summary>Serialises the envelope to a UTF-8 JSON payload.</summary>
     public byte[] Encode()
@@ -43,6 +66,13 @@ public sealed record LanMessageEnvelope(
             {
                 LanMessageType.Command => "command",
                 LanMessageType.Result => "result",
+                LanMessageType.Hello => "hello",
+                LanMessageType.PairRequest => "pair_request",
+                LanMessageType.PairChallenge => "pair_challenge",
+                LanMessageType.PairConfirm => "pair_confirm",
+                LanMessageType.PairComplete => "pair_complete",
+                LanMessageType.ApprovalRequest => "approval_request",
+                LanMessageType.ApprovalResolve => "approval_resolve",
                 _ => "hello",
             },
             ["id"] = Id,
@@ -51,6 +81,21 @@ public sealed record LanMessageEnvelope(
             ["text"] = Text,
             ["ts"] = Ts,
         };
+
+        if (Pub is not null)
+        {
+            node["pub"] = Pub;
+        }
+
+        if (Nonce is not null)
+        {
+            node["nonce"] = Nonce;
+        }
+
+        if (Cipher is not null)
+        {
+            node["cipher"] = Cipher;
+        }
 
         return Encoding.UTF8.GetBytes(node.ToJsonString());
     }
@@ -97,6 +142,12 @@ public sealed record LanMessageEnvelope(
             "command" => LanMessageType.Command,
             "result" => LanMessageType.Result,
             "hello" => LanMessageType.Hello,
+            "pair_request" => LanMessageType.PairRequest,
+            "pair_challenge" => LanMessageType.PairChallenge,
+            "pair_confirm" => LanMessageType.PairConfirm,
+            "pair_complete" => LanMessageType.PairComplete,
+            "approval_request" => LanMessageType.ApprovalRequest,
+            "approval_resolve" => LanMessageType.ApprovalResolve,
             _ => (LanMessageType?)null,
         };
         if (type is null)
@@ -126,7 +177,17 @@ public sealed record LanMessageEnvelope(
             ? tsEl.GetInt64()
             : 0L;
 
-        return new LanMessageEnvelope(type.Value, idEl.GetString()!, fromEl.GetString()!, toEl.GetString()!, textVal, ts);
+        var pub = root.TryGetProperty("pub", out var pubEl) && pubEl.ValueKind == JsonValueKind.String
+            ? pubEl.GetString()
+            : null;
+        var nonce = root.TryGetProperty("nonce", out var nonceEl) && nonceEl.ValueKind == JsonValueKind.String
+            ? nonceEl.GetString()
+            : null;
+        var cipher = root.TryGetProperty("cipher", out var cipherEl) && cipherEl.ValueKind == JsonValueKind.String
+            ? cipherEl.GetString()
+            : null;
+
+        return new LanMessageEnvelope(type.Value, idEl.GetString()!, fromEl.GetString()!, toEl.GetString()!, textVal, ts, pub, nonce, cipher);
     }
 }
 

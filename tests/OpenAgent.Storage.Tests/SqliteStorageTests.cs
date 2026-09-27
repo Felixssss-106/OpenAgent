@@ -41,15 +41,15 @@ public sealed class SqliteStorageTests : IDisposable
     {
         var version = _database.Initialize();
 
-        Assert.Equal(1, version);
-        Assert.Equal(1, new SchemaMigrator(_paths.DatabaseFile, _paths.BackupsDirectory).CurrentVersion());
+        Assert.Equal(2, version);
+        Assert.Equal(2, new SchemaMigrator(_paths.DatabaseFile, _paths.BackupsDirectory).CurrentVersion());
 
         using var connection = _database.CreateConnection();
         foreach (var table in new[]
                  {
                      "devices", "sessions", "tasks", "task_events", "approvals", "tools",
                      "providers", "provider_configs", "settings", "workflows", "plugins",
-                     "audit_logs", "sync_jobs",
+                     "audit_logs", "sync_jobs", "pairing", "pairing_identity",
                  })
         {
             using var command = connection.CreateCommand();
@@ -61,8 +61,10 @@ public sealed class SqliteStorageTests : IDisposable
     [Fact]
     public void Migrating_twice_is_a_no_op()
     {
-        Assert.Equal(1, _database.Initialize());
-        Assert.Equal(1, _database.Initialize());
+        // Initialize reports the schema version it brought the database to,
+        // so a second call reports the same 2 and applies nothing.
+        Assert.Equal(2, _database.Initialize());
+        Assert.Equal(2, _database.Initialize());
     }
 
     [Fact]

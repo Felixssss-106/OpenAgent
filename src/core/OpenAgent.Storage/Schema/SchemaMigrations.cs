@@ -11,6 +11,7 @@ public static class SchemaMigrations
     public static IReadOnlyList<SchemaMigration> All { get; } = new[]
     {
         new SchemaMigration(1, "initial", InitialSql),
+        new SchemaMigration(2, "pairing", PairingSql),
     };
 
     private const string InitialSql = """
@@ -165,6 +166,20 @@ public static class SchemaMigrations
         last_run_utc TEXT NULL,
         status TEXT NOT NULL,
         detail TEXT NULL
+    );
+    """;
+
+    private const string PairingSql = """
+    CREATE TABLE IF NOT EXISTS pairing_identity (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        private_key BLOB NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS pairing (
+        peer_id TEXT PRIMARY KEY,
+        peer_pub TEXT NOT NULL,
+        shared_key BLOB NOT NULL,
+        paired_at_utc TEXT NOT NULL
     );
     """;
 }

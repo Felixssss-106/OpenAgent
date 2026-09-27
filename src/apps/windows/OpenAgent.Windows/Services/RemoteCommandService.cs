@@ -8,6 +8,7 @@ using OpenAgent.Core.Tasks;
 using OpenAgent.Security;
 using OpenAgent.Shared.Protocol;
 using OpenAgent.Transport;
+using OpenAgent.Transport.Pairing;
 using OpenAgent.Windows.UI.Services;
 
 namespace OpenAgent.Windows.Services;
@@ -34,6 +35,7 @@ internal sealed class RemoteCommandService
     private readonly OpenAgentOptions _options;
     private readonly ITransport _transport;
     private readonly string _hostId;
+    private readonly PairingService _pairing;
     private readonly Func<RemoteApprovalRequest, Task<(bool Approved, string? ApprovalId)>> _gate;
     private readonly ILogger<RemoteCommandService> _logger;
     private readonly SemaphoreSlim _runs = new(1, 1);
@@ -44,6 +46,7 @@ internal sealed class RemoteCommandService
         OpenAgentOptions options,
         ITransport transport,
         string hostId,
+        PairingService pairing,
         Func<RemoteApprovalRequest, Task<(bool Approved, string? ApprovalId)>> gate,
         ILogger<RemoteCommandService> logger)
     {
@@ -52,8 +55,20 @@ internal sealed class RemoteCommandService
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
         _hostId = hostId ?? throw new ArgumentNullException(nameof(hostId));
+        _pairing = pairing ?? throw new ArgumentNullException(nameof(pairing));
         _gate = gate ?? throw new ArgumentNullException(nameof(gate));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// v2 policy: commands only run for paired peers (docs/protocol.md §4.4).
+    /// The refusal is plaintext on purpose — the sender has no key yet.
+    /// </summary>
+    public Task RejectUnpairedAsync(LanMessageEnvelope command)
+    {
+        _logger.LogWarning("rejected unpaired command from {From}", command.From);
+        Reply(command, "未配对：请先在两端完成配对", encrypted: false);
+        return Task.CompletedTask;
     }
 
     public async Task HandleAsync(LanMessageEnvelope command)
@@ -160,10 +175,13 @@ internal sealed class RemoteCommandService
         Reply(command, replyText);
     }
 
-    private void Reply(LanMessageEnvelope command, string text)
+    private void Reply(LanMessageEnvelope command, string text) =>
+        Reply(command, text, encrypted: _pairing.KeyFor(command.From) is not null);
+
+    private void Reply(LanMessageEnvelope command, string text, bool encrypted)
     {
         // The result echoes the command's id (protocol §3) so the phone can pair
-        // the answer with the request it sent.
+        // the answer with the request it sent; sealed when the pairing key exists.
         var reply = new LanMessageEnvelope(
             LanMessageType.Result,
             command.Id,
@@ -171,6 +189,8 @@ internal sealed class RemoteCommandService
             command.From,
             text,
             DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-        _ = _transport.SendAsync(command.From, reply.Encode());
+        var key = encrypted ? _pairing.KeyFor(command.From) : null;
+        var payload = key is null ? reply : EnvelopeCrypto.Seal(reply, key);
+        _ = _transport.SendAsync(command.From, payload.Encode());
     }
 }

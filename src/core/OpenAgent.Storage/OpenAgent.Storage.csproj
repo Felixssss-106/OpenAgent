@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../OpenAgent.Core/OpenAgent.Core.csproj" />
+    <ProjectReference Include="../OpenAgent.Transport/OpenAgent.Transport.csproj" />
     <ProjectReference Include="../../shared/OpenAgent.Shared/OpenAgent.Shared.csproj" />
   </ItemGroup>
 

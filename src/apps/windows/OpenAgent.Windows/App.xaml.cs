@@ -11,7 +11,9 @@ using Microsoft.UI.Xaml.Input;
 using OpenAgent.Agent;
 using OpenAgent.Providers;
 using OpenAgent.Security;
+using OpenAgent.Storage.Repositories;
 using OpenAgent.Transport;
+using OpenAgent.Transport.Pairing;
 using OpenAgent.Tools;
 using OpenAgent.Windows.Native;
 using OpenAgent.Windows.Services;
@@ -131,6 +133,7 @@ public partial class App : Application
             options.DatabaseRoot = CommandLineDataRoot();
         });
         services.AddOpenAgentProviders();
+        services.AddSingleton<IPairingStore, PairingStore>();
         var transport = new UdpLanTransport(LanDiscoveryOptions.Default(), new LocalLoopbackTransport());
         services.AddSingleton<ITransport>(transport);
 
@@ -141,19 +144,54 @@ public partial class App : Application
         var providers = Services.GetService<ProviderRegistry>();
         var executor = Services.GetService<ToolExecutor>();
         var logger = Services.GetService<ILogger<App>>();
+
+        // v2 pairing: identity on first run, PIN dialog on a request, encrypted
+        // traffic afterwards (docs/protocol.md §4).
+        var pairing = new PairingService(
+            Services.GetRequiredService<IPairingStore>(),
+            transport,
+            transport.SelfId);
+        pairing.EnsureIdentity();
+        pairing.PinRequested += (_, pin) => ShowPairingDialog(pin, pairing);
+
         transport.InboundMessage += (_, e) =>
         {
-            // A phone's command envelope becomes a real task run; anything else
-            // is visibility only.
-            if (e.Message.Type == LanMessageType.Command && remoteCommands is not null)
+            var envelope = e.Message;
+
+            // Pairing traffic is consumed by the state machine; everything else
+            // is application payload. A command runs only for a paired peer and
+            // only in sealed form (docs/protocol.md §4.4).
+            if (envelope.Type is LanMessageType.PairRequest or LanMessageType.PairConfirm
+                or LanMessageType.PairChallenge or LanMessageType.PairComplete)
             {
-                _ = remoteCommands.HandleAsync(e.Message);
+                _ = pairing.HandleAsync(envelope);
+                return;
+            }
+
+            if (envelope.Type == LanMessageType.Command && remoteCommands is not null)
+            {
+                var key = pairing.KeyFor(envelope.From);
+                if (key is null)
+                {
+                    _ = remoteCommands.RejectUnpairedAsync(envelope);
+                    return;
+                }
+
+                if (envelope.Cipher is null
+                    || !EnvelopeCrypto.TryOpen(envelope, key, out var opened)
+                    || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - opened.Ts > ReplayWindowMs)
+                {
+                    logger?.LogWarning("dropped undecryptable or stale command from {From}", envelope.From);
+                    return;
+                }
+
+                _ = remoteCommands.HandleAsync(opened);
                 return;
             }
 
             logger?.LogInformation(
                 "LAN inbound {Type} from {From} to {To}: {Text}",
-                e.Message.Type, e.Message.From, e.Message.To, e.Message.Text);
+                envelope.Type, envelope.From, envelope.To, envelope.Text);
         };
         if (tasks is not null && registry is not null && providers is not null && executor is not null)
         {
@@ -164,6 +202,7 @@ public partial class App : Application
                 options,
                 transport,
                 transport.SelfId,
+                pairing,
                 GateRemoteApprovalAsync,
                 Services.GetRequiredService<ILogger<RemoteCommandService>>());
             AgentHost.Register(new AgentHostAdapter(
@@ -172,6 +211,44 @@ public partial class App : Application
     }
 
     private static RemoteCommandService? remoteCommands;
+
+    private const long ReplayWindowMs = 5 * 60_000;
+
+    /// <summary>
+    /// The PIN a LAN peer must reproduce on its own screen (docs/protocol.md
+    /// §4.2). Accepting answers the pair_challenge; declining tells the state
+    /// machine to forget the request — the phone stays unpaired either way.
+    /// </summary>
+    private static void ShowPairingDialog(string pin, PairingService pairing)
+    {
+        var window = MainWindow;
+        if (window?.Content?.XamlRoot is null)
+        {
+            pairing.DeclinePairing();
+            return;
+        }
+
+        window.DispatcherQueue.TryEnqueue(async () =>
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "配对请求",
+                Content = $"收到新的配对请求。\n\n在手机上输入此配对码：\n{pin}",
+                PrimaryButtonText = "同意配对",
+                CloseButtonText = "拒绝",
+                XamlRoot = window.Content.XamlRoot,
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                await pairing.AcceptPairingAsync();
+            }
+            else
+            {
+                pairing.DeclinePairing();
+            }
+        });
+    }
 
     /// <summary>
     /// Marshals a LAN approval onto the window's dispatcher: the phone's 批准
