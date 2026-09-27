@@ -48,7 +48,8 @@ dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
 
 # 安装包（MSI + 包裹它的 EXE bundle）
 dotnet tool restore          # 拉取 WiX 7（清单在根目录 dotnet-tools.json）
-./scripts/build-installer.ps1
+# 必须用 powershell -File 调用：脚本的 shebang 写的是 pwsh，本机只装了 Windows PowerShell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1
 ```
 > `OpenAgent.pri`（XAML 资源索引）必须出现在 publish 输出里，否则应用启动即崩（见 §8.9）。
 > `build-installer.ps1` 会在打包前检查该文件是否存在，缺失即失败退出。
@@ -685,7 +686,8 @@ bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
   -c Release -p:Platform=x64 -r win-x64 --self-contained true -o artifacts/windows/win-x64
 #    → 校验 artifacts/windows/win-x64/OpenAgent.pri 存在，且 exe 能起窗口
-dotnet tool restore && ./scripts/build-installer.ps1 -SkipPublish
+dotnet tool restore
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1 -SkipPublish
 #    → artifacts/installer/OpenAgent-<ver>-x64.{msi,exe}
 #    → 装一遍再卸一遍：msiexec /i ... /qn，起窗口，msiexec /x ... /qn
 python scripts/verify-installer-payload.py

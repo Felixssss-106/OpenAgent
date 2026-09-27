@@ -2069,6 +2069,42 @@ remains there is the pill's width, which tracks the live copy ("等待 Windows �
 host, not the mockup's "已就绪 · 权限：请求批准").
 
 
+## 2026-09-27 · Rebuilding what users actually download, and proving the fixes are inside it
+
+Every gate now measures `artifacts/windows/win-x64`, but the installers on disk predated
+the whole day's work. Rebuilt both, plus the APK, and ran the release gates over them.
+
+| Artifact | Bytes | SHA-256 |
+|---|---|---|
+| `OpenAgent-1.0.0-x64.msi` | 76,322,000 | `9aba19b6ba952186…8a117df4` |
+| `OpenAgent-1.0.0-x64.exe` | 77,046,333 | `61d3d1a5773f6cec…6e98af8d` |
+| `app-release.apk` | 19,052,076 | `efdf7f465f61c23b…1394368d` |
+
+The MSI is the same byte length as the one it replaces and a completely different hash — a
+reminder that size is not evidence of anything and the payload check is not optional.
+`verify-installer-payload.py` extracts the package with `msiexec /a` and compares every
+file's SHA-256 against the publish directory: **580 files, IDENTICAL**. So the tree that
+produced all 14 captures is the tree that ships, byte for byte.
+`apksigner --print-certs` confirms `CN=OpenAgent, OU=Releases`, not the debug key.
+
+Two things I checked myself into and out of again:
+
+- `build-installer.ps1` printed four `ICE03 Invalid Language Id` errors and exited 0, which
+  looked like the vacuous-gate pattern again. It isn't: those come from the *informational*
+  run at line 79, whose output is piped through `Select-Object -First 5` and deliberately
+  unchecked. The blocking gate at line 75 suppresses ICE03/ICE60 for a documented reason
+  (WiX's `<Files>` harvest leaves `File.Language` NULL for versionless files and over-long
+  for .NET resource assemblies; the column only drives patch costing) and fails on
+  everything else. Reading the script before believing the symptom is the whole trick.
+- `./scripts/build-installer.ps1` from Git Bash fails with `/usr/bin/env: 'pwsh'`, because
+  the file's shebang names PowerShell Core and only Windows PowerShell is installed. It has
+  to be invoked as `powershell -File scripts/build-installer.ps1`.
+
+Not done, on purpose: installing this MSI for real still needs one interactive UAC
+acceptance (a per-machine package cannot elevate under `/qn`), so that step waits for the
+same approval that covers replacing the public Release.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in
