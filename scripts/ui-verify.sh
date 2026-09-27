@@ -25,19 +25,50 @@ WIN_PUB="$(cygpath -w "$PUB")"
 WIN_EXE="$(cygpath -w "$EXE")"
 
 capture() {
-    local started page theme out before after
+    local started page theme out before after capout caprc live
     started=$(date +%s)
     for page in $PAGES; do
         for theme in $THEMES; do
             out="artifacts/shots/cur-$page-$theme.png"
             before=$(stat -c %Y "$out" 2>/dev/null || echo 0)
+            # Never fight a person for the pointer: the harness moves it, clicks,
+            # and pops windows, so a user in front of the machine corrupts frames.
+            idle=$(powershell.exe -NoProfile -File "$WIN_ROOT\scripts\user-idle.ps1" 2>/dev/null | tr -d '\r')
+            if [ -z "$idle" ] || [ "$idle" -lt 5000 ]; then
+                echo "FAILED: user input ${idle:-?} ms ago — UI captures move the pointer and steal focus, rerun when the machine is idle"
+                return 1
+            fi
             powershell.exe -NoProfile -Command \
                 "Stop-Process -Name OpenAgent -Force -ErrorAction SilentlyContinue;
-                 Start-Sleep -Milliseconds 600;
+                 \$deadline = (Get-Date).AddSeconds(8);
+                 do {
+                     Start-Sleep -Milliseconds 250;
+                     \$alive = @(Get-Process -Name OpenAgent -ErrorAction SilentlyContinue | Where-Object { -not \$_.HasExited });
+                 } while (\$alive.Count -gt 0 -and (Get-Date) -lt \$deadline);
+                 if (\$alive.Count -gt 0) { exit 42 }
                  Start-Process -FilePath '$WIN_EXE' -WorkingDirectory '$WIN_PUB' -ArgumentList '--page=$page','--theme=$theme';
                  Start-Sleep -Seconds 8" >/dev/null 2>&1
-            powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$WIN_ROOT\scripts\capture-window.ps1" \
-                -Width 1440 -Height 900 -Out "$out" 2>&1 | tail -1
+            if [ $? -eq 42 ]; then
+                echo "FAILED: $page/$theme: a previous instance refused to die, the fresh launch would bail on the single-instance mutex"
+                return 1
+            fi
+            # Exactly one live instance, or capture-window.ps1 may grab the wrong
+            # window and record a page the band gate then rejects 12 minutes later.
+            # HasExited filters the just-killed zombie that Get-Process still lists
+            # while the tray unwinds, which once read as 'refused to die'.
+            live=$(powershell.exe -NoProfile -Command "@(Get-Process -Name OpenAgent -ErrorAction SilentlyContinue | Where-Object { -not \$_.HasExited }).Count" 2>/dev/null | tr -d '\r')
+            if [ "$live" != "1" ]; then
+                echo "FAILED: $page/$theme: $live OpenAgent instances alive after launch (wanted exactly 1)"
+                return 1
+            fi
+            capout=$(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$WIN_ROOT\scripts\capture-window.ps1" \
+                -Width 1440 -Height 900 -Out "$out" 2>&1)
+            caprc=$?
+            echo "$capout" | tail -1
+            if [ $caprc -ne 0 ]; then
+                echo "FAILED: capture-window.ps1 exited $caprc for $page/$theme"
+                return 1
+            fi
             after=$(stat -c %Y "$out" 2>/dev/null || echo 0)
             if [ "$after" -le "$started" ] || [ "$after" -le "$before" ]; then
                 echo "FAILED: $out was not rewritten by this run"

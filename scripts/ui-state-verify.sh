@@ -40,6 +40,14 @@ for theme in $THEMES; do
         out="artifacts/shots/state-$state-$theme.png"
         before=$(stat -c %Y "$out" 2>/dev/null || echo 0)
 
+        # The drive steals foreground and synthesises keystrokes: refuse to run
+        # under a person's hands (they once approved an approval card mid-drive).
+        idle=$(powershell.exe -NoProfile -File "$WIN_ROOT\scripts\user-idle.ps1" 2>/dev/null | tr -d '\r')
+        if [ -z "$idle" ] || [ "$idle" -lt 5000 ]; then
+            echo "FAILED: user input ${idle:-?} ms ago — the drive steals foreground and types, rerun when the machine is idle"
+            exit 1
+        fi
+
         sandbox="$ROOT/artifacts/state-sandbox/$state-$theme"
         rm -rf "$sandbox"
         WIN_SANDBOX="$(cygpath -w "$sandbox")"

@@ -46,6 +46,30 @@ public static class Win32Cap {
 
 Add-Type -AssemblyName System.Drawing
 
+# The harness moves the pointer and steals focus, so it must never run under a
+# person's hands: it once fought a real user's nav clicks and the capture recorded
+# the page THEY had navigated to. Refuse unless the machine has been idle a while.
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class UserIdleQuick {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LASTINPUTINFO { public uint cbSize; public uint dwTime; }
+    [DllImport("user32.dll")] public static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+    public static uint Milliseconds() {
+        LASTINPUTINFO info = new LASTINPUTINFO();
+        info.cbSize = (uint)Marshal.SizeOf(info);
+        if (!GetLastInputInfo(ref info)) return 0;
+        return (uint)Environment.TickCount - info.dwTime;
+    }
+}
+"@
+$idleMs = [UserIdleQuick]::Milliseconds()
+if ($idleMs -lt 5000) {
+    Write-Error ("user input {0:N0} ms ago — UI captures move the pointer and steal focus, rerun when the machine is idle" -f $idleMs)
+    exit 44
+}
+
 $target = Get-Process | Where-Object {
     $_.ProcessName -eq $ProcessName -and $_.MainWindowHandle -ne 0
 } | Select-Object -First 1
