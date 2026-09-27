@@ -78,6 +78,15 @@ def flat_mask(a):
     return (mx - mn).max(axis=2) < FLAT
 
 
+def mode_of(arr, y0, y1, x0, x1):
+    """The most common exact colour inside a cluster's box."""
+    box = arr[y0:y1 + 1, x0:x1 + 1].reshape(-1, 3).astype(np.int64)
+    packed = box[:, 0] * 65536 + box[:, 1] * 256 + box[:, 2]
+    values, counts = np.unique(packed, return_counts=True)
+    v = int(values[counts.argmax()])
+    return (v // 65536, v // 256 % 256, v % 256)
+
+
 def clusters(mask):
     """Greedy row-band clustering; enough to name a region, not to trace it."""
     ys = np.flatnonzero(mask.any(axis=1))
@@ -114,9 +123,13 @@ def report(label, shot, a, b, y0=0, y1=None):
     mask = flat_mask(sa) & flat_mask(sb) & (np.abs(sa - sb).max(axis=2) > DIFF)
     print(f"-- {label} vs {shot}: {int(mask.sum())} structural pixels")
     for area, x0, x1, by0, by1 in clusters(mask)[:5]:
-        ca = tuple(int(v) for v in sa[(by0 + by1) // 2, (x0 + x1) // 2])
-        cb = tuple(int(v) for v in sb[(by0 + by1) // 2, (x0 + x1) // 2])
-        print(f"     {area:6d}px  x {x0:4d}..{x1:4d}  y {by0 + y0:4d}..{by1 + y0:4d}  art{ca} build{cb}")
+        # The mode of each side, not the pixel at the centre of the bounding box:
+        # a one-step surface error (the phone's status pill drew bgSurface where the
+        # artboard draws bgSunken) hides at a centre that may be anything, but the
+        # dominant colour of a few thousand flat pixels is unambiguous.
+        ca, cb = mode_of(sa, by0, by1, x0, x1), mode_of(sb, by0, by1, x0, x1)
+        print(f"     {area:6d}px  x {x0:4d}..{x1:4d}  y {by0 + y0:4d}..{by1 + y0:4d}"
+              f"  art{ca} build{cb}")
     sys.stdout.flush()
 
 
