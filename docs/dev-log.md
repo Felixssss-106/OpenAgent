@@ -1745,9 +1745,10 @@ draws 1343`, exit 1; restored, exit 0.
 
 | Frames | Covered by |
 |---|---|
-| 01/02, 13–24 (14) | `ui-band-sweep.py --gate` (sidebar head/foot + page header + divider span) and `ui-colour-audit.py` |
+| 01/02, 13–24 (14) | `ui-band-sweep.py --gate` (sidebar head/foot + page header + divider span), `ui-colour-audit.py`, `ui-focus-ring-audit.py` |
 | 03–06 (4) | `ui-state-check.py` — driven, colour landmarks, card/panel geometry |
-| 07/08, 09/10, 25–30 (10) | `ui-android-audit.py`, from the release APK and held test frames |
+| 01–04 (4) | additionally `ui-halo-gate.py` — the composer's falloff in both states, both themes |
+| 07/08, 09/10, 25–30 (10) | `ui-android-audit.py`, from the release APK and held test frames; 07/08 additionally by `ui-halo-gate.py` (falloff, both strokes, the 12dp bar gap) |
 | 11/12 (2) | not covered — the phone cannot receive an approval state; deferred by the user behind LAN pairing/encryption |
 
 28 of 30 are compared against the shipped build and gated. The remaining two are not a
