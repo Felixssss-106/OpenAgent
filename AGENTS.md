@@ -39,7 +39,7 @@ UI → Agent Service → Tool Registry → Permission Manager → Tool Executor
 # 全量构建（必须带 -p:Platform=x64）
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 
-# 测试（当前 280 个，全绿）
+# 测试（当前 300 个，全绿）
 dotnet test OpenAgent.sln -c Release -p:Platform=x64
 
 # 可分发产物（self-contained，供安装包打包）
@@ -151,14 +151,21 @@ using global::Windows.System.VirtualKey;
 - `IProcessRunner`：进程派生抽象，`RealProcessRunner` 实现
 - `AddOpenAgentProviders`：遍历 `CliDiscovery.Scan()` 自动注册发现的 CLI
 
-### 5.2 Transport 层（Phase 6，提交 `bd80f73` + `133e9ff`）
+### 5.2 Transport 层（Phase 6，提交 `bd80f73` + `133e9ff`；v2 配对/加密 2026-09-27）
 - `ITransport` + `DeviceRecord` + `LocalLoopbackTransport`（本机恒在）
 - `LanBeaconFrame`：UTF-8 线格式 `OPENAGENT-BEACON v1|id|name|platform|version|port|ticks`
-- `LanMessageEnvelope`：JSON 命令/结果信封 `{"type":"command",...}`
+- `LanMessageEnvelope` v2：`command`/`result`/`hello` + 四个 `pair_*` + `approval_*`，
+  可选 `pub`/`nonce`/`cipher` 字段；v1 对端解不出新类型就整体忽略
 - `UdpLanTransport`：UDP 广播 beacon + 监听，发现对端为 `ConnectionType="lan"`
   - socket 绑不上 → **静默降级为仅 loopback**（不抛异常）
   - `SendAsync`：已知对端单播，否则尽力广播，绝不抛异常
+  - `SelfId`：本端 beacon id（回包 From 字段）
 - `InboundMessage` 事件：收到非 beacon 的 JSON envelope 时触发
+- **配对/加密（`Pairing/`，协议 v2 = docs/protocol.md §4）**：每安装一对 P-256 身份密钥
+  （PKCS#8/SPKI），raw ECDH 左补零到 32 字节 → HKDF-SHA256 → AES-256-GCM 密钥；
+  主机弹 PIN（由共享密钥派生，**永不上线**），手机复现才落库——MITM 转发的公钥
+  算不出同样的 PIN。信封域字符串两端逐字节一致，改一边必改另一边（`PairingCrypto`）。
+  配对后的 command 必须密封且 ts 新鲜（5 分钟重放窗），未配对来源以明文 result 拒绝。
 
 ### 5.3 UI 层（Phase 2-UI）
 - `MainWindow`：无边框（`ExtendsContentIntoTitleBar`），关闭即隐藏（托盘存活）
@@ -174,17 +181,21 @@ using global::Windows.System.VirtualKey;
 - `screen.capture` 用 GDI（`BitBlt` + `GetDIBits`），零新依赖
 - 路径走 `ToolPath` → `PathPolicy`，拒绝 `..`（不 normalize）
 
-### 5.5 Android 客户端（Kotlin + Compose，已对齐效果图 07/08、09/10、25–30；11/12 未实现）
-- `LanClient`：UDP beacon + 监听 + `MessageEnvelope` 命令收发，Wire format 与 .NET **字节级兼容**
+### 5.5 Android 客户端（Kotlin + Compose，已对齐效果图 07/08、09/10、25–30；11/12 审批卡已按 v2 实现）
+- `LanClient`：UDP beacon + 监听 + `MessageEnvelope` 命令收发，Wire format 与 .NET **字节级兼容**；
+  配对后的 command 密封上线（`PairingCrypto.seal`），sealed result 先解密再进聊天
+- `PairingManager` + `PairingCrypto`：手机侧 v2 握手（pair_request → 输主机屏上的 PIN →
+  pair_confirm），密钥与身份在 SharedPreferences；`DevicesScreen` 每张卡有 配对/已配对 行，
+  challenge 非空时弹 6 位输入框
 - 四个 tab 一个悬浮胶囊底栏（`OaTabBar`）：Agent / 任务 / 设备 / 设置，Agent 是启动页
-- `AgentScreen`：起始页（问候语 + 状态胶囊 + 输入胶囊）与对话态同一个面
+- `AgentScreen`：起始页（问候语 + 状态胶囊 + 输入胶囊）与对话态同一个面；
+  approval 非空时**审批卡覆盖输入条区域**（效果图 11/12 的版式），批准/拒绝密封回传
 - `TasksScreen` / `DevicesScreen` / `SettingsScreen`：44px 导航条 + 20dp 圆角分组卡
 - 配色/字号/圆角全部来自 `design/tokens.css`（`ui/theme/Color.kt`、`Type.kt`），
   **必须关掉 Material You 动态取色**，否则手机按壁纸取色，与效果图无关
 - 图标是 `ui/Glyphs.kt` 里手绘的 24 单位网格：不引 `material-icons-extended`
   （release 没开混淆，会把整套图标全打进包）
-- 效果图里的 审批态 / 思考强度 在手机上**没有数据源**：envelope 只有 `command`/`result`/`hello`
-  三种文本消息，权限门在 Windows 侧，所以这两块没有画成假控件
+- 思考强度在手机上仍**没有数据源**（envelope 无对应语义），没有画成假控件
 - 浮层只有两个（输入条 + 底栏），走 `Modifier.oaFloat()`；其余卡片是平的。
   底栏那圈光晕**画不出来**——它落在系统导航栏 inset 上（§8.34）
 - `Shape.rowHeight = 38.dp`：设计里的行距含分隔线那一像素（§8.35）
@@ -201,13 +212,13 @@ using global::Windows.System.VirtualKey;
 |------|------|------|
 | `OpenAgent.Core.Tests` | 36 | 事件总线、任务状态机、权限策略 |
 | `OpenAgent.Providers.Tests` | 40 | Native 路由、CLI 发现、CLI 适配器 |
-| `OpenAgent.Transport.Tests` | 24 | Beacon codec、Envelope codec、UDP 发现、载荷投递、inbound 事件 |
-| `OpenAgent.Tools.Tests` | 56 | 11 个工具 + 路径策略 |
-| `OpenAgent.Windows.UI.Tests` | 75 | CommandPlanner、ViewMapper、LongPressCounter、PlanViewMapper |
+| `OpenAgent.Transport.Tests` | 28 | Beacon/envelope codec（含 v2 配对字段）、UDP 发现、载荷投递、inbound 事件、配对握手 |
+| `OpenAgent.Tools.Tests` | 62 | 12 个工具 + 路径策略 + 命令行拆分器 |
+| `OpenAgent.Windows.UI.Tests` | 85 | CommandPlanner、各 ViewMapper、LongPressCounter、StartupRegistrar、PermissionModeChoices |
 | `OpenAgent.Agent.Tests` | 15 | 代理编排 |
 | `OpenAgent.Storage.Tests` | 9 | SQLite 存储 |
 | `OpenAgent.Security.Tests` | 25 | 安全策略 |
-| **总计** | **280** | |
+| **总计** | **300** | |
 
 ### WinUI 测试陷阱
 **测试项目不能带 `UseWinUI` 或 `Microsoft.WindowsAppSDK` 包引用**。否则 testhost 因 `Microsoft.TestPlatform.CoreUtilities` 加载冲突崩溃。
@@ -685,7 +696,10 @@ elevation 和一个颜色，elevation 到衰减曲线的映射没有任何文档
   用户状态，跑几轮就会把任务/对话堆进去，之后的失败看起来全像 UI 回归。
   注意它**不覆盖** `ui-settings.json`（那条路径写死在 `UiSettings.cs`）。
 - API Key：**走 OS 安全存储**，绝不写入 SQLite
-- 当前 LAN beacon 和消息信封是**明文**，无配对/信任/加密（Phase 6–7 解决）
+- LAN beacon 保持明文（只是广告）；**command/result/approval 只认配对对端且必须密封**
+  （协议 v2，`PairingService` + `PairingCrypto`，两端域字符串必须逐字节一致）
+- 手机 11/12 审批卡：`approval_request` 密封推送、`approval_resolve` 密封回传，
+  与本机卡片谁先决议谁生效（`ApprovalResolved` 事件同时 dismissed 另一端）
 - **发布 keystore 只有一份**：`artifacts/keystore/openagent-release.jks`（口令在同级
   `.storepass`，两者都已 gitignore，**无任何备份**）。丢了它就无法给同一应用发升级包。
 
@@ -695,7 +709,7 @@ elevation 和一个颜色，elevation 到衰减曲线的映射没有任何文档
 
 | 领域 | 缺失项 | 计划阶段 |
 |------|--------|----------|
-| Transport | mDNS 发现、Cloudflare Relay、LAN 配对/信任/加密 | Phase 6–7 |
+| Transport | mDNS 发现、Cloudflare Relay（v2 配对/信任/加密已于 2026-09-27 落地，docs/protocol.md §4） | Phase 6–7 |
 | Providers | CLI 流式/多轮会话 | Phase 4+ |
 | Agent | Native 真模型循环（当前是确定性关键词路由） | Phase 3 |
 | Plugins | 加载器、manifest、隔离 | Phase 12 |
@@ -717,8 +731,9 @@ v1.0.0 已作为首个发布版上线（Windows **MSI + 包裹它的 EXE bundle*
 
 > 注：原第 4 条"Android APK 构建验证"已完成——工具链齐备，且构建暴露出一个真实编译错误（§8.11）。
 
-**UI 与效果图的对齐状态（2026-09-27 实测）**：30 张效果图里 **28 张**已对着发布产物比对并设了门禁；
-剩下 11/12（手机端审批态）是**未实现的功能**，被用户明确排在 LAN 配对/加密之后，不是验证缺口。
+**UI 与效果图的对齐状态（2026-09-27 更新）**：30 张效果图里 **28 张**已对着发布产物比对并设了门禁；
+11/12（手机端审批卡）的功能已按协议 v2 实现（配对+加密落地后解锁），其 hold 帧取证与门禁扩展
+待一次机器空闲窗口执行（截图守卫拒绝在有人的机器上跑，见 §11.1）。
 两端各自的门禁见 §3 的脚本清单与 §11.1。
 
 **当前公开 Release 上的三个产物已过期**（本地已按今日全部修复重建，哈希见 `docs/dev-log.md`
@@ -731,13 +746,16 @@ v1.0.0 已作为首个发布版上线（Windows **MSI + 包裹它的 EXE bundle*
 ```bash
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
-dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 280
+dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 300
 bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色 = 14 张，跑五条门禁：
 #                                ①地标色 ②行带报告 ③侧栏+页头+分隔线几何 ④焦点框
 #                                ⑤输入条光晕；然后驱动并核对对话态/审批态（效果图 03–06）
 #                                （能失败才算门禁，见 §8.22；几何口径见 §8.25/§8.26；
 #                                 驱动态每次用一次性数据目录，见 §8.36）
 #   SKIP_STATES=1 跳过驱动态（要抢前台）；SKIP_SHOTS=1 只审计已有截图
+#   ⚠️ 全流程带“用户在场守卫”（scripts/user-idle.ps1，空闲 <5s 即拒绝并退非 0）：
+#      截图要动鼠标、抢前台，有人在用机器时跑出来的帧会是**他们的操作**——
+#      这不是理论：一次竞态拍到用户点开的页面，还把审批卡“批准”了。跑门禁前确认机器空闲。
 #   注意：光晕门禁读的是驱动态写出的 state-chat-*.png，所以它排在驱动段之后
 #    → Android 侧另跑：bash scripts/ui-verify-android.sh   # 4 路由 × 2 主题 + ②
 #      装的是 **release APK**（发布产物，签名 `CN=OpenAgent, OU=Releases`，`isMinifyEnabled=false`），
@@ -804,6 +822,6 @@ gh release create v1.0.0 <win-msi> <win-exe> <release-apk> --title ... --notes .
 
 ---
 
-*本文档最后更新：2026-09-27。文中所有数字（280 测试、8 测试工程、12 产品工程、28/30 帧已门禁、
+*本文档最后更新：2026-09-27。文中所有数字（300 测试、8 测试工程、12 产品工程、28/30 帧已门禁、
 行距 42/46/48/38、光晕峰值 20/255）与工具链结论均为本机实测，不是转抄；带"未做/未验"字样的
 条目是**待办**，不是已完成。*
