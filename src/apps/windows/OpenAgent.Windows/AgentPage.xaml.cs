@@ -43,6 +43,7 @@ public sealed partial class AgentPage : Page
     private readonly ApprovalService? _approvals;
     private readonly ToolRegistry? _registry;
     private readonly OpenAgentOptions? _options;
+    private readonly SemaphoreSlim _approvalCardGate = new(1, 1);
 
     private TaskCompletionSource<bool>? _approvalWait;
     private ApprovalRecord? _pendingApproval;
@@ -349,6 +350,36 @@ public sealed partial class AgentPage : Page
     }
 
     /// <summary>
+    /// Gates a command that arrived over the LAN: the same card, buttons and
+    /// expiry as a local run, but the task belongs to a remote session (the
+    /// phone's 批准 flow lands here too). Call on the page's DispatcherQueue.
+    /// </summary>
+    public async Task<(bool Approved, string? ApprovalId)> GateRemoteAsync(
+        string taskId,
+        string toolId,
+        string displayName,
+        RiskLevel risk,
+        bool reversible,
+        string argumentsSummary)
+    {
+        var approval = await _approvals!.RequestAsync(
+            taskId,
+            toolId,
+            risk,
+            reversible,
+            $"{displayName} 请求执行",
+            argumentsSummary);
+
+        await _tasks!.AppendEventAsync(
+            taskId,
+            TaskEventKinds.Approval,
+            $"{toolId} 等待批准 · {argumentsSummary}");
+
+        var plan = new CommandPlan(toolId, argumentsSummary, displayName);
+        return await ShowApprovalCardAsync(approval, displayName, risk, plan);
+    }
+
+    /// <summary>
     /// Shows the card and waits. Expiry is explicit: the card says how long is
     /// left and a timeout is reported as a denied approval, never as silence.
     /// </summary>
@@ -358,7 +389,13 @@ public sealed partial class AgentPage : Page
         RiskLevel risk,
         CommandPlan plan)
     {
-        _pendingApproval = approval;
+        // One card surface, two possible drivers (a typed prompt and a LAN
+        // command): the gate serializes them so a second request waits instead
+        // of overwriting the first card's state.
+        await _approvalCardGate.WaitAsync();
+        try
+        {
+            _pendingApproval = approval;
 
         // Artboard 05 titles the card with what is about to happen ("移动 35 个
         // 文件"), not with the tool's registry name, so the plan's own rationale
@@ -403,6 +440,11 @@ public sealed partial class AgentPage : Page
         Fade(ComposerBlock, visible: true);
 
         return (approved, approval.Id);
+        }
+        finally
+        {
+            _approvalCardGate.Release();
+        }
     }
 
     private UIElement LongPressContent()

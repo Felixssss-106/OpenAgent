@@ -43,12 +43,13 @@ public sealed class UdpLanTransport : ITransport, IDisposable
 
     private bool _disposed;
 
-    /// <summary>
-    /// Raised when a non-beacon JSON envelope arrives from a LAN peer (a command
+    /// <summary>Raised when a non-beacon JSON envelope arrives from a LAN peer (a command
     /// or result). The handler runs on a thread-pool thread from the listener
-    /// loop, so subscribers must marshal to the UI if they touch it.
-    /// </summary>
+    /// loop, so subscribers must marshal to the UI if they touch it.</summary>
     public event EventHandler<LanInboundMessageEventArgs>? InboundMessage;
+
+    /// <summary>This peer's beacon id — the From field on envelopes it sends.</summary>
+    public string SelfId => _localId;
 
     /// <summary>
     /// A peer is dropped if not heard from within this multiple of the beacon

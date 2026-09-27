@@ -157,6 +157,24 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Gates a LAN-originated command on the agent page — the phone's approval
+    /// flow shows the same card a typed prompt does. Call on the window's
+    /// DispatcherQueue.
+    /// </summary>
+    public Task<(bool Approved, string? ApprovalId)> GateRemoteApprovalAsync(
+        OpenAgent.Windows.Services.RemoteApprovalRequest request)
+    {
+        if (ContentFrame.Content is not AgentPage page)
+        {
+            return Task.FromResult((false, (string?)null));
+        }
+
+        return page.GateRemoteAsync(
+            request.TaskId, request.ToolId, request.DisplayName,
+            request.Risk, request.Reversible, request.ArgumentsSummary);
+    }
+
+    /// <summary>
     /// Brings the Agent surface forward and types a command into it without
     /// running it, so a command written elsewhere is still confirmed here.
     /// </summary>

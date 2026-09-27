@@ -139,21 +139,69 @@ public partial class App : Application
         var tasks = Services.GetService<AgentTaskService>();
         var registry = Services.GetService<ToolRegistry>();
         var providers = Services.GetService<ProviderRegistry>();
+        var executor = Services.GetService<ToolExecutor>();
         var logger = Services.GetService<ILogger<App>>();
         transport.InboundMessage += (_, e) =>
         {
-            // Best-effort visibility for cross-device commands (seed; Phase 6-7
-            // will route these into the agent task pipeline with pairing/trust).
+            // A phone's command envelope becomes a real task run; anything else
+            // is visibility only.
+            if (e.Message.Type == LanMessageType.Command && remoteCommands is not null)
+            {
+                _ = remoteCommands.HandleAsync(e.Message);
+                return;
+            }
+
             logger?.LogInformation(
                 "LAN inbound {Type} from {From} to {To}: {Text}",
                 e.Message.Type, e.Message.From, e.Message.To, e.Message.Text);
         };
-        if (tasks is not null && registry is not null && providers is not null)
+        if (tasks is not null && registry is not null && providers is not null && executor is not null)
         {
+            var options = Services.GetRequiredService<OpenAgentOptions>();
+            remoteCommands = new RemoteCommandService(
+                tasks,
+                executor,
+                options,
+                transport,
+                transport.SelfId,
+                GateRemoteApprovalAsync,
+                Services.GetRequiredService<ILogger<RemoteCommandService>>());
             AgentHost.Register(new AgentHostAdapter(
-                tasks, registry, transport, providers,
-                Services.GetRequiredService<OpenAgentOptions>()));
+                tasks, registry, transport, providers, options));
         }
+    }
+
+    private static RemoteCommandService? remoteCommands;
+
+    /// <summary>
+    /// Marshals a LAN approval onto the window's dispatcher: the phone's 批准
+    /// flow shows the same card a typed prompt does, and the waiting remote run
+    /// resumes when the card resolves.
+    /// </summary>
+    private static Task<(bool Approved, string? ApprovalId)> GateRemoteApprovalAsync(
+        RemoteApprovalRequest request)
+    {
+        var completion = new TaskCompletionSource<(bool Approved, string? ApprovalId)>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = MainWindow;
+        if (window is null)
+        {
+            completion.SetResult((false, null));
+            return completion.Task;
+        }
+
+        window.DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                completion.SetResult(await window.GateRemoteApprovalAsync(request));
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+        return completion.Task;
     }
 
     /// <summary>
