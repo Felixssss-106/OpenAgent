@@ -91,12 +91,33 @@ OpenAgent/
     ├── gen-tray-icon.py       # 托盘 .ico 生成（经典 32bpp DIB，PNG 走不通）
     ├── gen-installer-icon.py  # 多尺寸 app.ico（安装包用）
     ├── gen-android-icons.py   # 安卓 mipmap + 自适应图标（复用 oa_mark）
-    ├── ui-shot.ps1            # Windows：build → 运行 → 按效果图尺寸截客户区
-    ├── capture-window.ps1     # Windows：唤醒显示器 + PrintWindow + 裁剪 + 空帧门禁
-    ├── ui-shot-android.sh     # Android：gradle → 装 → 点 tab → screencap → 390x844
-    ├── android-tab.py         # Android：从 uiautomator dump 里取某个 tab 的中心点
-    └── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle
+    ├── build-installer.ps1    # publish → MSI → ICE 校验 → EXE bundle（必须 powershell -File）
+    ├── verify-installer-payload.py  # msiexec /a 解包，与发布目录逐文件比 SHA-256
+    │
+    │  ── Windows 截图与门禁 ──
+    ├── ui-shot.ps1            # build → 运行 → 按效果图尺寸截客户区
+    ├── capture-window.ps1     # 唤醒显示器 + 惰性点击 + PrintWindow + 裁剪 + 空帧门禁
+    ├── ui-verify.sh           # 总入口：拍 14 张 → 跑五条审计 → 驱动 03–06
+    ├── ui-colour-audit.py     # 门禁①地标色（配对错开即退 1）
+    ├── ui-band-sweep.py       # 门禁②③行带报告 + 侧栏/页头/分隔线几何断言
+    ├── ui-focus-ring-audit.py # 门禁④任何一帧带焦点框就退 1
+    ├── ui-halo-gate.py        # 门禁⑤输入条光晕衰减曲线 + 两处描边 + 12dp 间距（两端）
+    ├── ui-state-verify.sh     # 真鼠标驱动对话态/审批态，每次用一次性数据目录
+    ├── send-prompt.ps1        #   └ 码点传参 + 抢前台重试
+    ├── ui-state-check.py      #   └ 核对确实进入该态 + 地标色 + 卡片几何
+    ├── ui-hotspot-sweep.py    # 【只报不判】整帧结构差异簇，两侧各自主色
+    ├── ui-diff.py / ui_measure.py / measure-design.py   # 人工比对用的量尺
+    │
+    │  ── Android 截图与门禁 ──
+    ├── ui-shot-android.sh     # gradle release → 装 → 点 tab → screencap（raw + 缩放两张都写）
+    ├── android-tab.py         # 从 uiautomator dump 里取某个 tab 的中心点
+    ├── ui-verify-android.sh   # 4 路由 × 2 主题 → ui-android-audit + halo 门禁
+    ├── ui-android-audit.py    # 卡片边距/描边/强调色，读未缩放的 raw 帧
+    └── android-shot-test.sh   # 模拟器到不了的状态由 Compose 测试 hold 住拍帧
 ```
+
+> **门禁清单以 `ui-verify.sh` / `ui-verify-android.sh` 为准**，本文档只做人手导航。
+> 每条门禁都要跑一次"故意做错"的输入确认它退非 0（§8.22）。
 
 ---
 
@@ -153,7 +174,7 @@ using global::Windows.System.VirtualKey;
 - `screen.capture` 用 GDI（`BitBlt` + `GetDIBits`），零新依赖
 - 路径走 `ToolPath` → `PathPolicy`，拒绝 `..`（不 normalize）
 
-### 5.5 Android 客户端（Kotlin + Compose，已对齐效果图 07–12、25–30）
+### 5.5 Android 客户端（Kotlin + Compose，已对齐效果图 07/08、09/10、25–30；11/12 未实现）
 - `LanClient`：UDP beacon + 监听 + `MessageEnvelope` 命令收发，Wire format 与 .NET **字节级兼容**
 - 四个 tab 一个悬浮胶囊底栏（`OaTabBar`）：Agent / 任务 / 设备 / 设置，Agent 是启动页
 - `AgentScreen`：起始页（问候语 + 状态胶囊 + 输入胶囊）与对话态同一个面
@@ -164,6 +185,12 @@ using global::Windows.System.VirtualKey;
   （release 没开混淆，会把整套图标全打进包）
 - 效果图里的 审批态 / 思考强度 在手机上**没有数据源**：envelope 只有 `command`/`result`/`hello`
   三种文本消息，权限门在 Windows 侧，所以这两块没有画成假控件
+- 浮层只有两个（输入条 + 底栏），走 `Modifier.oaFloat()`；其余卡片是平的。
+  底栏那圈光晕**画不出来**——它落在系统导航栏 inset 上（§8.34）
+- `Shape.rowHeight = 38.dp`：设计里的行距含分隔线那一像素（§8.35）
+- `Palette.shadowAlpha` 明暗不同档：浅色 0.42、深色 1.0，且深色仍比效果图浅 2 级，
+  这是单位 alpha 高斯的天花板，不是没调（§8.34）
+- 状态胶囊是 `bgSunken` 不是 `bgSurface`——一档表面色差在黑底上最容易被扫出来（§8.35 末）
 
 ---
 
@@ -208,9 +235,32 @@ python scripts/gen-tokens.py --palette graphite
 - 只动 `transform` 和 `opacity`
 - `DoubleAnimation.EasingFunction` 的参数类型是 `EasingFunctionBase`（不是 `IEasingFunction`）
 
-**与效果图的有意偏差**：Pixso 的稿子是静帧，从不画焦点态。真机启动时 WinUI 会把焦点
-放在第一个可聚焦元素上，于是设置页首行会有焦点框——这是 WCAG「焦点可见」要求的，
-不为了对稿而关掉。截图对比时看到这一处差异属正常。
+### 阴影：全应用只有一处，且两端机制不同
+`--shadow-float` 只画在浮起的输入条上（设置卡、审批卡实测都是平的）。
+- **Windows**：WinUI 3 没有任何可用的阴影挂载点（四条路全部被编译器判死，见 §8.33），
+  所以是 10 层同心胶囊叠加，`AgentPage.xaml` 的 `ComposerHalo`。层的**数量**在某条边上
+  的覆盖数就是那条边的浓度。
+- **Android**：Compose 有真阴影，`Modifier.oaFloat()`（`Components.kt`），
+  `Shape.floatElevation = 5.5dp` + `Palette.shadowAlpha`。
+- 两端的每层/每档 alpha **不能互推**：合成时 8bit 通道每层都四舍五入一次，
+  深色底 10 会被这一步吃回去（§8.33）。所以 `--composer-halo` 是明暗两个值。
+- 手机标签栏那圈光晕**画不出来**：它落在系统导航栏 inset 上，那一层由系统合成在上面。
+
+### 行高：设计里的"行距"包含分隔线那一像素
+工具 42 / Provider 46 / 任务 48 / 设置 42（Windows），手机 38。
+行模板声明的是**比行距少 1** 的内容高度，分隔线画在两行公共的那一行上，不额外占高。
+详见 §8.35——把 41/45/47/38 当成"写错了"改回去，整页就会累积漂移。
+
+### 与效果图的有意偏差（不要再去找齐）
+- **问候语**：效果图写 "Good afternoon"，真机按本地时间出词。起始页残差 878px 就是它。
+- **焦点框**：效果图从不画焦点态。真机激活窗口时 WinUI 会把焦点给第一个可聚焦元素并画框
+  （WCAG「焦点可见」要求）。**不为对稿关掉它**——`capture-window.ps1` 改为在按快门前点一下
+  侧栏死区把这份瞬时焦点挪走，`ui-focus-ring-audit.py` 保证任何一帧还带着框就退 1。
+- **占位文案**：效果图里输入框、列表项的文字是展示用的假数据，正式软件不实现（布局/token/
+  结构才是规格）。所以整帧裸 diff 没有意义，见 `ui-hotspot-sweep.py` 的"只报不判"。
+- **字体**：token 表写 DM Sans，效果图实际按 Segoe 渲染，未随字体。CJK 走微软雅黑，
+  字重观感与设计用的苹方不同档（§8.35 末）。二级页页头墨迹比效果图高 2–3px，
+  差的是 `Segoe UI Variable Display` 30px 的行盒 leading，不用 padding 去凑。
 
 ---
 
@@ -630,9 +680,14 @@ elevation 和一个颜色，elevation 到衰减曲线的映射没有任何文档
 
 ## 9. 数据与安全
 
-- 数据目录：`%LOCALAPPDATA%\OpenAgent`
+- 数据目录：`%LOCALAPPDATA%\OpenAgent`（数据库、日志、会话、`ui-settings.json` 同目录）
+- **`--data=<dir>`**：把整个存储指到别处。只给截图验证用（§8.36）——脚本若直接读写真实
+  用户状态，跑几轮就会把任务/对话堆进去，之后的失败看起来全像 UI 回归。
+  注意它**不覆盖** `ui-settings.json`（那条路径写死在 `UiSettings.cs`）。
 - API Key：**走 OS 安全存储**，绝不写入 SQLite
 - 当前 LAN beacon 和消息信封是**明文**，无配对/信任/加密（Phase 6–7 解决）
+- **发布 keystore 只有一份**：`artifacts/keystore/openagent-release.jks`（口令在同级
+  `.storepass`，两者都已 gitignore，**无任何备份**）。丢了它就无法给同一应用发升级包。
 
 ---
 
@@ -652,7 +707,8 @@ elevation 和一个颜色，elevation 到衰减曲线的映射没有任何文档
 
 ## 11. 推进建议（优先级）
 
-v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来的优先级：
+v1.0.0 已作为首个发布版上线（Windows **MSI + 包裹它的 EXE bundle** + Android APK，
+挂在 GitHub Release 上；免安装 zip 早已被替换掉）。接下来的优先级：
 
 1. **LAN 配对 + 加密**（让"跨设备"真正安全可信）
 2. **Cloudflare Relay**（让不在同一局域网的两端互通）
@@ -660,6 +716,13 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 4. **真机互操作验证**（APK 已构建、签名，并在 API 36 模拟器上跑通界面与导航；模拟器在 NAT 后收不到局域网广播，所以 beacon↔envelope 仍需一台同 Wi-Fi 的真机确认）
 
 > 注：原第 4 条"Android APK 构建验证"已完成——工具链齐备，且构建暴露出一个真实编译错误（§8.11）。
+
+**UI 与效果图的对齐状态（2026-09-27 实测）**：30 张效果图里 **28 张**已对着发布产物比对并设了门禁；
+剩下 11/12（手机端审批态）是**未实现的功能**，被用户明确排在 LAN 配对/加密之后，不是验证缺口。
+两端各自的门禁见 §3 的脚本清单与 §11.1。
+
+**当前公开 Release 上的三个产物已过期**（本地已按今日全部修复重建，哈希见 `docs/dev-log.md`
+2026-09-27 那节），替换需要用户明确授权；真装一次 MSI 需要一次交互式 UAC 批准（§8.28）。
 
 ---
 
@@ -669,18 +732,23 @@ v1.0.0 已作为首个发布版上线（Windows zip + Android APK）。接下来
 # 1. 全绿门禁
 dotnet build OpenAgent.sln -c Release -p:Platform=x64
 dotnet test  OpenAgent.sln -c Release -p:Platform=x64     # 280
-bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色，核对地标色 + 断言侧栏/页头几何
-#                                + 驱动并核对对话态/审批态（效果图 03–06，见 §8.30）
-#                                （能失败才算门禁，见 §8.22；几何口径见 §8.25/§8.26）
+bash scripts/ui-verify.sh        # 从 publish 目录重拍 7 页 × 2 色 = 14 张，跑五条门禁：
+#                                ①地标色 ②行带报告 ③侧栏+页头+分隔线几何 ④焦点框
+#                                ⑤输入条光晕；然后驱动并核对对话态/审批态（效果图 03–06）
+#                                （能失败才算门禁，见 §8.22；几何口径见 §8.25/§8.26；
+#                                 驱动态每次用一次性数据目录，见 §8.36）
 #   SKIP_STATES=1 跳过驱动态（要抢前台）；SKIP_SHOTS=1 只审计已有截图
-#    → Android 侧另跑：bash scripts/ui-verify-android.sh
-#      装的是 **release APK**（发布产物，签名 `fdb10835…`，`isMinifyEnabled=false`），
+#   注意：光晕门禁读的是驱动态写出的 state-chat-*.png，所以它排在驱动段之后
+#    → Android 侧另跑：bash scripts/ui-verify-android.sh   # 4 路由 × 2 主题 + ②
+#      装的是 **release APK**（发布产物，签名 `CN=OpenAgent, OU=Releases`，`isMinifyEnabled=false`），
 #      主题用模拟器的 `cmd uimode night yes|no` 切（release 不可调试，写不了 SharedPreferences）。
+#      模拟器建议用**手势导航**（`settings put secure navigation_mode 2`），效果图画的是手势条。
 #      每个路由写两张图：`raw-<route>-<theme>.png`（原始 1080x2400，审计读它）和
 #      `android-<route>-<theme>.png`（390x844，人眼看）。**不要就地缩放**——1px 描边会被抹掉，
 #      审计会"通过"在一条糊掉的红线上（见 §8.31）。
 #      模拟器到不了的状态（无主机 → 无设备卡/任务行/对话）由 Compose 测试 hold 住拍帧，
 #      `scripts/android-shot-test.sh <out> <class#method>`，raw 与缩放两张同样都留。
+#      注意 hold 帧来自 **debug** 构建，证据强度低于 release 产物，改了 Compose 要重拍。
 
 # 2. Windows 安装包
 dotnet publish src/apps/windows/OpenAgent.Windows/OpenAgent.Windows.csproj \
@@ -702,8 +770,14 @@ cd android && JAVA_HOME="<AndroidStudio>/jbr" ./gradlew assembleDebug assembleRe
 gh release create v1.0.0 <win-msi> <win-exe> <release-apk> --title ... --notes ...
 ```
 
-**发布前必须做的三件事**：冒烟测试跑 publish 目录（不是 `bin`）；安装包**真的装一次再卸一次**；
-`git grep` 扫一遍 token / 私钥 / 本机绝对路径。
+**发布前必须做的四件事**：冒烟测试跑 publish 目录（不是 `bin`，见 §8.9/§8.16）；安装包
+**真的装一次再卸一次**（per-machine 静默装拿不到提权，见 §8.28）；
+`python scripts/verify-installer-payload.py` 证明 MSI 解包后与截图所用目录逐字节相同
+（**体积相同、哈希不同是常态**，别拿大小当证据）；`git grep` 扫一遍 token / 私钥 / 本机绝对路径。
+
+改过 UI 之后要重跑的两条：`bash scripts/ui-verify.sh` 与 `bash scripts/ui-verify-android.sh`。
+`python scripts/ui-hotspot-sweep.py` 是**只报不判**的兜底，用来发现门禁没覆盖的那一类
+（行高、光晕、状态胶囊的表面色都是它先看见的）。
 
 ---
 
@@ -713,15 +787,23 @@ gh release create v1.0.0 <win-msi> <win-exe> <release-apk> --title ... --notes .
 |------|------|
 | `OpenAgent 完整项目总提示词.md` | 规格真源（366 节） |
 | `docs/protocol.md` | 跨设备线格式（beacon + envelope） |
-| `docs/dev-log.md` | 开发日志（按提交记录） |
+| `docs/dev-log.md` | 开发日志（按提交记录，含 30 帧覆盖表与当前产物哈希） |
+| `design/pixso-final/` | 30 张效果图 + `manifest.json`（UI 的唯一真源） |
 | `Directory.Build.props` | 全局版本/分析器（当前 Version=1.0.0） |
-| `src/apps/windows/OpenAgent.Windows/App.xaml.cs` | DI 组合根 |
+| `src/apps/windows/OpenAgent.Windows/App.xaml.cs` | DI 组合根；`--page=` `--theme=` `--data=` 三个开关 |
+| `src/apps/windows/OpenAgent.Windows/AgentPage.xaml` | 起始/对话/审批同一个面；`ComposerHalo` 十层胶囊在这里 |
+| `src/apps/windows/OpenAgent.Windows/Themes/Styles.xaml` | `RowList`（行距含分隔线的约定）、`ComposerHaloLayer` |
+| `src/apps/windows/OpenAgent.Windows.UI/Controls/SettingRow.xaml` | 设置行；行高是行距减 1（见 §8.35） |
 | `src/core/OpenAgent.Transport/UdpLanTransport.cs` | LAN 传输 |
 | `src/providers/OpenAgent.Providers/ProviderServiceRegistration.cs` | Provider DI |
-| `design/tokens.css` | 设计 token 真源 |
+| `design/tokens.css` | 设计 token 真源（OKLCH，含 `--composer-halo`） |
 | `design/motion.md` | 动效真源 |
+| `android/app/src/.../ui/Components.kt` | `oaFloat()` 浮层阴影、`ValueRow`、`OaTabBar` |
+| `android/app/src/.../ui/theme/Type.kt` | `object Shape`：行高、胶囊高度、`floatElevation`、`barGap` |
 | `android/app/src/.../data/LanClient.kt` | Android 网络核心 |
 
 ---
 
-*本文档最后更新：2026-09-27，对应 v1.0.0 首个发布版。文中所有数字（280 测试、8 测试工程、12 产品工程）与工具链结论均为本机实测，不是转抄。*
+*本文档最后更新：2026-09-27。文中所有数字（280 测试、8 测试工程、12 产品工程、28/30 帧已门禁、
+行距 42/46/48/38、光晕峰值 20/255）与工具链结论均为本机实测，不是转抄；带"未做/未验"字样的
+条目是**待办**，不是已完成。*
