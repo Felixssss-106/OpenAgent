@@ -4,9 +4,12 @@
 A DIAGNOSTIC, NOT A GATE: it always exits 0. Most of what it finds is the
 mockup data deliberately not implemented (an empty device list where the frame
 draws a paired one), which no threshold can tell apart from a real defect. Read
-the output; do not assert on it. It is how the 44px row pitch and the missing
-composer halo were found — both invisible to the gates that only look where
-someone already thought to look.
+the output; do not assert on it. It is how the 44px row pitch, the missing composer
+halo and the phone's status pill (drawn one surface step too high) were found — all
+invisible to gates that only look where someone already thought to look. Each
+cluster prints the dominant colour of each side, because a five-level surface error
+does not read when the report quotes the pixel at the centre of a box that may
+straddle anything.
 
 
 A raw pixel diff is useless here: the mockup copy is deliberately not implemented,
