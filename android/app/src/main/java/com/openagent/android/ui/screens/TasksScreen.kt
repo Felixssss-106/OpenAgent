@@ -116,8 +116,13 @@ private fun rememberCommands(messages: List<ChatMessage>): List<CommandTask> {
     return remember(messages) {
         sorted.mapNotNull { message ->
             if (message.direction != ChatMessage.Direction.OUT) return@mapNotNull null
-            val index = sorted.indexOf(message)
-            val replied = sorted.drop(index + 1).any { it.direction == ChatMessage.Direction.IN }
+            // The host's result envelope echoes the command's id (docs/protocol.md
+            // §3), so "已回复" means THIS command was answered — not merely that
+            // some later message arrived, which any unrelated inbound traffic
+            // used to satisfy.
+            val replied = sorted.any {
+                it.direction == ChatMessage.Direction.IN && it.id == message.id
+            }
             CommandTask(text = message.text, at = message.ts, replied = replied)
         }.reversed()
     }

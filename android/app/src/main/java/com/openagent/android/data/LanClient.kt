@@ -32,9 +32,15 @@ class LanClient(
     private val port: Int = 47819,
     private val deviceName: String = Build.MODEL ?: "Android",
     private val version: String = Build.VERSION.RELEASE ?: "?",
+    /**
+     * The install-stable part of [selfId]. protocol.md promises "Stable
+     * per-instance id"; a fresh UUID per launch made every restart a new device
+     * on the host. The application persists one and passes it in.
+     */
+    private val instanceId: String = UUID.randomUUID().toString().take(8),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) {
-    val selfId = "android:${deviceName}-${UUID.randomUUID().toString().take(8)}"
+    val selfId = "android:${deviceName}-${instanceId}"
 
     private val _devices = MutableStateFlow<List<Device>>(emptyList())
     val devices = _devices.asStateFlow()

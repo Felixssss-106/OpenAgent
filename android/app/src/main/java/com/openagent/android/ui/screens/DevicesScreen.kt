@@ -42,7 +42,9 @@ internal fun DevicesScreenContent(
         OaNavBar("设备", onBack)
 
         Text(
-            text = "${devices.size} 台已配对",
+            // 发现，不是配对：a beacon is neither trust nor pairing — the honest
+            // word for what this list actually holds.
+            text = "${devices.size} 台已发现",
             style = Type.caption,
             color = ink.textTertiary,
             modifier = Modifier.padding(start = Shape.gutter, top = 14.dp, bottom = 12.dp),

@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -27,6 +28,7 @@ import com.openagent.android.ui.screens.SettingsScreen
 import com.openagent.android.ui.screens.TasksScreen
 import com.openagent.android.ui.theme.OpenAgentTheme
 import com.openagent.android.ui.theme.ThemePrefs
+import com.openagent.android.viewmodel.MainViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +53,9 @@ fun OpenAgentApp() {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val route = backStack?.destination?.route ?: "agent"
+    // One activity-scoped view model: created here, outside the NavHost, so a
+    // device picked on 设备 is visible to the Agent page as the send target.
+    val vm: MainViewModel = viewModel()
 
     Scaffold(
         contentWindowInsets = WindowInsets.statusBars,
@@ -76,12 +81,16 @@ fun OpenAgentApp() {
                 .padding(innerPadding)
                 .padding(bottom = 8.dp),
         ) {
-            composable("agent") { AgentScreen() }
-            composable("tasks") { TasksScreen(onBack = { navController.navigate("agent") }) }
+            composable("agent") { AgentScreen(vm = vm) }
+            composable("tasks") { TasksScreen(onBack = { navController.navigate("agent") }, vm = vm) }
             composable("devices") {
                 DevicesScreen(
                     onBack = { navController.navigate("agent") },
-                    onPick = { navController.navigate("agent") },
+                    onPick = { device ->
+                        vm.selectTarget(device)
+                        navController.navigate("agent")
+                    },
+                    vm = vm,
                 )
             }
             composable("settings") { SettingsScreen(onBack = { navController.navigate("agent") }) }

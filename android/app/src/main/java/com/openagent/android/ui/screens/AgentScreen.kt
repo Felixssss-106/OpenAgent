@@ -63,9 +63,13 @@ import java.util.Locale
 fun AgentScreen(vm: MainViewModel = viewModel()) {
     val messages by vm.messages.collectAsStateWithLifecycle()
     val devices by vm.devices.collectAsStateWithLifecycle()
+    val picked by vm.selectedTarget.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
 
-    val host = devices.firstOrNull { it.platform.equals("windows", ignoreCase = true) }
+    // The device the user picked on 设备 leads; without a pick, the first
+    // Windows host does.
+    val host = picked
+        ?: devices.firstOrNull { it.platform.equals("windows", ignoreCase = true) }
         ?: devices.firstOrNull()
 
     AgentScreenContent(
