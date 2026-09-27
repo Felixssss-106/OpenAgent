@@ -146,7 +146,12 @@
     <!-- Row list inside a card. The stock item container is replaced: its hover
          and selected fills are not in the artboards, and its own separators fight
          the card's. The -1 top padding pulls the first row's hairline under the
-         card border so the two do not stack into a double line. -->
+         card border so the two do not stack into a double line.
+
+         The hairline belongs to the row: the artboards measure a row's pitch
+         *including* the pixel that divides it from the one above (42 on the tools
+         page, 46 on providers, 48 on tasks), so each row template declares its
+         content one pixel shorter than the pitch it has to land on. -->
     <Style x:Key="RowList" TargetType="ListView">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
@@ -183,7 +188,9 @@
         <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
         <Setter Property="FontSize" Value="{StaticResource TypeCaptionSize}" />
         <Setter Property="Foreground" Value="{ThemeResource TextTertiaryBrush}" />
-        <Setter Property="Margin" Value="0,24,0,0" />
+        <!-- 23, not 24: measured off artboard 18, 28 rows sit between a card's
+             bottom border and the heading's ink. -->
+        <Setter Property="Margin" Value="0,23,0,0" />
     </Style>
 
     <Style x:Key="HairLine" TargetType="Border">
@@ -213,7 +220,9 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="CharacterSpacing" Value="110" />
         <Setter Property="Foreground" Value="{ThemeResource TextQuaternaryBrush}" />
-        <Setter Property="Margin" Value="0,24,0,0" />
+        <!-- 23, not 24: artboard 18 leaves 28 rows between a card's bottom border
+             and the heading's ink, and 24 measured 29. -->
+        <Setter Property="Margin" Value="0,23,0,0" />
     </Style>
 
     <Style x:Key="DataRow" TargetType="Border">

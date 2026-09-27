@@ -30,7 +30,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:TaskItem">
                                 <Grid
-                                    Height="48"
+                                    Height="47"
                                     ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

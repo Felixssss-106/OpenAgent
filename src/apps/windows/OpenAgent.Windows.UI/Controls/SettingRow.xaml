@@ -5,7 +5,7 @@
 
     <Button
         x:Name="RootButton"
-        Height="43"
+        Height="42"
         Background="Transparent"
         BorderThickness="0"
         Padding="0"

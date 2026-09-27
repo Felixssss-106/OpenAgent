@@ -29,7 +29,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:ProviderItem">
                                 <Grid
-                                    Height="46"
+                                    Height="45"
                                     ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />

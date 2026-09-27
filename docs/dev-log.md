@@ -1905,6 +1905,61 @@ own border and compares two different widgets' pixels.
 themes and 14 assertions pass from a freshly built release APK.
 
 
+## 2026-09-27 · A sweep that looks *outside* the things I already gated, and the 44px row
+
+Every gate so far asserts something I had already decided to look at: landmark
+colours, band tops, chrome extents, the halo. So I wrote one that looks nowhere in
+particular — a whole-frame diff reduced to pixels where **both** images are locally
+flat, which drops all glyph antialiasing and all mockup copy and leaves surfaces,
+strokes and gaps disagreeing on their own.
+
+It found two things the same afternoon.
+
+**Every row in the app was 1px too tall, and the divider was why.** Measuring the
+hairline-to-hairline pitch (the divider colour is a single known value, so its rows
+are findable directly):
+
+| Page | Artboard pitch | Build, before | Build, after |
+|---|---|---|---|
+| Tools (15) | 42 | 43 | 42 |
+| Providers (16) | 46 | 47 | 46 |
+| Tasks (13) | 48 | 49 | 48 |
+| Settings (18) | 42 | 44 | 42 |
+
+The design's row height *includes* the pixel that separates it from the row above.
+The build declared the content at the design's number and then added a 1px divider
+next to it — so the `RowList` items measured content+1, and the settings page, which
+stacks `SettingRow(43)` and a separate divider element, measured 44. Fixed by taking
+the divider pixel out of the layout: the row templates declare one less, and
+`RowDivider` carries `Margin="0,0,0,-1"` so it draws on the boundary instead of
+widening it. `SectionHeading`'s top margin went 24 → 23 for the same reason (28 rows
+between a card's border and the next heading's ink, not 29).
+
+The compounding was the visible part: on the settings page the fourth card sat **12px
+below** where the artboard draws it. Now all four cards are 86px tall and the page has
+**zero** structural disagreement with artboards 18 and 24, in both themes — the only
+frame in the app that reaches that.
+
+**The start page's residual is correct.** 437px at the hero line, identical colour at
+its centre: the artboard says "afternoon" and the build says "morning", because the
+capture ran at 01:47. Same face, same weight, same position.
+
+What the sweep still reports elsewhere is content, not craft — 76,810px on devices is
+the artboard's paired-device card where the build honestly has none, 342,824px on tasks
+is a populated list against an empty one. That is exactly why it **reports and never
+gates**: no threshold separates "the mockup has data we deliberately do not ship" from
+"a surface drifted". It lives at `scripts/ui-hotspot-sweep.py`.
+
+One thing it flagged and I did not change: the page title's ink starts 2-3px higher
+than the artboards' on every secondary page. The block's internal spacing is right
+(title→hairline 56 vs 55); the offset is the line-box leading of
+`Segoe UI Variable Display` at 30px, which differs from what Pixso composed. Padding it
+out by hand would encode a font-metric accident into a spacing token, so it is recorded
+as a known deviation next to the DM Sans and CJK substitution ones.
+
+280 tests pass; all five Windows audits pass over 14 regenerated captures.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

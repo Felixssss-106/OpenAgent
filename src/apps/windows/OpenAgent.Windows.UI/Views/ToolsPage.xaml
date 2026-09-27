@@ -11,7 +11,7 @@
         <!-- One row shape for every group: the tool id on the left, its risk and
              reversibility as coloured text on the right. -->
         <DataTemplate x:Key="ToolRow" x:DataType="local:ToolItem">
-            <Grid Height="42">
+            <Grid Height="41">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
