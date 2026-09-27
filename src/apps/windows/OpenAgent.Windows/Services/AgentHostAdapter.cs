@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using OpenAgent.Agent;
 using OpenAgent.Core.Domain;
 using OpenAgent.Providers;
+using OpenAgent.Security;
 using OpenAgent.Tools;
 using OpenAgent.Transport;
 using OpenAgent.Windows.UI.Services;
@@ -23,22 +24,41 @@ internal sealed class AgentHostAdapter : IAgentHost
     private readonly ToolRegistry _registry;
     private readonly ITransport _transport;
     private readonly ProviderRegistry _providers;
+    private readonly OpenAgentOptions _options;
 
     public AgentHostAdapter(
         AgentTaskService tasks,
         ToolRegistry registry,
         ITransport transport,
-        ProviderRegistry providers)
+        ProviderRegistry providers,
+        OpenAgentOptions options)
     {
         ArgumentNullException.ThrowIfNull(tasks);
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(transport);
         ArgumentNullException.ThrowIfNull(providers);
+        ArgumentNullException.ThrowIfNull(options);
 
         _tasks = tasks;
         _registry = registry;
         _transport = transport;
         _providers = providers;
+        _options = options;
+    }
+
+    /// <summary>
+    /// The mode crosses as the enum's own name. Assignment is live: every later
+    /// ToolExecutionRequest reads it from the same options instance, so the
+    /// settings pick needs no restart. Unknown strings fall back to the install
+    /// default, never to something more permissive. Explicitly implemented so the
+    /// member name does not shadow the <c>PermissionMode</c> type inside the class.
+    /// </summary>
+    string IAgentHost.PermissionMode
+    {
+        get => _options.PermissionMode.ToString();
+        set => _options.PermissionMode = Enum.TryParse<PermissionMode>(value, out var mode)
+            ? mode
+            : PermissionMode.AskBeforeActions;
     }
 
     public Task<IReadOnlyList<AgentTask>> RecentTasksAsync(

@@ -20,10 +20,18 @@ public sealed partial class SettingRow : UserControl
         InitializeComponent();
 
         // A row nobody listens to is a label, not a control: Tab should not walk the five
-        // of them. What it does not stop is the focus adorner WinUI draws when the window
-        // is activated with nothing focused yet — see scripts/capture-window.ps1, which
-        // neutralises that transient state before shooting, because no artboard draws it.
-        Loaded += (_, _) => RootButton.IsTabStop = Click is not null;
+        // of them, no hover or press visual may hint at a click that does nothing, and
+        // the chevron belongs only to rows that actually open something. What IsTabStop
+        // does not stop is the focus adorner WinUI draws when the window is activated
+        // with nothing focused yet — see scripts/capture-window.ps1, which neutralises
+        // that transient state before shooting, because no artboard draws it.
+        Loaded += (_, _) =>
+        {
+            var actionable = Click is not null;
+            RootButton.IsTabStop = actionable;
+            RootButton.IsHitTestVisible = actionable;
+            Chevron.Visibility = actionable ? Visibility.Visible : Visibility.Collapsed;
+        };
     }
 
     public string Title

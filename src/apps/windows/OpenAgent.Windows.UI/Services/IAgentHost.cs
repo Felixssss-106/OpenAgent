@@ -35,6 +35,14 @@ public interface IAgentHost
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// The active permission mode, carried as the <c>OpenAgent.Security</c> enum
+    /// name ("AskBeforeActions" …) because the UI library does not reference that
+    /// project. Assigning applies to every later request — no restart needed —
+    /// and unknown values fall back to the install default.
+    /// </summary>
+    string PermissionMode { get; set; }
+
+    /// <summary>
     /// Ask the shell to surface the Command Center with <paramref name="prompt"/>
     /// already typed. Nothing executes here — the user still presses send — so a
     /// command written on any page stays under their control instead of being

@@ -7,6 +7,7 @@ namespace OpenAgent.Windows.UI.Views;
 public sealed partial class SettingsPage : Page
 {
     private const string ThemeSettingKey = "ui.theme";
+    private const string PermissionModeKey = "agent.permissionMode";
     private static readonly string[] ThemeOptions = { "跟随系统", "浅色", "深色" };
 
     public SettingsPage()
@@ -15,14 +16,105 @@ public sealed partial class SettingsPage : Page
         Loaded += SettingsPage_Loaded;
     }
 
-    private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
+    private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
+        // The registry key is the truth about startup, not a cached setting: an
+        // entry removed by hand must read 已关闭 on the next visit.
+        StartupSetting.Value = StartupRegistrar.IsEnabled() ? "已开启" : "已关闭";
+        PermissionSetting.Value = PermissionModeChoices.LabelFor(
+            PermissionModeChoices.Normalize(AgentHost.Current.PermissionMode));
+
         ThemeSetting.Value = ReadTheme() switch
         {
             ElementTheme.Light => "浅色",
             ElementTheme.Dark => "深色",
             _ => "跟随系统",
         };
+
+        try
+        {
+            var providers = await AgentHost.Current.ProvidersAsync();
+            var defaultProvider = providers.FirstOrDefault(p => p.IsDefault) ?? providers.FirstOrDefault();
+            if (defaultProvider is not null)
+            {
+                DefaultAgentSetting.Value = defaultProvider.DisplayName;
+            }
+        }
+        catch
+        {
+            // The host is not wired (designer, tests): the static "OpenAgent Native"
+            // text is still the honest answer, because that provider is always there.
+        }
+    }
+
+    private void StartupSetting_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (StartupRegistrar.IsEnabled())
+            {
+                StartupRegistrar.Disable();
+                StartupSetting.Value = "已关闭";
+            }
+            else
+            {
+                StartupRegistrar.Enable();
+                StartupSetting.Value = "已开启";
+            }
+        }
+        catch (Exception ex)
+        {
+            StartupSetting.Value = StartupRegistrar.IsEnabled() ? "已开启" : "已关闭";
+            _ = new ContentDialog
+            {
+                Title = "开机启动",
+                Content = $"写入启动项失败：{ex.Message}",
+                CloseButtonText = "好",
+                XamlRoot = XamlRoot,
+            }.ShowAsync();
+        }
+    }
+
+    private async void PermissionSetting_Click(object sender, RoutedEventArgs e)
+    {
+        var modes = PermissionModeChoices.Modes;
+        var labels = modes.Select(PermissionModeChoices.LabelFor).ToList();
+        var current = PermissionModeChoices.Normalize(AgentHost.Current.PermissionMode);
+
+        var dialog = new ContentDialog
+        {
+            Title = "权限模式",
+            PrimaryButtonText = "确定",
+            CloseButtonText = "取消",
+            XamlRoot = XamlRoot,
+        };
+
+        var panel = new StackPanel { Spacing = 8 };
+        var list = new ListView
+        {
+            SelectionMode = ListViewSelectionMode.Single,
+            ItemsSource = labels,
+            SelectedIndex = modes.ToList().IndexOf(current),
+        };
+        panel.Children.Add(list);
+        panel.Children.Add(new TextBlock
+        {
+            Text = "选择立即生效，并在下次启动时保持。",
+            Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+            Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.Colors.Gray),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        dialog.Content = panel;
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary || list.SelectedIndex < 0)
+            return;
+
+        var mode = PermissionModeChoices.Normalize(modes[list.SelectedIndex]);
+        AgentHost.Current.PermissionMode = mode;
+        UiSettings.Set(PermissionModeKey, mode);
+        PermissionSetting.Value = PermissionModeChoices.LabelFor(mode);
     }
 
     private async void ThemeSetting_Click(object sender, RoutedEventArgs e)

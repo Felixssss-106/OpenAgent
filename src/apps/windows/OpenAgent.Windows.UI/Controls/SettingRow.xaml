@@ -31,6 +31,7 @@
                 Margin="0,0,4,0" />
 
             <FontIcon
+                x:Name="Chevron"
                 Grid.Column="2"
                 Glyph="&#xE76C;"
                 FontSize="12"

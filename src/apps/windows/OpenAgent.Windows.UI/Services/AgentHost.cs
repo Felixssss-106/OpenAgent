@@ -63,4 +63,10 @@ public sealed class NullAgentHost : IAgentHost
     public void RequestCommandCenter(string prompt)
     {
     }
+
+    public string PermissionMode
+    {
+        get => "AskBeforeActions";
+        set { }
+    }
 }

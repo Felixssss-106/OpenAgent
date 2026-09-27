@@ -121,7 +121,13 @@ public partial class App : Application
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
         services.AddOpenAgent(options =>
         {
-            options.PermissionMode = PermissionMode.AskBeforeActions;
+            // The settings page persists the pick; unknown values fall back to the
+            // install default — never to something more permissive (spec 239).
+            options.PermissionMode = Enum.TryParse<PermissionMode>(
+                PermissionModeChoices.Normalize(UiSettings.Get("agent.permissionMode")),
+                out var mode)
+                ? mode
+                : PermissionMode.AskBeforeActions;
             options.DatabaseRoot = CommandLineDataRoot();
         });
         services.AddOpenAgentProviders();
@@ -144,7 +150,9 @@ public partial class App : Application
         };
         if (tasks is not null && registry is not null && providers is not null)
         {
-            AgentHost.Register(new AgentHostAdapter(tasks, registry, transport, providers));
+            AgentHost.Register(new AgentHostAdapter(
+                tasks, registry, transport, providers,
+                Services.GetRequiredService<OpenAgentOptions>()));
         }
     }
 

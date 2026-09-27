@@ -42,7 +42,7 @@ public sealed partial class AgentPage : Page
     private readonly ToolExecutor? _executor;
     private readonly ApprovalService? _approvals;
     private readonly ToolRegistry? _registry;
-    private readonly PermissionMode _permissionMode;
+    private readonly OpenAgentOptions? _options;
 
     private TaskCompletionSource<bool>? _approvalWait;
     private ApprovalRecord? _pendingApproval;
@@ -70,8 +70,7 @@ public sealed partial class AgentPage : Page
         _executor = services.GetService<ToolExecutor>();
         _approvals = services.GetService<ApprovalService>();
         _registry = services.GetService<ToolRegistry>();
-        _permissionMode = services.GetService<OpenAgentOptions>()?.PermissionMode
-                          ?? PermissionMode.AskBeforeActions;
+        _options = services.GetService<OpenAgentOptions>();
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -258,7 +257,9 @@ public sealed partial class AgentPage : Page
             plan.ToolId,
             document.RootElement.Clone(),
             task.Id,
-            PermissionMode: _permissionMode,
+            // Read per request, not cached at construction: the settings page can
+            // change the mode while this page is alive.
+            PermissionMode: _options?.PermissionMode ?? PermissionMode.AskBeforeActions,
             ProviderId: ProviderId);
 
         var started = System.Diagnostics.Stopwatch.GetTimestamp();

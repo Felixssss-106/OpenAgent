@@ -37,8 +37,10 @@
                 <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
+                            x:Name="StartupSetting"
                             Title="开机启动"
-                            Value="已开启" />
+                            Value="已关闭"
+                            Click="StartupSetting_Click" />
                         <Border Style="{StaticResource RowDivider}" />
                         <controls:SettingRow
                             Title="语言"
@@ -69,13 +71,16 @@
                 <Border Style="{StaticResource ListCard}" Margin="0,22,0,0">
                     <StackPanel>
                         <controls:SettingRow
+                            x:Name="DefaultAgentSetting"
                             Title="默认 Agent"
                             Value="OpenAgent Native" />
                         <Border Style="{StaticResource RowDivider}" />
                         <controls:SettingRow
+                            x:Name="PermissionSetting"
                             Title="权限模式"
                             Value="请求批准"
-                            ValueForeground="{ThemeResource AccentBrush}" />
+                            ValueForeground="{ThemeResource AccentBrush}"
+                            Click="PermissionSetting_Click" />
                     </StackPanel>
                 </Border>
 
@@ -86,7 +91,7 @@
                     <StackPanel>
                         <controls:SettingRow
                             Title="Relay"
-                            Value="官方 Relay" />
+                            Value="未启用" />
                         <Border Style="{StaticResource RowDivider}" />
                         <controls:SettingRow
                             Title="连接方式"
