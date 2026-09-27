@@ -1,11 +1,13 @@
 package com.openagent.android.data
 
 import android.os.Build
+import com.openagent.android.data.model.ApprovalRequest
 import com.openagent.android.data.model.ChatMessage
 import com.openagent.android.data.model.Device
 import com.openagent.android.protocol.MessageEnvelope
 import com.openagent.android.protocol.MessageType
 import com.openagent.android.protocol.OpenAgentBeacon
+import org.json.JSONObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,6 +50,11 @@ class LanClient(
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages = _messages.asStateFlow()
 
+    private val _approvals = MutableStateFlow<ApprovalRequest?>(null)
+
+    /** The host's pending approval card, if one is waiting for this phone. */
+    val approvals = _approvals.asStateFlow()
+
     private var socket: DatagramSocket? = null
     private val seen = mutableMapOf<String, Device>()
     private val peerEndpoints = mutableMapOf<String, InetAddress>()
@@ -82,7 +89,51 @@ class LanClient(
                 }
 
                 val env = MessageEnvelope.decode(text)
-                if (env != null && (env.type == MessageType.COMMAND || env.type == MessageType.RESULT)) {
+                if (env == null) continue
+
+                // Pairing traffic belongs to the state machine, not the chat.
+                if (env.type == MessageType.PAIR_REQUEST || env.type == MessageType.PAIR_CHALLENGE ||
+                    env.type == MessageType.PAIR_CONFIRM || env.type == MessageType.PAIR_COMPLETE
+                ) {
+                    pairing?.onEnvelope(env)
+                    continue
+                }
+
+                if (env.type == MessageType.APPROVAL_REQUEST) {
+                    // Sealed per peer (docs/protocol.md §4.4): open with the
+                    // pairing key before it can mean anything.
+                    val key = pairing?.keyFor(env.from)
+                    val opened =
+                        if (key != null && env.cipher != null) {
+                            PairingCrypto.tryOpen(key, env.nonce ?: "", env.cipher ?: "")
+                        } else {
+                            null
+                        } ?: continue
+                    val request = parseApprovalRequest(opened) ?: continue
+                    _approvals.value = request
+                    // The host already auto-rejects at expiry; the card follows.
+                    scope.launch {
+                        delay((request.expiresAt - System.currentTimeMillis()).coerceAtLeast(0))
+                        if (_approvals.value?.id == request.id) _approvals.value = null
+                    }
+                    continue
+                }
+
+                if (env.type == MessageType.RESULT && env.cipher != null) {
+                    // A sealed reply from a paired host: open it before it lands
+                    // in the chat, so the user never sees ciphertext.
+                    val opened = pairing?.keyFor(env.from)?.let { key ->
+                        PairingCrypto.tryOpen(key, env.nonce ?: "", env.cipher ?: "")
+                    }
+                    val text = opened ?: continue
+                    synchronized(_messages) {
+                        _messages.value =
+                            _messages.value + ChatMessage(env.id, ChatMessage.Direction.IN, "[${env.from}] $text")
+                    }
+                    continue
+                }
+
+                if (env.type == MessageType.COMMAND || env.type == MessageType.RESULT) {
                     synchronized(_messages) {
                         _messages.value =
                             _messages.value +
@@ -106,9 +157,27 @@ class LanClient(
         }
     }
 
+    /** Late-wired by [OpenAgentApplication]; null before that, pairing simply off. */
+    var pairing: PairingManager? = null
+
     /** Sends a command envelope to [targetId]; unicast if known, else broadcast. */
     fun sendCommand(targetId: String, text: String) {
-        val env =
+        val env = if (pairing?.isPaired(targetId) == true) {
+            // Paired traffic is sealed (docs/protocol.md §4.4): the plaintext
+            // never rides the wire, and the chat records what the user said.
+            val key = pairing!!.keyFor(targetId)!!
+            val (nonce, cipher) = PairingCrypto.seal(key, text)
+            MessageEnvelope(
+                type = MessageType.COMMAND,
+                id = UUID.randomUUID().toString(),
+                from = selfId,
+                to = targetId,
+                text = "",
+                ts = System.currentTimeMillis(),
+                nonce = nonce,
+                cipher = cipher,
+            )
+        } else {
             MessageEnvelope(
                 type = MessageType.COMMAND,
                 id = UUID.randomUUID().toString(),
@@ -117,9 +186,18 @@ class LanClient(
                 text = text,
                 ts = System.currentTimeMillis(),
             )
-        val bytes = env.encode().toByteArray(Charsets.UTF_8)
+        }
+        sendRaw(env)
+        synchronized(_messages) {
+            _messages.value = _messages.value + ChatMessage(env.id, ChatMessage.Direction.OUT, text)
+        }
+    }
+
+    /** Ships a datagram to [envelope.to] — unicast to its last-seen endpoint, else broadcast. */
+    fun sendRaw(envelope: MessageEnvelope) {
+        val bytes = envelope.encode().toByteArray(Charsets.UTF_8)
         runCatching {
-            val target = peerEndpoints[targetId]
+            val target = peerEndpoints[envelope.to]
             val packet =
                 if (target != null) {
                     DatagramPacket(bytes, bytes.size, target, port)
@@ -127,11 +205,44 @@ class LanClient(
                     DatagramPacket(bytes, bytes.size, InetAddress.getByName("255.255.255.255"), port)
                 }
             socket?.send(packet)
-            synchronized(_messages) {
-                _messages.value = _messages.value + ChatMessage(env.id, ChatMessage.Direction.OUT, text)
-            }
         }
     }
+
+    /** Answers the host's approval card; the sealed resolve is the phone's vote. */
+    fun resolveApproval(hostId: String, approvalId: String, approved: Boolean) {
+        val key = pairing?.keyFor(hostId) ?: return
+        val (nonce, cipher) = PairingCrypto.seal(
+            key,
+            """{"approvalId":"$approvalId","approved":$approved}""",
+        )
+        sendRaw(
+            MessageEnvelope(
+                type = MessageType.APPROVAL_RESOLVE,
+                id = UUID.randomUUID().toString(),
+                from = selfId,
+                to = hostId,
+                text = "",
+                ts = System.currentTimeMillis(),
+                nonce = nonce,
+                cipher = cipher,
+            ),
+        )
+        _approvals.value = null
+    }
+
+    private fun parseApprovalRequest(json: String): ApprovalRequest? = runCatching {
+        val obj = JSONObject(json)
+        ApprovalRequest(
+            id = obj.getString("approvalId"),
+            taskId = obj.optString("taskId"),
+            tool = obj.optString("tool"),
+            title = obj.optString("title"),
+            args = obj.optString("args"),
+            risk = obj.optString("risk", "Medium"),
+            reversible = obj.optBoolean("reversible"),
+            expiresAt = obj.optLong("expiresAtMs"),
+        )
+    }.getOrNull()
 
     fun stop() {
         runCatching { socket?.close() }

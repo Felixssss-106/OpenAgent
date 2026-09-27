@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.openagent.android.OpenAgentApplication
+import com.openagent.android.data.PairingManager
+import com.openagent.android.data.model.ApprovalRequest
 import com.openagent.android.data.model.ChatMessage
 import com.openagent.android.data.model.Device
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val lan = (application as OpenAgentApplication).lanClient
 
+    /** Non-null: the application wires the pairing manager before any screen can read it. */
+    private val pairing = (application as OpenAgentApplication).pairing
+
     val devices: StateFlow<List<Device>> =
         lan.devices.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -34,9 +39,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** The device the user picked on 设备; null until they do (agent auto-picks). */
     val selectedTarget: StateFlow<Device?> = _selectedTarget.asStateFlow()
 
+    /** The pairing handshake waiting for a PIN, if any. */
+    val pairingChallenge: StateFlow<PairingManager.Challenge?> = pairing.challenge
+
+    /** Hosts this phone is paired with. */
+    val pairedIds: StateFlow<Set<String>> = pairing.pairedIds
+
+    /** The host's pending approval card, if any. */
+    val approvals: StateFlow<ApprovalRequest?> = lan.approvals
+
     fun selectTarget(device: Device) {
         _selectedTarget.value = device
     }
+
+    fun startPairing(device: Device) = pairing.startPairing(device.id)
+
+    fun submitPin(code: String) = pairing.submitPin(code)
+
+    fun cancelPairing() = pairing.cancelPairing()
+
+    fun resolveApproval(hostId: String, approvalId: String, approved: Boolean) =
+        lan.resolveApproval(hostId, approvalId, approved)
 
     fun sendCommand(targetId: String, text: String) = lan.sendCommand(targetId, text)
 }

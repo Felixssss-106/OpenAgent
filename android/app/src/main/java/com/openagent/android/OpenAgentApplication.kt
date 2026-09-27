@@ -3,18 +3,21 @@ package com.openagent.android
 import android.app.Application
 import android.content.Context
 import com.openagent.android.data.LanClient
+import com.openagent.android.data.PairingManager
 import java.util.UUID
 
 /**
  * Owns the process-wide [LanClient] so discovery and messaging survive screen
  * navigation. The client is started once and lives for the whole app (Phase 8
- * seed; pairing/trust arrive in Phase 6-7).
+ * seed; the v2 pairing state machine rides on it — docs/protocol.md §4).
  */
 class OpenAgentApplication : Application() {
     val lanClient = LanClient(instanceId = persistedInstanceId())
+    val pairing = PairingManager(this, lanClient.selfId) { lanClient.sendRaw(it) }
 
     override fun onCreate() {
         super.onCreate()
+        lanClient.pairing = pairing
         lanClient.start()
     }
 

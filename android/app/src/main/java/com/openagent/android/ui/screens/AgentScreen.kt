@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.openagent.android.data.model.ApprovalRequest
 import com.openagent.android.data.model.ChatMessage
 import com.openagent.android.ui.Glyph
 import com.openagent.android.ui.GlyphIcon
@@ -64,6 +65,7 @@ fun AgentScreen(vm: MainViewModel = viewModel()) {
     val messages by vm.messages.collectAsStateWithLifecycle()
     val devices by vm.devices.collectAsStateWithLifecycle()
     val picked by vm.selectedTarget.collectAsStateWithLifecycle()
+    val approval by vm.approvals.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
 
     // The device the user picked on 设备 leads; without a pick, the first
@@ -85,6 +87,9 @@ fun AgentScreen(vm: MainViewModel = viewModel()) {
                 draft = ""
             }
         },
+        approval = approval,
+        onApprove = { request -> host?.let { vm.resolveApproval(it.id, request.id, true) } },
+        onReject = { request -> host?.let { vm.resolveApproval(it.id, request.id, false) } },
     )
 }
 
@@ -97,6 +102,9 @@ internal fun AgentScreenContent(
     draft: String,
     onDraft: (String) -> Unit,
     onSend: () -> Unit,
+    approval: ApprovalRequest? = null,
+    onApprove: (ApprovalRequest) -> Unit = {},
+    onReject: (ApprovalRequest) -> Unit = {},
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (messages.isEmpty()) {
@@ -109,7 +117,17 @@ internal fun AgentScreenContent(
             MetaRow(hostName = hostName)
         }
 
-        Composer(draft = draft, onDraft = onDraft, onSend = onSend, enabled = canSend)
+        if (approval != null) {
+            // Artboards 11/12: the approval card covers the composer area — the
+            // decision is the only thing the screen can do right now.
+            ApprovalCard(
+                request = approval,
+                onApprove = { onApprove(approval) },
+                onReject = { onReject(approval) },
+            )
+        } else {
+            Composer(draft = draft, onDraft = onDraft, onSend = onSend, enabled = canSend)
+        }
         // Artboard 07 leaves 12dp between the composer's border and the tab bar's.
         // The NavHost already contributes 8 of that to every route, so this is the rest.
         Spacer(Modifier.height(Shape.barGap))
@@ -218,6 +236,84 @@ private fun MetaRow(hostName: String?) {
         )
     }
     Spacer(Modifier.height(14.dp))
+}
+
+/**
+ * Artboards 11/12: the approval card is the product's visual signature — an
+ * orange-bordered decision object with the risk and reversibility in its own
+ * words, a filled 批准 pill and an outlined refusal pill. It covers the
+ * composer area, exactly where the card lands in the artboards.
+ */
+@Composable
+private fun ApprovalCard(
+    request: ApprovalRequest,
+    onApprove: () -> Unit,
+    onReject: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Shape.barInset)
+            .oaFloat(RoundedCornerShape(28.dp))
+            .clip(RoundedCornerShape(28.dp))
+            .background(ink.bgSurface)
+            .border(1.dp, ink.statusPending, RoundedCornerShape(28.dp))
+            .padding(20.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(ink.statusPending),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text("需要批准", style = Type.caption, color = ink.textSecondary)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "·  ${if (request.reversible) "可撤销" else "不可撤销"}",
+                style = Type.caption,
+                color = ink.textTertiary,
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(request.title, style = Type.heading, color = ink.textPrimary)
+        if (request.args.isNotBlank()) {
+            Spacer(Modifier.height(4.dp))
+            Text("→ ${request.args}", style = Type.caption, color = ink.textTertiary)
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            "${request.riskLabel} · ${request.tool}",
+            style = Type.caption,
+            color = ink.textSecondary,
+        )
+        Spacer(Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .clip(RoundedCornerShape(percent = 50))
+                .background(ink.accent)
+                .clickable(onClick = onApprove),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("批准", style = Type.body, color = ink.onAccent)
+        }
+        Spacer(Modifier.height(10.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .clip(RoundedCornerShape(percent = 50))
+                .border(1.dp, ink.borderDefault, RoundedCornerShape(percent = 50))
+                .clickable(onClick = onReject),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("拒绝", style = Type.body, color = ink.textPrimary)
+        }
+    }
 }
 
 @Composable
