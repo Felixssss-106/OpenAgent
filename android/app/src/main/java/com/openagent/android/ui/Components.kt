@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,6 +37,22 @@ import com.openagent.android.ui.theme.Type
 
 /** Shorthand for the palette the current screen is drawing with. */
 val ink: Palette @Composable get() = LocalPalette.current
+
+/**
+ * --shadow-float, on the only two surfaces the artboards let float: the composer
+ * and the tab bar. Every other card is flat. Applied *before* clip so the halo
+ * escapes the shape instead of being cut to it.
+ */
+@Composable
+fun Modifier.oaFloat(shape: androidx.compose.ui.graphics.Shape): Modifier {
+    val alpha = ink.shadowAlpha
+    return shadow(
+        elevation = Shape.floatElevation,
+        shape = shape,
+        ambientColor = Color.Black.copy(alpha = alpha),
+        spotColor = Color.Black.copy(alpha = alpha),
+    )
+}
 
 @Composable
 fun OaCard(
@@ -169,8 +186,10 @@ fun OaTabBar(selected: String, onSelect: (String) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = Shape.barInset)
             .height(Shape.tabHeight)
+            .oaFloat(RoundedCornerShape(percent = 50))
             .clip(RoundedCornerShape(percent = 50))
             .background(ink.bgSurface)
+            .border(1.dp, ink.borderSubtle, RoundedCornerShape(percent = 50))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,

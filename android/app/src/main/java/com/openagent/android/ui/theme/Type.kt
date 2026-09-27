@@ -57,6 +57,8 @@ object Shape {
     val barInset = 16.dp
     val tabHeight = 60.dp
     val composerHeight = 52.dp
+    /** --shadow-float: the halo under the two floating capsules reaches ~12dp out. */
+    val floatElevation = 5.5.dp
     val navbarHeight = 44.dp
     val backButton = 36.dp
 }

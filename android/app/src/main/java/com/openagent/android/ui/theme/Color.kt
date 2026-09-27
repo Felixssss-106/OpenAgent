@@ -30,6 +30,14 @@ data class Palette(
     val statusOnline: Color,
     val statusError: Color,
     val statusPending: Color,
+    /**
+     * Peak coverage of --shadow-float where it lands on this theme's canvas.
+     * Measured off artboards 07/08 one pixel below the floating capsule: light
+     * reads 20/255 on white (0.078), dark reads 10 to 6 (0.40). The two are not
+     * a factor apart by accident — a black shadow on a canvas of 10 has to be
+     * far stronger to move the pixel at all.
+     */
+    val shadowAlpha: Float,
 )
 
 val LightPalette = Palette(
@@ -51,6 +59,7 @@ val LightPalette = Palette(
     statusOnline = Color(0xFF34C759),
     statusError = Color(0xFFFF3B30),
     statusPending = Color(0xFFFF9500),
+    shadowAlpha = 0.42f,
 )
 
 val DarkPalette = Palette(
@@ -72,6 +81,7 @@ val DarkPalette = Palette(
     statusOnline = Color(0xFF30D158),
     statusError = Color(0xFFFF453A),
     statusPending = Color(0xFFFF9F0A),
+    shadowAlpha = 1.00f,
 )
 
 val LocalPalette = staticCompositionLocalOf { LightPalette }

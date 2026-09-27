@@ -1852,6 +1852,59 @@ also emits `WMC9999 未将对象引用设置到对象的实例`, which is fallou
 publish directory, and the driven states (03–06) are unaffected.
 
 
+## 2026-09-27 · The same halo on the phone, where the shadow API does work — and one edge the OS owns
+
+Having just proved WinUI 3 cannot cast a shadow, the Android half looked free: Compose has
+`Modifier.shadow`. Measuring artboards 07/08 first showed the shipped APK was missing more
+than the halo:
+
+| What | Artboard 07/08 | Released APK |
+|---|---|---|
+| Composer stroke | `borderDefault` #D1D1D6 | #E5E5EA (`borderSubtle`) |
+| Tab-bar stroke | 1dp `borderSubtle`, top and bottom | none |
+| Composer halo | 12dp ramp, peak 20/255 light · 4/10 dark | none |
+| Tab-bar halo | 12dp ramp below the bar | not drawable there |
+
+Both strokes were one-line fixes. The halo took four build-shoot-measure cycles, because
+`Modifier.shadow` exposes elevation and a colour and nothing else, and the mapping from
+those to a falloff curve is not documented:
+
+| elevation · alpha | peak | reaches |
+|---|---|---|
+| 8 · 0.078 | 3 | 17dp — a smear |
+| 6 · 0.30 | 16 | 14dp |
+| 4.2 · 0.33 | 17 | 11dp — right head, short tail |
+| 5.5 · 0.42 | 20 | 12dp ✓ |
+
+Final: `floatElevation = 5.5dp`, `shadowAlpha = 0.42` light. Measured against the artboard
+at 1..12dp: build 20,19,18,16,14,13,11,8,7,5,4,3 against design 20,19,18,17,15,14,12,11,9,8,7,5
+— worst 2 levels.
+
+Two limits worth writing down rather than pretending away:
+
+- **Dark tops out at 2 of the 4 levels the artboard draws.** `shadowAlpha` is already 1.0
+  there; a unit-alpha Gaussian blurred far enough to reach 12dp simply cannot leave 40%
+  coverage at the edge. Lowering the elevation buys the peak back and loses the tail.
+  Windows reaches 3 of 3 because stacked layers are not a Gaussian.
+- **The tab bar's halo cannot exist.** Its falloff lands in the navigation-bar inset, and
+  the app draws inside `windowInsetsPadding(navigationBars)`, so that band is composited
+  over by the system — measured directly: the pixels below the bar read (255,255,255) on
+  light and (17,18,22) on dark, neither of which is the app's canvas. Drawing it would mean
+  letting the bar float under the system nav, which moves a widget every other gate pins.
+
+`scripts/ui-halo-gate.py` now covers both platforms — 6 curves on Windows, 4 on Android,
+plus the two strokes — with per-platform tolerances (2 and 3, both measured, not rounded).
+Proven by erasing the phone's halo and stroke from copies of both captures: 5 `FAIL`s,
+exit 1. Its first version silently measured the **tab bar instead of the composer** — the
+capsule locator picked the longest run of the surface colour, and the tab bar is 60dp to
+the composer's 52dp, so it "passed" a widget it had never looked at. Locating by uppermost
+run fixed that; the ramp is also capped at 12dp because a 13th sample hits the tab bar's
+own border and compares two different widgets' pixels.
+
+`ui-verify-android.sh` runs the halo gate alongside the existing audit; all 8 routes ×
+themes and 14 assertions pass from a freshly built release APK.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

@@ -23,7 +23,11 @@ echo "--- Android parity (released APK) ---"
 python scripts/ui-android-audit.py
 audit=$?
 
-if [ $audit -ne 0 ]; then
+echo "--- composer halo and the two floating strokes ---"
+python scripts/ui-halo-gate.py
+halo=$?
+
+if [ $audit -ne 0 ] || [ $halo -ne 0 ]; then
     echo "FAILED: the phone build drifted from the artboards"
     exit 1
 fi

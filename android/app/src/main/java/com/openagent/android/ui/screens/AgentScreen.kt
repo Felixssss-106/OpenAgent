@@ -45,6 +45,7 @@ import com.openagent.android.ui.Glyph
 import com.openagent.android.ui.GlyphIcon
 import com.openagent.android.ui.StatusDot
 import com.openagent.android.ui.ink
+import com.openagent.android.ui.oaFloat
 import com.openagent.android.ui.theme.Shape
 import com.openagent.android.ui.theme.Type
 import com.openagent.android.viewmodel.MainViewModel
@@ -218,9 +219,10 @@ private fun Composer(draft: String, onDraft: (String) -> Unit, onSend: () -> Uni
             .fillMaxWidth()
             .padding(horizontal = Shape.barInset)
             .height(Shape.composerHeight)
+            .oaFloat(RoundedCornerShape(percent = 50))
             .clip(RoundedCornerShape(percent = 50))
             .background(ink.bgSurface)
-            .border(1.dp, ink.borderSubtle, RoundedCornerShape(percent = 50))
+            .border(1.dp, ink.borderDefault, RoundedCornerShape(percent = 50))
             .padding(start = 20.dp, end = 8.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
