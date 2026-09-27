@@ -63,6 +63,7 @@ object Shape {
      * RowDivider lands on it. The 46 this used to carry measured 47.
      */
     val rowHeight = 38.dp
+    val barGap = 4.dp
     /** --shadow-float: the halo under the two floating capsules reaches ~12dp out. */
     val floatElevation = 5.5.dp
     val navbarHeight = 44.dp

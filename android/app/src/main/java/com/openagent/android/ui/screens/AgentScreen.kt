@@ -106,7 +106,9 @@ internal fun AgentScreenContent(
         }
 
         Composer(draft = draft, onDraft = onDraft, onSend = onSend, enabled = canSend)
-        Spacer(Modifier.height(10.dp))
+        // Artboard 07 leaves 12dp between the composer's border and the tab bar's.
+        // The NavHost already contributes 8 of that to every route, so this is the rest.
+        Spacer(Modifier.height(Shape.barGap))
     }
 }
 

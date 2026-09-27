@@ -35,11 +35,15 @@ MIN_ARTBOARD_PEAK = 1
 # sample lands on that widget's own border and compares two different things.
 RAMP_DP = 12
 
-# (artboard, capture, pill surface fill, canvas brightness). Both are 1440x900
-# window captures at 100% scaling, so one pixel is one dp.
+# (artboard, capture, pill surface fill, canvas brightness). The Windows pairs are
+# 1440x900 window captures at 100% scaling, so one pixel is one dp. The chat state
+# is driven by scripts/ui-state-verify.sh, and the composer floats there too — the
+# same capsule has to carry the same halo in both states.
 WINDOWS_CASES = [
     ("01-windows-起始页-浅色.png", "cur-agent-light.png", (247, 247, 250), 255),
     ("02-windows-起始页-深色.png", "cur-agent-dark.png", (28, 28, 30), 10),
+    ("03-windows-对话态-浅色.png", "state-chat-light.png", (247, 247, 250), 255),
+    ("04-windows-对话态-深色.png", "state-chat-dark.png", (28, 28, 30), 10),
 ]
 
 # The phone artboards are drawn at dp scale but captured at 420dpi, so its ramp
@@ -87,7 +91,7 @@ def capsule(px, size, fill, column):
     raise AssertionError("no capsule of that fill in the lower third")
 
 
-def phone_readings(px, size, fill, canvas, density):
+def phone_readings(px, size, fill, canvas, density, tab):
     w, _ = size
     column = w // 2
     top, bottom = capsule(px, size, fill, column)
@@ -97,7 +101,16 @@ def phone_readings(px, size, fill, canvas, density):
     ramp = lambda base, sign: [
         canvas - px[column, base + sign * round(k * density)][0] for k in range(RAMP_DP)
     ]
-    return {"below": ramp(start, 1), "above": ramp(above, -1)}
+    # Tolerance 2, not 6: the composer's own halo decays through 235 one pixel after
+    # its border, and the light hairline is 229 — a loose match lands on the halo and
+    # reports a zero gap.
+    bar = next((y for y in range(start, size[1])
+                if max(abs(int(u) - int(v)) for u, v in zip(px[column, y], tab)) <= 2), None)
+    readings = {"below": ramp(start, 1), "above": ramp(above, -1)}
+    # The air between the composer's border and the tab bar's is a layout number
+    # the artboards fix at 12dp, and it was 18 until the spacer was traced.
+    readings["gap"] = round((bar - start) / density, 1) if bar else None
+    return readings
 
 
 def compare(label, shot_name, edge, want, got, tolerance):
@@ -154,10 +167,19 @@ def main():
             continue
         a_px, a_size = load(art)
         b_px, b_size = load(shot)
-        want = phone_readings(a_px, a_size, fill, canvas, 1.0)
-        got = phone_readings(b_px, b_size, fill, canvas, PHONE_DENSITY)
+        want = phone_readings(a_px, a_size, fill, canvas, 1.0, want_tab)
+        got = phone_readings(b_px, b_size, fill, canvas, PHONE_DENSITY, want_tab)
         for edge in ("below", "above"):
             bad += compare("android", shot_name, edge, want[edge], got[edge], ANDROID_TOLERANCE)
+        wg, bg = want["gap"], got["gap"]
+        if wg is None or bg is None:
+            print(f"FAIL android {shot_name} gap: no tab-bar hairline below the composer")
+            bad += 1
+        elif abs(wg - bg) > 2:
+            print(f"FAIL android {shot_name} gap: composer->tabbar is {bg}dp, artboard draws {wg}dp")
+            bad += 1
+        else:
+            print(f"ok   android {shot_name} gap: composer->tabbar {bg}dp vs {wg}dp")
 
         built = stroke_of(b_px, b_size, fill, PHONE_DENSITY)
         if built != want_border:

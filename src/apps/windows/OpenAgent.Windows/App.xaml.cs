@@ -95,6 +95,23 @@ public partial class App : Application
     }
 
     /// <summary>
+    /// --data=&lt;dir&gt; points the whole store at a throwaway directory. It exists for
+    /// scripts/ui-state-verify.sh: the approval card is only capturable from a known
+    /// starting state, and every earlier verification run had left tasks and
+    /// conversations behind in %LOCALAPPDATA%\OpenAgent. Null keeps the default.
+    /// </summary>
+    private static string? CommandLineDataRoot()
+    {
+        foreach (var argument in Environment.GetCommandLineArgs())
+        {
+            if (!argument.StartsWith("--data=", StringComparison.OrdinalIgnoreCase)) continue;
+            var path = argument["--data=".Length..];
+            if (!string.IsNullOrWhiteSpace(path)) return path;
+        }
+        return null;
+    }
+
+    /// <summary>
     /// Registers the whole non-UI stack once (spec section 165) and hands the UI
     /// library its <see cref="IAgentHost"/> so pages read real data.
     /// </summary>
@@ -102,7 +119,11 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
-        services.AddOpenAgent(options => options.PermissionMode = PermissionMode.AskBeforeActions);
+        services.AddOpenAgent(options =>
+        {
+            options.PermissionMode = PermissionMode.AskBeforeActions;
+            options.DatabaseRoot = CommandLineDataRoot();
+        });
         services.AddOpenAgentProviders();
         var transport = new UdpLanTransport(LanDiscoveryOptions.Default(), new LocalLoopbackTransport());
         services.AddSingleton<ITransport>(transport);

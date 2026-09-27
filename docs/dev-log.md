@@ -2021,6 +2021,47 @@ safe against the app having real data**, not against the empty state you develop
 The harness passed for weeks because the list it was breaking was empty.
 
 
+## 2026-09-27 · The verification harness had been poisoning its own subject
+
+Two more items closed, then a failure that turned out to be about the harness rather than
+the UI.
+
+**Artboards 03/04 now gate the halo too.** The composer floats in 对话态 exactly as it does
+on the start page, and nothing asserted it — the halo gate read the start-page captures
+only. Measured: the chat state reproduces the same profile (peak 20 light / 3 dark, worst
+2 levels). Adding those two frames took the Windows half from 6 to 12 assertions, proven
+non-vacuous by erasing the halo from a copy of `state-chat-light.png` (2 `FAIL`s). The gate
+had to move *after* the interactive-state block in `ui-verify.sh`, or it would have compared
+last run's chat frames and said ok.
+
+**The phone's composer sat 6dp too far from the tab bar.** Artboard 07 leaves 12dp between
+the capsule's border and the bar's hairline; the build measured 18.3. The trail:
+`AgentScreenContent` ends with `Spacer(10.dp)` and `MainActivity`'s NavHost carries a global
+`padding(bottom = 8.dp)` — 18, from two places that each looked like the other's share.
+`Shape.barGap = 4.dp` now makes the 12 explicit, measured 12.2dp on device, and the gate
+asserts it for both themes. Its first version reported a 0dp gap, because the hairline
+search used a tolerance of 6 and the composer's own halo passes through 235 one pixel after
+the border while the light hairline is 229 — the search matched the halo and stopped.
+
+**Then `approval/dark` started failing, and the reason was everything above it.** The drive
+produced a chat frame with an *executed* `app.launch`, not a pending approval card. Running
+it alone passed. Running the whole sequence failed. The cause is that every script here has
+been launching the real app against the real store — `%LOCALAPPDATA%\OpenAgent` — and that
+store now carries **50 tasks and 25 agent turns** accumulated by these very verifications.
+The page opens on a scrolled, populated conversation rather than the state the artboard
+draws, which is also what made the old `(700,100)` capture click land on a task row.
+
+Fixed at the root: `--data=<dir>` on the app sets `OpenAgentOptions.DatabaseRoot`, and
+`ui-state-verify.sh` gives each drive a throwaway directory under `artifacts/state-sandbox/`
+and deletes it afterwards. Two consecutive full `ui-verify.sh` runs now produce byte-identical
+verdicts (approval borders 22 and 15 rows, all five audits green), where before the second
+run in a sequence could land on a different page state.
+
+The general lesson, which is now in AGENTS.md: **a screenshot harness that writes to the
+user's real state is not re-runnable**, and its failures will look like UI regressions. The
+same rule indicts the "inert" click point — inert against an empty database is not inert.
+
+
 ## NOT IMPLEMENTED registry
 
 Every entry below is a real `NotSupportedException("NOT IMPLEMENTED: …")` in

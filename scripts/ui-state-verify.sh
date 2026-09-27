@@ -7,6 +7,11 @@
 #
 #   scripts/ui-state-verify.sh              # both states, both themes
 #   STATES="approval" scripts/ui-state-verify.sh
+#
+# Each drive runs against a throwaway data directory (--data=, see App.xaml.cs). Without
+# it the app reads its real store, which by now holds every task and conversation this
+# script has ever produced: the page opens on a scrolled, populated list instead of the
+# artboard's state, and the approval capture stops being reproducible.
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -35,10 +40,14 @@ for theme in $THEMES; do
         out="artifacts/shots/state-$state-$theme.png"
         before=$(stat -c %Y "$out" 2>/dev/null || echo 0)
 
+        sandbox="$ROOT/artifacts/state-sandbox/$state-$theme"
+        rm -rf "$sandbox"
+        WIN_SANDBOX="$(cygpath -w "$sandbox")"
+
         powershell.exe -NoProfile -Command \
             "Stop-Process -Name OpenAgent -Force -ErrorAction SilentlyContinue;
              Start-Sleep -Milliseconds 600;
-             Start-Process -FilePath '$WIN_EXE' -WorkingDirectory '$WIN_PUB' -ArgumentList '--theme=$theme';
+             Start-Process -FilePath '$WIN_EXE' -WorkingDirectory '$WIN_PUB' -ArgumentList '--theme=$theme',"--data=$WIN_SANDBOX";
              Start-Sleep -Seconds 8" >/dev/null 2>&1
 
         # No pipe on either of these: `cmd | tail` reports tail's exit code, which is 0
@@ -74,4 +83,5 @@ for theme in $THEMES; do
 done
 
 powershell.exe -NoProfile -Command "Stop-Process -Name OpenAgent -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1
-echo "OK: states captured"
+rm -rf "$ROOT/artifacts/state-sandbox"
+echo "OK: states captured (each from a clean data directory)"

@@ -72,11 +72,6 @@ echo "--- focus adorner (no artboard draws one) ---"
 python scripts/ui-focus-ring-audit.py
 rings=$?
 
-echo
-echo "--- composer halo (the one soft shadow in the app) ---"
-python scripts/ui-halo-gate.py
-halo=$?
-
 states=0
 if [ "${SKIP_STATES:-0}" != "1" ]; then
     echo
@@ -84,6 +79,13 @@ if [ "${SKIP_STATES:-0}" != "1" ]; then
     bash scripts/ui-state-verify.sh
     states=$?
 fi
+
+# After the states: the composer floats in 对话态 too, so this gate reads captures
+# that block writes. Running it before would compare last run's frames and say ok.
+echo
+echo "--- composer halo (the one soft shadow in the app, both states) ---"
+python scripts/ui-halo-gate.py
+halo=$?
 
 if [ $colours -ne 0 ]; then
     echo "FAILED: a landmark colour drifted from the artboard"
