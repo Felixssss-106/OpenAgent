@@ -128,7 +128,9 @@ private fun StartState(hostName: String?, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .height(36.dp)
                 .clip(RoundedCornerShape(percent = 50))
-                .background(ink.bgSurface)
+                // bgSunken, not bgSurface: artboards 07/08 draw the status pill one
+                // step below the cards it sits beside (#F2F2F7 / #000000).
+                .background(ink.bgSunken)
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

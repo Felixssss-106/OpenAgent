@@ -2061,6 +2061,13 @@ The general lesson, which is now in AGENTS.md: **a screenshot harness that write
 user's real state is not re-runnable**, and its failures will look like UI regressions. The
 same rule indicts the "inert" click point — inert against an empty database is not inert.
 
+One real defect did fall out of the asymmetry between the phone's light and dark counts.
+The status pill under the greeting is `bgSunken` in artboards 07/08 (#F2F2F7 on light,
+#000000 on dark) and the build painted it `bgSurface` — one step too high against the page.
+Fixed; the sweep now reports the same centre colour on both sides of that cluster, and what
+remains there is the pill's width, which tracks the live copy ("等待 Windows 主机" with no
+host, not the mockup's "已就绪 · 权限：请求批准").
+
 
 ## NOT IMPLEMENTED registry
 
